@@ -1,4 +1,3 @@
-import moment from 'moment';
 import Promise from 'bluebird';
 import oracledb from 'oracledb';
 
@@ -10,34 +9,45 @@ import _ from 'lodash';
 import sageModel from '../build/sage_model';
 import sageSchema from '../build/sage_schema'
 
-let sage = {};
-
-sage.connection = null;
-sage.connect = function(uri, options = {}) {
-  if(sage.connection) {
-    return new Promise(function(resolve, reject) { resolve(); })
+class Sage {
+  constructor() {
+    this.Schema = sageSchema;
+    this._connection = null;
+  }
+  get connection() {
+    return this._connection;
   }
 
-  // Make a new connection
-  let auth = { 
-    user: "system",
-    password: "oracle",
-    connectString: "127.0.0.1:1521/orcl"
+  model(name, schema) {
+    return sageModel(name, schema, this)
   }
-  auth = _.defaults(options, auth);
-  return new Promise(function(resolve, reject) {
-    oracledb.getConnection(auth, function(err, connection) {
-      if(err) {
-        console.log(err);
-        reject(err); 
-      }
-      sage.connection = connection;
-      resolve();
-    })
-  });
-};
 
-sage.Schema = sageSchema;
-sage.model = sageModel;
+  connect(uri, options = {}) {
+    let self = this;
+    if(self._connection) {
+      return new Promise(function(resolve, reject) { resolve(); })
+    }
+
+    // Make a new connection
+    let auth = { 
+      user: "system",
+      password: "oracle",
+      connectString: uri || "127.0.0.1:1521/orcl"
+    }
+    auth = _.defaults(options, auth);
+    return new Promise(function(resolve, reject) {
+      oracledb.getConnection(auth, function(err, connection) {
+        if(err) {
+          console.log(err);
+          reject(err); 
+        }
+        self._connection = connection;
+        resolve();
+      })
+    });
+  }
+}
+
+let sage = new Sage();
 
 module.exports = sage;

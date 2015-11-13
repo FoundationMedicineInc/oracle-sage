@@ -2,13 +2,21 @@
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _sage = require('../build/sage');
+var _bluebird = require('bluebird');
 
-var _sage2 = _interopRequireDefault(_sage);
+var _bluebird2 = _interopRequireDefault(_bluebird);
+
+var _moment = require('moment');
+
+var _moment2 = _interopRequireDefault(_moment);
 
 var _sage_util = require('../build/sage_util');
 
 var _sage_util2 = _interopRequireDefault(_sage_util);
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -16,7 +24,7 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var model = function model(name, schema) {
+var model = function model(name, schema, sage) {
   return (function () {
     function Model(props, initName, initSchema) {
       _classCallCheck(this, Model);
@@ -28,19 +36,71 @@ var model = function model(name, schema) {
       this._schema = initSchema || schema;
 
       this._props = props || {};
+      this._dirtyProps = {};
 
       this.errors = [];
     }
 
-    // **** BEGIN STATIC
-
     _createClass(Model, [{
+      key: 'mergeProps',
+      value: function mergeProps() {
+        this._props = _lodash2.default.assign(this._props, this._dirtyProps);
+        this._dirtyProps = {};
+      }
+
+      // **** BEGIN STATIC
+      // Uses the primary key definition and returns the first row on that
+
+    }, {
+      key: 'save',
+
+      // **** END STATIC   
+
+      value: function save() {
+        var _this = this;
+
+        return new _bluebird2.default(function (resolve, reject) {
+          if (_this.valid) {
+            // save it to the database
+            var pk = schema.primaryKey;
+
+            var result = _sage_util2.default.getUpdateSQL(_this.dirtyProps);
+            var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
+            sql = _sage_util2.default.amendDateFields(_this.schema, sql);
+            result.values[pk] = _this.get(pk);
+
+            sage.connection.execute(sql, result.values, function (err, result) {
+              if (err) {
+                console.log(err);
+                reject();
+              } else {
+                sage.connection.commit(function (err, result) {
+                  if (err) {
+                    console.log(err);
+                    reject();
+                  } else {
+                    _this.mergeProps();
+                    resolve();
+                  }
+                });
+              }
+            });
+          } else {
+            reject();
+          }
+        });
+      }
+
+      // Goes through and returns an object with non-entries filled with NULL
+
+    }, {
       key: 'get',
 
       // Return a property
       value: function get(key) {
-        return this._props[key];
+        return this._dirtyProps[key] || this._props[key];
       }
+
       // Set a property
 
     }, {
@@ -48,10 +108,10 @@ var model = function model(name, schema) {
       value: function set(key, value) {
         if ((typeof key === 'undefined' ? 'undefined' : _typeof(key)) === 'object') {
           for (var k in key) {
-            this._props[k] = key[k];
+            this._dirtyProps[k] = key[k];
           }
         } else {
-          this._props[key] = value;
+          this._dirtyProps[key] = value;
         }
       }
     }, {
@@ -59,34 +119,23 @@ var model = function model(name, schema) {
       value: function clearErrors() {
         this.errors = [];
       }
-    }, {
-      key: 'errorPromise',
-      value: function errorPromise() {
-        return new Promise(function (resolve, reject) {
-          reject(this.errors);
-        });
-      }
-    }, {
-      key: 'save',
-      value: function save() {
-        // Insert if there is no ID set.
-        if (!this.valid) {
-          return this.errorPromise;
-        };
-      }
+
       // Check against schema if it is valid
 
     }, {
+      key: 'dirtyProps',
+      get: function get() {
+        return this._dirtyProps;
+      }
+    }, {
       key: 'normalized',
-
-      // **** END STATIC   
       get: function get() {
         var result = {};
         for (var key in this.schema.definition) {
-          var value = this._props[key];
-          if (value === undefined) {
-            value = null;
-          }
+          var value = this.get(key);
+          // if(value === undefined) {
+          //   value = undefined;
+          // }
           result[key] = value;
         }
         return result;
@@ -108,7 +157,7 @@ var model = function model(name, schema) {
         var isValid = true;
         for (var key in this.schema.definition) {
           var schemaProps = this.schema.definition[key];
-          var value = this._props[key];
+          var value = this.get(key);
 
           // Don't check if the value is null
           if (value == null) {
@@ -123,8 +172,14 @@ var model = function model(name, schema) {
               valid = typeof value === "number";
               error = key + ' is not a number';
               break;
+            case "clob":
+              valid = true;
+              error = key + ' is not a clob';
+            case "char":
+              valid = typeof value === "string";
+              error = key + ' is not a char';
             case "date":
-              valid = moment(value, schemaProps.format).isValid();
+              valid = (0, _moment2.default)(value, schemaProps.format).isValid();
               error = key + ' is not a date';
               break;
             case "varchar":
@@ -158,17 +213,73 @@ var model = function model(name, schema) {
     }], [{
       key: 'findById',
       value: function findById(value) {
+        var self = this;
         var pk = schema.primaryKey;
         var data = {
           value: value
         };
-        var sql = 'SELECT * FROM ' + name + ' WHERE ' + pk + '=:value ORDER BY ID DESC FETCH FIRST 1 ROWS ONLY';
-
-        console.log(sql);
-        return new Promise(function (resolve, reject) {
-          resolve();
+        var sql = 'SELECT * FROM ' + name + ' WHERE ' + pk + '=:value ORDER BY ' + pk + ' DESC FETCH FIRST 1 ROWS ONLY';
+        return new _bluebird2.default(function (resolve, reject) {
+          sage.connection.query(sql, data, function (err, result) {
+            if (err) {
+              console.log(err);
+              reject();
+            } else {
+              var row = null;
+              if (result.length) {
+                row = new self(result[0], name, schema);
+              }
+              resolve(row);
+            }
+          });
         });
-        // let template = _.template('SELECT * ${table} (${fields}) VALUES (${keys})');
+      }
+
+      // **** BEGIN STATIC
+      // AND'd find, returns the first result
+
+    }, {
+      key: 'findOne',
+      value: function findOne() {
+        var values = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+        var self = this;
+        var pk = schema.primaryKey;
+        var result = _sage_util2.default.getSelectANDSQL(values);
+        var sql = 'SELECT * FROM ' + name + ' WHERE ' + result.sql + ' ORDER BY ' + pk + ' DESC FETCH FIRST 1 ROWS ONLY';
+        return new _bluebird2.default(function (resolve, reject) {
+          sage.connection.query(sql, result.values, function (err, result) {
+            if (err) {
+              console.log(err);
+              reject();
+            } else {
+              var row = null;
+              if (result.length) {
+                row = new self(result[0], name, schema);
+              }
+              resolve(row);
+            }
+          });
+        });
+      }
+
+      // Raw SQL query
+
+    }, {
+      key: 'query',
+      value: function query(_query) {
+        var values = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+        return new _bluebird2.default(function (resolve, reject) {
+          sage.connection.query(_query, values, function (err, result) {
+            if (err) {
+              console.log(err);
+              reject();
+            } else {
+              resolve(result);
+            }
+          });
+        });
       }
     }, {
       key: 'create',
@@ -176,30 +287,26 @@ var model = function model(name, schema) {
         var props = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
         var m = new this(props, name, schema);
-        return new Promise(function (resolve, reject) {
+        return new _bluebird2.default(function (resolve, reject) {
           if (!m.valid) {
-            reject(m);
+            reject();
           } else {
             var sql = _sage_util2.default.getInsertSQL(m.name, m.schema);
             var values = m.normalized;
-            console.log(values);
-            console.log(sql);
 
-            // sage.connection.execute(sql, values, function(err, result) {
-            //   if(err) {
-            //     console.log(err);
-            //     reject();
-            //   } else {
-            //     sage.connection.commit(function(err, result) {
-            //       if(err) { console.log(err); reject(); }
-            //       fulfill();
-            //     })
-            //   }
-            // })
-            // console.log()
-            // console.log(m.normalized);
-            // console.log(sage.connection)
-            resolve(m);
+            sage.connection.execute(sql, values, function (err, result) {
+              if (err) {
+                console.log(err);
+                reject();
+              } else {
+                sage.connection.commit(function (err, result) {
+                  if (err) {
+                    console.log(err);reject();
+                  }
+                  resolve(true);
+                });
+              }
+            });
           }
         });
       }

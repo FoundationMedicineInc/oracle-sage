@@ -8,6 +8,38 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var util = {};
 
+util.getSelectANDSQL = function () {
+  var fields = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+  var params = [];
+  var values = {};
+  _lodash2.default.each(fields, function (value, key) {
+    params.push(key + "=:" + key);
+    values[key] = value;
+  });
+  var sql = params.join(" AND ");
+  return {
+    sql: sql,
+    values: values
+  };
+};
+
+util.getUpdateSQL = function () {
+  var fields = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+  var params = [];
+  var values = {};
+  _lodash2.default.each(fields, function (value, key) {
+    params.push(key + "=:" + key);
+    values[key] = value;
+  });
+  var sql = params.join(",");
+  return {
+    sql: sql,
+    values: values
+  };
+};
+
 util.schemaToString = function (schema) {
   var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 

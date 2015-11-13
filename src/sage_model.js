@@ -1,7 +1,9 @@
-import sage from '../build/sage';
+import Promise from 'bluebird';
+import moment from 'moment';
 import sageUtil from '../build/sage_util';
+import _ from 'lodash';
 
-var model = function(name, schema) {
+let model = function(name, schema, sage) {
   return class Model {
     constructor(props, initName, initSchema) {
       // Name and schema will inherit off function
@@ -11,62 +13,144 @@ var model = function(name, schema) {
       this._schema = initSchema || schema;
 
       this._props = props || {};
+      this._dirtyProps = {};
 
       this.errors = [];
     }
 
+    mergeProps() {
+      this._props = _.assign(this._props, this._dirtyProps);
+      this._dirtyProps = {};
+    }
+
     // **** BEGIN STATIC
+    // Uses the primary key definition and returns the first row on that
     static findById(value) {
-      var pk = schema.primaryKey;
-      var data = {
+      let self = this;
+      let pk = schema.primaryKey;
+      let data = {
         value: value
       }
-      let sql = `SELECT * FROM ${name} WHERE ${pk}=:value ORDER BY ID DESC FETCH FIRST 1 ROWS ONLY`
-
-      console.log(sql)
+      let sql = `SELECT * FROM ${name} WHERE ${pk}=:value ORDER BY ${pk} DESC FETCH FIRST 1 ROWS ONLY`
       return new Promise(function(resolve, reject) {
-        resolve();
+        sage.connection.query(sql, data, function(err, result) {
+          if(err) {
+            console.log(err);
+            reject();
+          } else {
+            let row = null;
+            if(result.length) { row = new self(result[0], name, schema); }
+            resolve(row)
+          }
+        })
       })
-      // let template = _.template('SELECT * ${table} (${fields}) VALUES (${keys})');
+    }
+
+    // **** BEGIN STATIC
+    // AND'd find, returns the first result
+    static findOne(values = {}) {
+      let self = this;
+      let pk = schema.primaryKey;
+      let result = sageUtil.getSelectANDSQL(values);
+      let sql = `SELECT * FROM ${name} WHERE ${result.sql} ORDER BY ${pk} DESC FETCH FIRST 1 ROWS ONLY`
+      return new Promise(function(resolve, reject) {
+        sage.connection.query(sql, result.values, function(err, result) {
+          if(err) {
+            console.log(err);
+            reject();
+          } else {
+            let row = null;
+            if(result.length) { row = new self(result[0], name, schema); }
+            resolve(row)
+          }
+
+        })
+      })
+    }    
+
+    // Raw SQL query
+    static query(query, values = []) {
+      return new Promise(function(resolve, reject) {
+        sage.connection.query(query, values, function(err, result) {
+          if(err) {
+            console.log(err);
+            reject();
+          } else {
+            resolve(result)
+          }
+        })
+      })      
     }
 
     static create(props = {}) {
       let m = new this(props, name, schema);
       return new Promise(function(resolve, reject) {
         if(!m.valid) {
-          reject(m);
+          reject();
         } else {
           let sql = sageUtil.getInsertSQL(m.name, m.schema);
-          let values = m.normalized
-          console.log(values)
-          console.log(sql)
+          let values = m.normalized;
 
-          // sage.connection.execute(sql, values, function(err, result) {
-          //   if(err) {
-          //     console.log(err);
-          //     reject();
-          //   } else {
-          //     sage.connection.commit(function(err, result) {
-          //       if(err) { console.log(err); reject(); }
-          //       fulfill();
-          //     })
-          //   }
-          // })
-          // console.log()
-          // console.log(m.normalized);
-          // console.log(sage.connection)
-          resolve(m);
+          sage.connection.execute(sql, values, function(err, result) {
+            if(err) {
+              console.log(err);
+              reject();
+            } else {
+              sage.connection.commit(function(err, result) {
+                if(err) { console.log(err); reject(); }
+                resolve(true);
+              })
+            }
+          });
         }
       })
     }
     // **** END STATIC    
+
+    save() {
+      return new Promise((resolve, reject) => {
+        if(this.valid) {
+          // save it to the database
+          let pk = schema.primaryKey;
+
+          let result = sageUtil.getUpdateSQL(this.dirtyProps);
+          let sql = `UPDATE ${name} SET ${result.sql} WHERE ${pk}=:${pk}`
+          sql = sageUtil.amendDateFields(this.schema, sql);
+          result.values[pk] = this.get(pk);
+
+          sage.connection.execute(sql, result.values, (err, result) => {
+            if(err) {
+              console.log(err);
+              reject()
+            } else {
+              sage.connection.commit((err, result) => {
+                if(err) { 
+                  console.log(err); 
+                  reject();
+                } else {
+                  this.mergeProps();
+                  resolve();
+                }
+              })
+            }
+          });
+        } else {
+          reject();
+        }
+      });
+    }
+
+    // Goes through and returns an object with non-entries filled with NULL
+    get dirtyProps() {
+      return this._dirtyProps;
+    }
     get normalized() {
       let result = {};
       for(let key in this.schema.definition) {
-        let value = this._props[key];
-        if(value === undefined) {
-          value = null;
-        }
+        let value = this.get(key);
+        // if(value === undefined) {
+        //   value = undefined;
+        // }
         result[key] = value;
       }
       return result;
@@ -80,40 +164,31 @@ var model = function(name, schema) {
     }
     // Return a property
     get(key) {
-      return this._props[key];
+      return this._dirtyProps[key] || this._props[key];
     }
+
     // Set a property
     set(key, value) {
       if(typeof key === 'object') {
         for(let k in key) {
-          this._props[k] = key[k];
+          this._dirtyProps[k] = key[k];
         }
       } else {
-        this._props[key] = value;
+        this._dirtyProps[key] = value;
       }
     }
+    
     clearErrors() {
       this.errors = [];
     }
 
-    errorPromise() {
-     return new Promise(function(resolve, reject) {
-        reject(this.errors);
-      })      
-    }
-
-    save() {
-      // Insert if there is no ID set.
-      if(!this.valid) { return this.errorPromise };
-
-    }
     // Check against schema if it is valid
     get valid() {
       this.clearErrors();
       let isValid = true;
       for(let key in this.schema.definition) {
         let schemaProps = this.schema.definition[key];
-        let value = this._props[key];
+        let value = this.get(key);
 
         // Don't check if the value is null
         if(value == null) {
@@ -128,6 +203,12 @@ var model = function(name, schema) {
             valid = typeof(value) === "number";
             error = `${key} is not a number`;
             break;
+          case "clob":
+            valid = true;
+            error = `${key} is not a clob`            
+          case "char":
+            valid = typeof(value) === "string";
+            error = `${key} is not a char`
           case "date":
             valid = moment(value, schemaProps.format).isValid();
             error = `${key} is not a date`;

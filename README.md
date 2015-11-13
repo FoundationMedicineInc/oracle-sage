@@ -1,48 +1,162 @@
+# oracle-sage
+
+Promise driven ORM around node-oracledb.
+
+## Install & Require
+
+`$ npm install oracle-sage`
+
+`var sage = require('oracle-sage');`
+
+## Connect
+
 ```
-var sage = require('../build/sage');
-sage.connect().then(function() {
-  // Define Schema
-  var studySchema = new sage.Schema({
-    DOWNLOAD_DATE: {
-      type: "date",
-      format: "MM/DD/YYYY"
-    },
-    NCT_ID: {
-      type: "varchar",
-      validator: function(v) {
-        return /1/.test(v);
-      },
-    },
-    PHASE: {
-      type: "varchar",
-      enum: {
-        values: '1 1/2 2 2/3 3 4'.split(' '),
-      }
+var auth = {
+  user: "system",
+  password: "oracle",
+}
+sage.connect("127.0.0.1:1521/orcl", auth).then(function() {
+  // do something...
+});
+
+```
+
+
+
+## Defining Schemas
+
+```
+var userSchema = sage.Schema({
+  ID: "number",
+  CREATED_AT: {
+    type: "date",
+    format: "MM/DD/YYYY"
+  },  
+  USERNAME: {
+    type: "varchar"
+    validator: function(value) {
+      return /^[a-zA-Z]+$/.test(value); // test only letters
+    },    
+  },
+  GENDER: {
+    type: "char",
+    enum: {
+      values: ['M', 'F']
     }
-    MINIMUM_AGE: "number"
-  }, {
-    primaryKey: "ID"
-  });
+  },
+  BIO: "clob"
+}, {
+  primaryKey: "ID"
+})
+```
 
-  // Make model
-  var Study = sage.model("rocket.clinical_study", studySchema);
+Supports types:
 
-  // Make record
-  var study = new Study({ 
-    NCT_ID: "NCT12345", 
-    CURRENT: "Y", 
-    PHASE: "1" 
-  });
+- number
+- char
+- date
+- varchar
+- clob
 
-  study.set('PHASE', '2/3');
-  study.set({
-    'NCT_ID': "NCT4567",
-    "MINIMUM_AGE": 18
-  });
+Special features:
 
-  study.insert().then(function(study) {
+- enum 
+- validators
+
+## Initialize
+
+```
+var userTable = "users";
+var User = sage.model(userTable, userSchema);
+```
+
+## Creation
+
+```
+User.create({ USERNAME: "example" });
+```
+
+## Updating
+
+```
+var user;
+User.findOne({ username: "example" }).then(function(user) {
+  user.set("username", "bob");
+  user.save().then(function() {
     // do something
   });
-  
 })
+```
+
+Updating will only update modified fields.
+
+## Querying
+
+#####findBydId(value)
+
+Finds model based on `value` against the set primary key
+
+#####findOne({})
+
+Accepts `{}` which transforms into **AND** conditions.
+
+```
+User.findOne({ USERNAME: example, GENDER: 'M'})
+```
+
+#####execute(query = "", values = {})
+
+Runs a raw Oracle query. Promise wrapper around `connection.query` from `simple-oracledb`
+
+## Model Methods
+
+#####get
+
+```
+user.get('USERNAME');
+```
+
+#####set
+
+```
+user.set('USERNAME', 'alice');
+user.set({ 'USERNAME': 'alice', 'GENDER': 'F');
+```
+
+## Model Properties
+
+
+#####valid
+
+```
+user.set('USERNAME', 12345);
+user.valid // false
+user.set('USERNAME', 'example');
+user.valid // true
+```
+
+#####errors
+
+```
+user.set({'USERNAME': 12345, GENDER: 'xyz');
+user.valid // false
+user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
+```
+
+## Example
+
+```
+var user;
+
+User.create({USERNAME: "example"}).then(function() {
+  return User.findOne({USERNAME: "example"});
+}).then(function(model) {
+  user = model;  
+  user.get('USERNAME'); // example
+  user.set('USERNAME', 'alice');
+  return user.save();
+}).then(function() {
+  user.get('USERNAME'); // alice
+});
+            
 ```

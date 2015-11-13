@@ -2,6 +2,34 @@ import _ from 'lodash';
 
 let util = {};
 
+util.getSelectANDSQL = function(fields = {}) {
+  let params = [];
+  let values = {};
+  _.each(fields, function(value, key) {
+    params.push(`${key}=:${key}`)
+    values[key] = value;
+  });
+  let sql = params.join(" AND ");
+  return {
+    sql: sql,
+    values: values
+  };
+}
+
+util.getUpdateSQL = function(fields = {}) {
+  let params = [];
+  let values = {};
+  _.each(fields, function(value, key) {
+    params.push(`${key}=:${key}`)
+    values[key] = value;
+  });
+  let sql = params.join(",");
+  return {
+    sql: sql,
+    values: values
+  };  
+}
+
 util.schemaToString = function(schema, options = {}) {
   let prefix = options.prefix || "";
   let result = "";
@@ -30,6 +58,7 @@ util.amendDateFields = function(schema, string) {
   });
   return string;   
 }
+
 
 util.getInsertSQL = function(table, schema) {
   let fields = this.schemaToString(schema);

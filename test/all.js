@@ -27,6 +27,12 @@ describe('models', function() {
         validator: function(v) {
           return(v === "bob");
         }
+      },
+      gender: {
+        type: "varchar",
+        enum: {
+          values: 'M F'.split(' '),
+        }
       }
     }, {
       primaryKey: "id"
@@ -43,28 +49,22 @@ describe('models', function() {
     assert.equal(user.valid, true);
   });    
 
-  it("should be able to findById", function(done) {
+  it('should validate enum', function() {
     var User = sage.model("User", schema);
-    User.findById(1).then(function() {
-      done();
-    })
-  });
-
-  it("shouldnt create an invalid model", function(done) {
-    var User = sage.model("User", schema);
-    User.create({name: "alice"}).then(function(){}, function(model) {
-      assert.equal(model.errors.length, 1);
-      done();
+    var user = new User({
+      name: "bob",
+      gender: "dog"
     });
-  });
+    assert.equal(user.valid, false);
+    user.set('gender', 'M');
+    assert.equal(user.valid, true);
+  });     
 
-  it("should create an valid model", function(done) {
+  it("should normalize", function() {
     var User = sage.model("User", schema);
-    User.create({name: "bob"}).then(function(model){
-      assert.equal(model.errors.length, 0);
-      done();
-    });
-  });  
-
+    var user = new User({name: "alice"});
+    assert.equal(user.normalized.id, null);
+    assert.equal(user.normalized.name, "alice");
+  });
   
 })
