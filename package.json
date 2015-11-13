@@ -1,0 +1,23 @@
+{
+  "name": "sage",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "babel src -d build -w"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-preset-es2015": "^6.1.4",
+    "bluebird": "^3.0.5",
+    "lodash": "^3.10.1",
+    "moment": "^2.10.6",
+    "oracledb": "^1.3.0",
+    "simple-oracledb": "0.0.15"
+  }
+}
