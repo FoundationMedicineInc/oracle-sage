@@ -1,6 +1,6 @@
--> ![](http://i.imgur.com/wYE7vS5.png =100x100) <-
-
 # Oracle Sage
+
+![sage](http://i.imgur.com/TR5LYwo.png)
 
 *WARNING: DO NOT USE THIS PACKAGE. I put it on NPM so I can continue to test it and I couldn't make it private. Wait at least a week or two before using this as I will probably change a lot of stuff.*
 
