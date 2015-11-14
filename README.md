@@ -4,7 +4,7 @@
 </p>
 
 
-*WARNING: DO NOT USE THIS PACKAGE. I put it on NPM so I can continue to test it and I couldn't make it private. Wait at least a week or two before using this as I will probably change a lot of stuff.*
+*WARNING (11/14/2015): DO NOT USE THIS PACKAGE. I put it here so I can continue to test it. This is a skeleton of an idea, and I'm not even sure if it all works. Wait at least a week or two before using this as I will probably change a lot of stuff.*
 
 Promise driven object modeling for OracleDB.
 
