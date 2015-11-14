@@ -252,7 +252,7 @@ var physicianSchema = new sage.Schema({
   name: "varchar"
   patients: {
     type: "association",
-    joinType: "hasMany",
+    joinType: "hasManyThrough",
     joinTable: "appointments",
     joinsWith: "patients",
     foreignKeys: { // foreign keys in the association table
