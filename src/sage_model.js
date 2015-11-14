@@ -1,6 +1,7 @@
 import Promise from 'bluebird';
 import moment from 'moment';
 import sageUtil from '../build/sage_util';
+import sageSelectQuery from '../build/sage_select_query';
 import _ from 'lodash';
 
 let model = function(name, schema, sage) {
@@ -80,6 +81,10 @@ let model = function(name, schema, sage) {
           }
         })
       })      
+    }
+
+    static select(columns) {
+      return new sageSelectQuery(sage, name, this, columns);
     }
 
     static create(props = {}) {

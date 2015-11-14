@@ -14,6 +14,10 @@ var _sage_util = require('../build/sage_util');
 
 var _sage_util2 = _interopRequireDefault(_sage_util);
 
+var _sage_select_query = require('../build/sage_select_query');
+
+var _sage_select_query2 = _interopRequireDefault(_sage_select_query);
+
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
@@ -280,6 +284,11 @@ var model = function model(name, schema, sage) {
             }
           });
         });
+      }
+    }, {
+      key: 'select',
+      value: function select(columns) {
+        return new _sage_select_query2.default(sage, name, this, columns);
       }
     }, {
       key: 'create',
