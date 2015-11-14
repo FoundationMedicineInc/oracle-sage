@@ -152,19 +152,41 @@ var model = function model(name, schema, sage) {
         });
       }
     }, {
-      key: 'save',
-      value: function save() {
+      key: 'destroy',
+      value: function destroy() {
         var _this4 = this;
 
         return new _bluebird2.default(function (resolve, reject) {
-          if (_this4.valid) {
+          var pk = _this4.get(_this4._schema.primaryKey);
+          if (!pk) {
+            reject();
+          }
+
+          var sql = knex(_this4._name).where(_this4._schema.primaryKey, pk).del().toString();
+          sage.connection.execute(sql, function (err, results) {
+            if (err) {
+              console.log(err);
+              reject();
+            } else {
+              resolve();
+            }
+          });
+        });
+      }
+    }, {
+      key: 'save',
+      value: function save() {
+        var _this5 = this;
+
+        return new _bluebird2.default(function (resolve, reject) {
+          if (_this5.valid) {
             // save it to the database
             var pk = schema.primaryKey;
 
-            var result = _sage_util2.default.getUpdateSQL(_this4.dirtyProps);
+            var result = _sage_util2.default.getUpdateSQL(_this5.dirtyProps);
             var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
-            sql = _sage_util2.default.amendDateFields(_this4.schema, sql);
-            result.values[pk] = _this4.get(pk);
+            sql = _sage_util2.default.amendDateFields(_this5.schema, sql);
+            result.values[pk] = _this5.get(pk);
 
             sage.connection.execute(sql, result.values, function (err, result) {
               if (err) {
@@ -176,7 +198,7 @@ var model = function model(name, schema, sage) {
                     console.log(err);
                     reject();
                   } else {
-                    _this4.mergeProps();
+                    _this5.mergeProps();
                     resolve();
                   }
                 });

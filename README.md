@@ -22,6 +22,7 @@
 - [Model Methods](#model-methods)
       - [get](#get)
       - [set](#set)
+      - [destroy](#destroy)
 - [Model Properties](#model-properties)
       - [valid](#valid)
       - [errors](#errors)
@@ -126,16 +127,16 @@ A list of current querying options. Note that querying returns models.
 
 ##### findById(value)
 
-Finds model based on `value` against the set primary key
+Finds model based on `value` against the schema primary key
 
 ##### findOne({})
 
-Accepts `{}` which transforms into **AND** conditions.
+Accepts `{}` which transforms into **AND** conditions. Returns the first item, and the SELECT is ORDERED BY the schema primary key.
 
 ```javascript
 User.findOne({ USERNAME: example, GENDER: 'M'}).then(function(resultModel) {
   var user = resultModel;
-  user.get('GENDER') // value is M
+  user.get('GENDER') // value is "M"
 })
 ```
 
@@ -145,7 +146,7 @@ A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the
 
 ```javascript
 User.select("*").where('USERNAME', 'example').limit(1).then(function(resultsAsModels) {
-  resultsAsModels[0].get('USERNAME') // value is example
+  resultsAsModels[0].get('USERNAME') // value is "example"
 })
 ```
 
@@ -153,15 +154,27 @@ User.select("*").where('USERNAME', 'example').limit(1).then(function(resultsAsMo
 
 ##### get
 
+Get a property. 
+
 ```javascript
 user.get('USERNAME'); // returns "example" (based off above schema)
 ```
 
 ##### set
 
+Set a property.
+
 ```javascript
 user.set('USERNAME', 'alice');
 user.set({ 'USERNAME': 'alice', 'GENDER': 'F');
+```
+
+##### destroy
+
+Delete the record from database
+
+```javascript
+user.destroy().then(function(){});
 ```
 
 ## Model Properties

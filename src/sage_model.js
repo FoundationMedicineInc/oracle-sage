@@ -209,6 +209,25 @@ let model = function(name, schema, sage) {
       
     }
 
+    destroy() {
+      return new Promise((resolve, reject) => {
+        let pk = this.get(this._schema.primaryKey);
+        if(!pk) { reject(); }
+        
+        let sql = knex(this._name)
+        .where(this._schema.primaryKey, pk)
+        .del()
+        .toString();
+        sage.connection.execute(sql, (err, results) => {
+          if(err) {
+            console.log(err);
+            reject();
+          } else {
+            resolve();
+          }
+        })
+      })
+    }
     save() {
       return new Promise((resolve, reject) => {
         if(this.valid) {
