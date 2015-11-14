@@ -1,6 +1,8 @@
-# Oracle Sage
+<h1 align="center">Oracle Sage</h1>
+<p align="center">
+  <img src="http://i.imgur.com/TR5LYwo.png" alt="sagee"/>
+</p>
 
-![sage](http://i.imgur.com/TR5LYwo.png)
 
 *WARNING: DO NOT USE THIS PACKAGE. I put it on NPM so I can continue to test it and I couldn't make it private. Wait at least a week or two before using this as I will probably change a lot of stuff.*
 
