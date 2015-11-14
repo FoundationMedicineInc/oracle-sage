@@ -1,6 +1,6 @@
 # Oracle Sage
 
-*WARNING: DO NOT USE THIS PACKAGE. I put it on NPM so I can continue to test it and I couldn't make it private. Wait at least a week or two before using this as I will probably change a lot of stuff.*
+*WARNING: DO NOT USE THIS. I put it here so I can continue to test it. Wait at least a week or two before using this as I will probably change a lot of stuff.*
 
 Promise driven object modeling for OracleDB.
 
@@ -93,7 +93,7 @@ User.findOne({ username: "example" }).then(function(user) {
 
 ## Querying
 
-##### findBydId(value)
+##### findById(value)
 
 Finds model based on `value` against the set primary key
 
