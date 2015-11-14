@@ -46,7 +46,9 @@ util.schemaToString = function (schema) {
   var prefix = options.prefix || "";
   var result = "";
   _lodash2.default.each(schema.definition, function (value, key) {
-    result = result + prefix + key + ",";
+    if (value.type != "association") {
+      result = result + prefix + key + ",";
+    }
   });
   result = result.substring(0, result.length - 1);
   return result;

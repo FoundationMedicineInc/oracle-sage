@@ -28,8 +28,10 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var knex = require('knex')({ client: 'oracle' });
+
 var model = function model(name, schema, sage) {
-  return (function () {
+  var modelClass = (function () {
     function Model(props, initName, initSchema) {
       _classCallCheck(this, Model);
 
@@ -43,6 +45,9 @@ var model = function model(name, schema, sage) {
       this._dirtyProps = {};
 
       this.errors = [];
+
+      // queue for pending associations to be populated
+      this._associations = [];
     }
 
     _createClass(Model, [{
@@ -56,22 +61,103 @@ var model = function model(name, schema, sage) {
       // Uses the primary key definition and returns the first row on that
 
     }, {
-      key: 'save',
+      key: 'populate',
 
       // **** END STATIC   
 
-      value: function save() {
+      value: function populate() {
         var _this = this;
 
+        if (!this._associations.length) {
+          this._associations = this._schema.associations;
+        }
+
+        if (this._associations.length) {
+          return new _bluebird2.default(function (resolve, reject) {
+            _this._populate().then(function () {
+              resolve();
+            });
+          });
+        } else {
+          return new _bluebird2.default(function (resolve, reject) {
+            resolve();
+          });
+        }
+      }
+    }, {
+      key: '_populate',
+      value: function _populate() {
+        var _this2 = this;
+
         return new _bluebird2.default(function (resolve, reject) {
-          if (_this.valid) {
+          var association = _this2._associations.shift();
+          _this2.populateOne(association).then(function () {
+            if (_this2._associations.length) {
+              _this2._populate().then(function () {
+                resolve();
+              });
+            } else {
+              resolve();
+            }
+          });
+        });
+      }
+    }, {
+      key: 'populateOne',
+      value: function populateOne(association) {
+        var _this3 = this;
+
+        var self = this;
+        var value = association.value;
+        var model = sage.models[value.model];
+        var associationModel = model.model;
+        var associationSchema = model.schema;
+
+        if (value.hasMany && value.through) {
+          var _ret = (function () {
+            var sql = knex(value.hasMany).select('*').innerJoin(function () {
+              this.select('*').from(value.through).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
+            }, value.hasMany + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
+
+            return {
+              v: new _bluebird2.default(function (resolve, reject) {
+                sage.connection.query(sql, function (err, results) {
+                  if (err) {
+                    console.log(err);
+                    reject();
+                  } else {
+                    (function () {
+                      var models = [];
+                      _lodash2.default.each(results, function (result) {
+                        models.push(new associationModel(result));
+                      });
+                      _this3.set(association.key, models);
+                      resolve();
+                    })();
+                  }
+                });
+              })
+            };
+          })();
+
+          if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+        }
+        throw 'unrecognized association';
+      }
+    }, {
+      key: 'save',
+      value: function save() {
+        var _this4 = this;
+
+        return new _bluebird2.default(function (resolve, reject) {
+          if (_this4.valid) {
             // save it to the database
             var pk = schema.primaryKey;
 
-            var result = _sage_util2.default.getUpdateSQL(_this.dirtyProps);
+            var result = _sage_util2.default.getUpdateSQL(_this4.dirtyProps);
             var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
-            sql = _sage_util2.default.amendDateFields(_this.schema, sql);
-            result.values[pk] = _this.get(pk);
+            sql = _sage_util2.default.amendDateFields(_this4.schema, sql);
+            result.values[pk] = _this4.get(pk);
 
             sage.connection.execute(sql, result.values, function (err, result) {
               if (err) {
@@ -83,7 +169,7 @@ var model = function model(name, schema, sage) {
                     console.log(err);
                     reject();
                   } else {
-                    _this.mergeProps();
+                    _this4.mergeProps();
                     resolve();
                   }
                 });
@@ -136,11 +222,10 @@ var model = function model(name, schema, sage) {
       get: function get() {
         var result = {};
         for (var key in this.schema.definition) {
-          var value = this.get(key);
-          // if(value === undefined) {
-          //   value = undefined;
-          // }
-          result[key] = value;
+          if (this.schema.definition[key].type != 'association') {
+            var value = this.get(key);
+            result[key] = value;
+          }
         }
         return result;
       }
@@ -323,5 +408,14 @@ var model = function model(name, schema, sage) {
 
     return Model;
   })();
+
+  // Store them in sage as they get created
+  sage.models[name] = {
+    model: modelClass,
+    schema: schema
+  };
+
+  return modelClass;
 };
+
 module.exports = model;

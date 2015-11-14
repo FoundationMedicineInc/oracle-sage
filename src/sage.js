@@ -13,6 +13,8 @@ class Sage {
   constructor() {
     this.Schema = sageSchema;
     this._connection = null;
+
+    this.models = {}; // all the models that have currently been instantiated
   }
   get connection() {
     return this._connection;

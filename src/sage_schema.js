@@ -1,3 +1,4 @@
+import _ from 'lodash';
 class Schema {
   constructor(definition = {}, config = {}) {
     let tempDefinition = {};
@@ -16,6 +17,18 @@ class Schema {
   }
   get definition() {
     return this._definition;
+  }
+  get associations() {
+    let associations = [];
+    _.each(this._definition, (item, key) => {
+      if(item.type === "association") {
+        associations.push({
+          key: key,
+          value: item
+        })
+      }
+    });
+    return associations;
   }
 }
 

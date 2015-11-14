@@ -4,8 +4,10 @@ import sageUtil from '../build/sage_util';
 import sageSelectQuery from '../build/sage_select_query';
 import _ from 'lodash';
 
+var knex = require('knex')({ client: 'oracle' });
+
 let model = function(name, schema, sage) {
-  return class Model {
+  let modelClass = class Model {
     constructor(props, initName, initSchema) {
       // Name and schema will inherit off function
       // Create uses the constructor as well so naming has to be different
@@ -17,6 +19,9 @@ let model = function(name, schema, sage) {
       this._dirtyProps = {};
 
       this.errors = [];
+
+      // queue for pending associations to be populated
+      this._associations = []; 
     }
 
     mergeProps() {
@@ -112,6 +117,75 @@ let model = function(name, schema, sage) {
     }
     // **** END STATIC    
 
+    populate() {
+      if(!this._associations.length) {
+        this._associations = this._schema.associations;
+      }
+
+      if(this._associations.length) {
+        return new Promise((resolve, reject) => {
+          this._populate().then(function() {
+            resolve();
+          })        
+        });
+      } else {
+        return new Promise(function(resolve, reject) {
+          resolve();
+        });
+      }
+    }
+
+    _populate() {
+      return new Promise((resolve, reject) => {
+        let association = this._associations.shift();
+        this.populateOne(association).then(()=> {
+          if(this._associations.length) {
+            this._populate().then(function() {
+              resolve();
+            });
+          } else {
+            resolve();
+          }
+        })        
+      })
+    }
+
+    populateOne(association) {
+      let self = this;
+      let value = association.value;
+      let model = sage.models[value.model];
+      let associationModel = model.model;
+      let associationSchema = model.schema;
+      
+      if(value.hasMany && value.through) {
+        let sql = knex(value.hasMany)
+        .select('*').innerJoin(function() {
+          this.select('*').
+          from(value.through).
+          where(value.foreignKeys.mine, self.get(self._schema.primaryKey))
+          .as('t1')
+        }, `${value.hasMany}.${associationSchema.primaryKey}`, `t1.${value.foreignKeys.theirs}`)
+        .toString(); 
+
+        return new Promise((resolve, reject) => {
+          sage.connection.query(sql, (err, results) => {
+            if(err) {
+              console.log(err);
+              reject();
+            } else {
+              let models = [];
+              _.each(results, (result) => {
+                models.push(new associationModel(result));
+              });
+              this.set(association.key, models)
+              resolve();
+            }
+          })  
+        })        
+      }   
+      throw('unrecognized association')   
+    }
+
     save() {
       return new Promise((resolve, reject) => {
         if(this.valid) {
@@ -152,11 +226,10 @@ let model = function(name, schema, sage) {
     get normalized() {
       let result = {};
       for(let key in this.schema.definition) {
-        let value = this.get(key);
-        // if(value === undefined) {
-        //   value = undefined;
-        // }
-        result[key] = value;
+        if(this.schema.definition[key].type != 'association') {
+          let value = this.get(key);
+          result[key] = value;
+        }
       }
       return result;
     }
@@ -247,5 +320,14 @@ let model = function(name, schema, sage) {
       return isValid;
     }
   }
+
+  // Store them in sage as they get created
+  sage.models[name] = {
+    model: modelClass,
+    schema: schema
+  }
+
+  return(modelClass);
 }
+
 module.exports = model;

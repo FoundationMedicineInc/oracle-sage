@@ -34,7 +34,9 @@ util.schemaToString = function(schema, options = {}) {
   let prefix = options.prefix || "";
   let result = "";
   _.each(schema.definition, function(value, key) {
-    result = result + prefix + key + ",";
+    if(value.type != "association") {
+      result = result + prefix + key + ",";
+    }
   });
   result = result.substring(0, result.length - 1);
   return result;  

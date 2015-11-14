@@ -38,6 +38,8 @@ var Sage = (function () {
 
     this.Schema = _sage_schema2.default;
     this._connection = null;
+
+    this.models = {}; // all the models that have currently been instantiated
   }
 
   _createClass(Sage, [{
