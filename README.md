@@ -26,8 +26,9 @@
       - [valid](#valid)
       - [errors](#errors)
 - [Associations and Population](#associations-and-population)
-  - [hasAndBelongsToMany](#hasandbelongstomany)
+  - [hasMany](#hasmany)
   - [hasManyThrough](#hasmanythrough)
+  - [hasAndBelongsToMany](#hasandbelongstomany)
 - [Other Examples](#other-examples)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -192,53 +193,41 @@ user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
 
 Supports:
 
-- [hasAndBelongsToMany](http://guides.rubyonrails.org/association_basics.html#the-has-and-belongs-to-many-association)
+- [hasMany](http://guides.rubyonrails.org/association_basics.html#the-has-many-association)
 - [hasManyThrough](http://guides.rubyonrails.org/association_basics.html#the-has-many-through-association)
+- [hasAndBelongsToMany](http://guides.rubyonrails.org/association_basics.html#the-has-and-belongs-to-many-association)
 
 The following examples satisfies the displayed database designs. The pictures are from rails so the field types in the pictures are not the exact Oracles equivilant.
 
-### hasAndBelongsToMany
+### hasMany
 
-![](http://i.imgur.com/fj6KKBB.png)
+![](http://i.imgur.com/t3e1YFf.png)
 
 ```javascript
-var assemblySchema = new sage.Schema({ 
+var customersSchema = new sage.Schema({ 
   id: "number",
   name: "varchar"
-  parts: {
+  orders: {
     type: "association",
-    joinType: "hasAndBelongsToMany",
-    joinTable: "assemblies_parts",
-    joinsWith: "parts",
-    foreignKeys: { // foreign keys in the association table
-      mine: 'assembly_id',
-      theirs: 'part_id'
+    joinType: "hasMany",
+    joinsWith: "orders",
+    foreignKeys: {
+      mine: "id",
+      theirs: "customer_id"
     },
-    model: 'Part' // what model to cast in to when results are returned
-  }
+    model: 'orders'
 }, {
   primaryKey: "id"
 });
 
-// It is not necessary to put the association here unless you want to populate 
-// assemblies on a parts model
-var partsSchema = new sage.Schema({
+var ordersSchema = new sage.Schema({
   id: "number",
-  part_number: "varchar"
-}, {
-  primaryKey: "id"
-})
-
-// Create the models
-var Assembly = sage.model("assemblies", assemblySchema);
-var Part = sage.model("parts", partsSchema);
-
-// Example usage
-Assembly.findById(1).then(function(assemblyModel) {
-  assemblyModel.populate().then(function() {
-    assemblyModel.get('parts'); // array of Part models
-  })
-)}
+  customer_id: "number",
+  order_date: {
+    type: "date",
+  format: "MM/DD/YYYY"
+  }
+});
 
 ```
 
@@ -259,7 +248,7 @@ var physicianSchema = new sage.Schema({
       mine: 'physician_id',
       theirs: 'patient_id'
     },
-    model: 'Patient' // what model to cast in to when results are returned
+    model: 'patients' // what model to cast in to when results are returned
   }
 }, {
   primaryKey: "id"
@@ -288,6 +277,52 @@ Physician.findById(1).then(function(physician) {
 })
 
 ```
+
+### hasAndBelongsToMany
+
+![](http://i.imgur.com/fj6KKBB.png)
+
+```javascript
+var assemblySchema = new sage.Schema({ 
+  id: "number",
+  name: "varchar"
+  parts: {
+    type: "association",
+    joinType: "hasAndBelongsToMany",
+    joinTable: "assemblies_parts",
+    joinsWith: "parts",
+    foreignKeys: { // foreign keys in the association table
+      mine: 'assembly_id',
+      theirs: 'part_id'
+    },
+    model: 'parts' // what model to cast in to when results are returned
+  }
+}, {
+  primaryKey: "id"
+});
+
+// It is not necessary to put the association here unless you want to populate 
+// assemblies on a parts model
+var partsSchema = new sage.Schema({
+  id: "number",
+  part_number: "varchar"
+}, {
+  primaryKey: "id"
+})
+
+// Create the models
+var Assembly = sage.model("assemblies", assemblySchema);
+var Part = sage.model("parts", partsSchema);
+
+// Example usage
+Assembly.findById(1).then(function(assemblyModel) {
+  assemblyModel.populate().then(function() {
+    assemblyModel.get('parts'); // array of Part models
+  })
+)}
+
+```
+
 ## Other Examples
 
 Basic example of some common functionality.

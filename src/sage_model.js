@@ -160,6 +160,12 @@ let model = function(name, schema, sage) {
       let sql = null;
 
       switch(value.joinType) {
+        case "hasMany":
+          sql = knex(value.joinsWith)
+          .select('*')
+          .where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine))
+          .toString();
+          break;
         case "hasAndBelongsToMany":
           sql = knex(value.joinsWith)
           .select('*').innerJoin(function() {

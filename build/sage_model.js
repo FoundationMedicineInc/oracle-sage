@@ -116,6 +116,9 @@ var model = function model(name, schema, sage) {
         var sql = null;
 
         switch (value.joinType) {
+          case "hasMany":
+            sql = knex(value.joinsWith).select('*').where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine)).toString();
+            break;
           case "hasAndBelongsToMany":
             sql = knex(value.joinsWith).select('*').innerJoin(function () {
               this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
