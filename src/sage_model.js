@@ -156,34 +156,51 @@ let model = function(name, schema, sage) {
       let model = sage.models[value.model];
       let associationModel = model.model;
       let associationSchema = model.schema;
-      
+
+      let sql = null;
+
+      if(value.hasAndBelongsToMany && value.joinTable) {
+        sql = knex(value.hasAndBelongsToMany)
+        .select('*').innerJoin(function() {
+          this.select('*').
+          from(value.joinTable).
+          where(value.foreignKeys.mine, self.get(self._schema.primaryKey))
+          .as('t1')
+        }, `${value.hasAndBelongsToMany}.${associationSchema.primaryKey}`, `t1.${value.foreignKeys.theirs}`)
+        .toString();        
+      }
       if(value.hasMany && value.through) {
-        let sql = knex(value.hasMany)
+        sql = knex(value.hasMany)
         .select('*').innerJoin(function() {
           this.select('*').
           from(value.through).
           where(value.foreignKeys.mine, self.get(self._schema.primaryKey))
           .as('t1')
         }, `${value.hasMany}.${associationSchema.primaryKey}`, `t1.${value.foreignKeys.theirs}`)
-        .toString(); 
-
-        return new Promise((resolve, reject) => {
-          sage.connection.query(sql, (err, results) => {
-            if(err) {
-              console.log(err);
-              reject();
-            } else {
-              let models = [];
-              _.each(results, (result) => {
-                models.push(new associationModel(result));
-              });
-              this.set(association.key, models)
-              resolve();
-            }
-          })  
-        })        
+        .toString();      
       }   
-      throw('unrecognized association')   
+
+      if(!sql) {
+        throw('unrecognized association'); 
+      }
+
+      return new Promise((resolve, reject) => {
+        sage.connection.query(sql, (err, results) => {
+          if(err) {
+            console.log(err);
+            reject();
+          } else {
+            let models = [];
+            _.each(results, (result) => {
+              models.push(new associationModel(result));
+            });
+            this.set(association.key, models)
+            resolve();
+          }
+        })  
+      })      
+         
+      
     }
 
     save() {

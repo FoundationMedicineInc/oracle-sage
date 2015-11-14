@@ -113,36 +113,40 @@ var model = function model(name, schema, sage) {
         var associationModel = model.model;
         var associationSchema = model.schema;
 
-        if (value.hasMany && value.through) {
-          var _ret = (function () {
-            var sql = knex(value.hasMany).select('*').innerJoin(function () {
-              this.select('*').from(value.through).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
-            }, value.hasMany + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
+        var sql = null;
 
-            return {
-              v: new _bluebird2.default(function (resolve, reject) {
-                sage.connection.query(sql, function (err, results) {
-                  if (err) {
-                    console.log(err);
-                    reject();
-                  } else {
-                    (function () {
-                      var models = [];
-                      _lodash2.default.each(results, function (result) {
-                        models.push(new associationModel(result));
-                      });
-                      _this3.set(association.key, models);
-                      resolve();
-                    })();
-                  }
-                });
-              })
-            };
-          })();
-
-          if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+        if (value.hasAndBelongsToMany && value.joinTable) {
+          sql = knex(value.hasAndBelongsToMany).select('*').innerJoin(function () {
+            this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
+          }, value.hasAndBelongsToMany + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
         }
-        throw 'unrecognized association';
+        if (value.hasMany && value.through) {
+          sql = knex(value.hasMany).select('*').innerJoin(function () {
+            this.select('*').from(value.through).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
+          }, value.hasMany + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
+        }
+
+        if (!sql) {
+          throw 'unrecognized association';
+        }
+
+        return new _bluebird2.default(function (resolve, reject) {
+          sage.connection.query(sql, function (err, results) {
+            if (err) {
+              console.log(err);
+              reject();
+            } else {
+              (function () {
+                var models = [];
+                _lodash2.default.each(results, function (result) {
+                  models.push(new associationModel(result));
+                });
+                _this3.set(association.key, models);
+                resolve();
+              })();
+            }
+          });
+        });
       }
     }, {
       key: 'save',

@@ -1,23 +1,22 @@
-<h1 align="center">Oracle Sage</h1>
-<p align="center">
+<p align="right">
   <img src="http://i.imgur.com/TR5LYwo.png" alt="sagee"/>
 </p>
 
-*WARNING (11/14/2015): DO NOT USE THIS PACKAGE. I put it here so I can continue to test it. This is a skeleton of an idea, and I'm not even sure if it all works. Wait until this message is removed before using.*
 
-Promise driven object modeling for OracleDB.
+<h1 align="right">Oracle Sage</h1>
+<p align="right">Promise driven object modeling for OracleDB.</p>
 
 ## Install & Require
 
 `$ npm install oracle-sage`
 
-```
+```javascript
 var sage = require('oracle-sage');
 ```
 
 ## Connect
 
-```
+```javascript
 var auth = {
   user: "system",
   password: "oracle"
@@ -30,7 +29,7 @@ sage.connect("127.0.0.1:1521/orcl", auth).then(function() {
 
 ## Defining Schemas
 
-```
+```javascript
 var userSchema = sage.Schema({
   ID: "number",
   CREATED_AT: {
@@ -68,26 +67,159 @@ Special features:
 - enum 
 - validators
 
+## Initialize
+
+```javascript
+var userTable = "users"; // use the table name in the database
+var User = sage.model(userTable, userSchema);
+```
+
+## Creation
+
+```javascript
+User.create({ USERNAME: "example" });
+```
+
+## Updating
+
+Updating will only update modified fields.
+
+```javascript
+User.findOne({ username: "example" }).then(function(user) {
+  user.set("username", "bob");
+  user.save().then(function() {
+    // do something
+  });
+})
+```
+
+## Querying
+
+A list of current querying options. Note that querying returns models.
+
+##### findById(value)
+
+Finds model based on `value` against the set primary key
+
+##### findOne({})
+
+Accepts `{}` which transforms into **AND** conditions.
+
+```javascript
+User.findOne({ USERNAME: example, GENDER: 'M'}).then(function(resultModel) {
+  var user = resultModel;
+  user.get('GENDER') // value is M
+})
+```
+
+##### select()
+
+A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the full API usage.
+
+```javascript
+User.select("*").where('USERNAME', 'example').limit(1).then(function(resultsAsModels) {
+  resultsAsModels[0].get('USERNAME') // value is example
+})
+```
+
+## Model Methods
+
+##### get
+
+```javascript
+user.get('USERNAME'); // returns "example" (based off above schema)
+```
+
+##### set
+
+```javascript
+user.set('USERNAME', 'alice');
+user.set({ 'USERNAME': 'alice', 'GENDER': 'F');
+```
+
+## Model Properties
+
+
+##### valid
+
+```javascript
+user.set('USERNAME', 12345);
+user.valid // false
+user.set('USERNAME', 'example');
+user.valid // true
+```
+
+##### errors
+
+```javascript
+user.errors // []
+user.set({'USERNAME': 12345, GENDER: 'xyz');
+user.valid // false
+user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
+```
 
 ## Associations and Population
 
-Associations and naming conventions are Rails inspired.
-
-You must `.populate()` a model in order to load the associations.
-
-*Saving will only save the original schema, and does not impact associations.*
+- Associations and naming conventions are Rails inspired.
+- You must `.populate()` a model in order to load the associations.
+- Saving will only save the original schema, and does not impact associations.
 
 Supports:
 
+- [hasAndBelongsToMany](http://guides.rubyonrails.org/association_basics.html#the-has-and-belongs-to-many-association)
 - [hasMany :through](http://guides.rubyonrails.org/association_basics.html#the-has-many-through-association)
 
-##### hasMany :through
+The following examples satisfies the displayed database designs. The pictures are from rails so the field types in the pictures are not the exact Oracles equivilant.
 
-The following example satisfies this database. This picture is from rails, but I am just replacing it with the equivilant Oracle type values.
+### hasAndBelongsToMany
+
+![](http://i.imgur.com/fj6KKBB.png)
+
+```javascript
+var assemblySchema = new sage.Schema({ 
+  id: "number",
+  name: "varchar"
+  parts: {
+    type: "association",
+    hasAndBelongsToMany: "parts",
+    joinTable: "assemblies_parts",
+    foreignKeys: { // foreign keys in the association table
+      mine: 'assembly_id',
+      theirs: 'part_id'
+    },
+    model: 'Part' // what model to cast in to when results are returned
+  }
+}, {
+  primaryKey: "id"
+});
+
+// It is not necessary to put the association here unless you want to populate 
+// assemblies on a parts model
+var partsSchema = new sage.Schema({
+  id: "number",
+  part_number: "varchar"
+}, {
+  primaryKey: "id"
+})
+
+// Create the models
+var Assembly = sage.model("assemblies", assemblySchema);
+var Part = sage.model("parts", partsSchema);
+
+// Example usage
+Assembly.findById(1).then(function(assemblyModel) {
+  assemblyModel.populate().then(function() {
+    assemblyModel.get('parts'); // array of Part models
+  })
+)}
+
+```
+
+### hasMany :through
 
 ![](http://i.imgur.com/Bb05jN1.png)
 
-```
+```javascript
 var physicianSchema = new sage.Schema({ 
   id: "number",
   name: "varchar"
@@ -105,7 +237,8 @@ var physicianSchema = new sage.Schema({
   primaryKey: "id"
 });
 
-// It is not necessary to put the association here unless you want to populate physicians on a patient model
+// It is not necessary to put the association here unless you want to populate 
+// physicians on a patient model
 var patientSchema = new sage.Schema({
   id: "number",
   name: "varchar"
@@ -117,8 +250,7 @@ var patientSchema = new sage.Schema({
 var Physician = sage.model("physicians", physicianSchema);
 var Patient = sage.model("patients", patientSchema);
 
-// Example fetch
-
+// Example usage
 Physician.findById(1).then(function(physician) {
   physician.populate().then(function() {
     physician.get('patients').length; // value would be how ever many patients were returned
@@ -127,113 +259,11 @@ Physician.findById(1).then(function(physician) {
   })
 })
 
-
 ```
+## Other Examples
 
-## Initialize
-
-```
-var userTable = "users";
-var User = sage.model(userTable, userSchema);
-```
-
-## Creation
-
-```
-User.create({ USERNAME: "example" });
-```
-
-## Updating
-
-Updating will only update modified fields.
-
-```
-User.findOne({ username: "example" }).then(function(user) {
-  user.set("username", "bob");
-  user.save().then(function() {
-    // do something
-  });
-})
-```
-
-## Querying
-
-Querying returns a new model.
-
-##### findBydId(value)
-
-Finds model based on `value` against the set primary key
-
-##### findOne({})
-
-Accepts `{}` which transforms into **AND** conditions.
-
-```
-User.findOne({ USERNAME: example, GENDER: 'M'}).then(function(result) {
-  var user = result;
-  user.get('GENDER') // value is M
-})
-```
-
-##### select()
-
-A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the full API usage.
-
-```
-User.select("*").where('USERNAME', 'example').limit(1).then(function(results) {
-  results[0].get('USERNAME') // value is example
-})
-```
-
-##### sage.connection 
-*!DANGER*
-
-Last resort. You can get access to the raw connection here, and then perform operations as documented in the `node-oracledb` API. You probably don't want to use this though. This is NOT wrapped in a Promise.
-
-```
-sage.connection.execute("SELECT * FROM users", function(err, result) {
-  // do something
-});
-```
-## Model Methods
-
-##### get
-
-```
-user.get('USERNAME');
-```
-
-##### set
-
-```
-user.set('USERNAME', 'alice');
-user.set({ 'USERNAME': 'alice', 'GENDER': 'F');
-```
-
-## Model Properties
-
-
-##### valid
-
-```
-user.set('USERNAME', 12345);
-user.valid // false
-user.set('USERNAME', 'example');
-user.valid // true
-```
-
-##### errors
-
-```
-user.errors // []
-user.set({'USERNAME': 12345, GENDER: 'xyz');
-user.valid // false
-user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
-```
-
-## Example
-
-```
+Basic example of some common functionality.
+```javascript
 var user;
 
 User.create({USERNAME: "example"}).then(function() {
