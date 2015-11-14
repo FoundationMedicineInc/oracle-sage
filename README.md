@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center">Oracle Sage</h1>
-<p align="center">Promise driven object modeling for OracleDB.</p>
+<p align="center">Promise driven OracleDB object modeling for node.js</p>
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
