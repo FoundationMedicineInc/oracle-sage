@@ -1,17 +1,21 @@
 {
-  "name": "sage",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "oracle-sage",
+  "description": "Promise driven object modeling for OracleDB",  
+  "version": "0.0.1",
+  "main": "./build/sage.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "watch": "babel src -d build -w"
   },
-  "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "author": {
+    "name": "Justin Ho",
+    "email": "mrchess8@gmail.com",
+    "url": "http://github.com/himrc"
+  },
   "dependencies": {
     "babel-preset-es2015": "^6.1.4",
     "bluebird": "^3.0.5",
@@ -19,5 +23,13 @@
     "moment": "^2.10.6",
     "oracledb": "^1.3.0",
     "simple-oracledb": "0.0.15"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/mrchess/oracle-sage/issues/new",
+    "email": "mongoose-orm@googlegroups.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mrchess/oracle-sage.git"
+  }  
 }

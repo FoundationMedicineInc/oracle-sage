@@ -1,27 +1,29 @@
-# oracle-sage
+# Oracle Sage
 
-Promise driven ORM around node-oracledb.
+*WARNING: DO NOT USE THIS PACKAGE. I put it on NPM so I can continue to test it and I couldn't make it private. Wait at least a week or two before using this as I will probably change a lot of stuff.*
+
+Promise driven object modeling for OracleDB.
 
 ## Install & Require
 
 `$ npm install oracle-sage`
 
-`var sage = require('oracle-sage');`
+```
+var sage = require('oracle-sage');
+```
 
 ## Connect
 
 ```
 var auth = {
   user: "system",
-  password: "oracle",
+  password: "oracle"
 }
 sage.connect("127.0.0.1:1521/orcl", auth).then(function() {
   // do something...
 });
 
 ```
-
-
 
 ## Defining Schemas
 
@@ -78,8 +80,9 @@ User.create({ USERNAME: "example" });
 
 ## Updating
 
+Updating will only update modified fields.
+
 ```
-var user;
 User.findOne({ username: "example" }).then(function(user) {
   user.set("username", "bob");
   user.save().then(function() {
@@ -88,15 +91,13 @@ User.findOne({ username: "example" }).then(function(user) {
 })
 ```
 
-Updating will only update modified fields.
-
 ## Querying
 
-#####findBydId(value)
+##### findBydId(value)
 
 Finds model based on `value` against the set primary key
 
-#####findOne({})
+##### findOne({})
 
 Accepts `{}` which transforms into **AND** conditions.
 
@@ -104,19 +105,19 @@ Accepts `{}` which transforms into **AND** conditions.
 User.findOne({ USERNAME: example, GENDER: 'M'})
 ```
 
-#####execute(query = "", values = {})
+##### execute(query = "", values = {})
 
 Runs a raw Oracle query. Promise wrapper around `connection.query` from `simple-oracledb`
 
 ## Model Methods
 
-#####get
+##### get
 
 ```
 user.get('USERNAME');
 ```
 
-#####set
+##### set
 
 ```
 user.set('USERNAME', 'alice');
@@ -126,7 +127,7 @@ user.set({ 'USERNAME': 'alice', 'GENDER': 'F');
 ## Model Properties
 
 
-#####valid
+##### valid
 
 ```
 user.set('USERNAME', 12345);
@@ -135,9 +136,10 @@ user.set('USERNAME', 'example');
 user.valid // true
 ```
 
-#####errors
+##### errors
 
 ```
+user.errors // []
 user.set({'USERNAME': 12345, GENDER: 'xyz');
 user.valid // false
 user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
@@ -150,8 +152,8 @@ var user;
 
 User.create({USERNAME: "example"}).then(function() {
   return User.findOne({USERNAME: "example"});
-}).then(function(model) {
-  user = model;  
+}).then(function(resultModel) {
+  user = resultModel;  
   user.get('USERNAME'); // example
   user.set('USERNAME', 'alice');
   return user.save();
