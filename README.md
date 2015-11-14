@@ -145,7 +145,10 @@ User.findOne({ USERNAME: example, GENDER: 'M'}).then(function(resultModel) {
 A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the full API usage.
 
 ```javascript
-User.select("*").where('USERNAME', 'example').limit(1).then(function(resultsAsModels) {
+User.select("*")
+.where('USERNAME', 'example')
+.limit(1)
+.exec().then(function(resultsAsModels) {
   resultsAsModels[0].get('USERNAME') // value is "example"
 })
 ```
