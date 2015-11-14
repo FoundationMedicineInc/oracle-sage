@@ -1,10 +1,10 @@
-<p align="right">
+<p align="center">
   <img src="http://i.imgur.com/TR5LYwo.png" alt="sagee"/>
 </p>
 
 
-<h1 align="right">Oracle Sage</h1>
-<p align="right">Promise driven object modeling for OracleDB.</p>
+<h1 align="center">Oracle Sage</h1>
+<p align="center">Promise driven object modeling for OracleDB.</p>
 
 ## Install & Require
 
