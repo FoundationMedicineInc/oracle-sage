@@ -115,19 +115,19 @@ var model = function model(name, schema, sage) {
 
         var sql = null;
 
-        if (value.hasAndBelongsToMany && value.joinTable) {
-          sql = knex(value.hasAndBelongsToMany).select('*').innerJoin(function () {
-            this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
-          }, value.hasAndBelongsToMany + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
-        }
-        if (value.hasMany && value.through) {
-          sql = knex(value.hasMany).select('*').innerJoin(function () {
-            this.select('*').from(value.through).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
-          }, value.hasMany + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
-        }
-
-        if (!sql) {
-          throw 'unrecognized association';
+        switch (value.joinType) {
+          case "hasAndBelongsToMany":
+            sql = knex(value.joinsWith).select('*').innerJoin(function () {
+              this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
+            }, value.joinsWith + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
+            break;
+          case "hasManyThrough":
+            sql = knex(value.joinsWith).select('*').innerJoin(function () {
+              this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
+            }, value.joinsWith + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
+            break;
+          default:
+            throw 'unrecognized association';
         }
 
         return new _bluebird2.default(function (resolve, reject) {

@@ -2,9 +2,35 @@
   <img src="http://i.imgur.com/TR5LYwo.png" alt="sagee"/>
 </p>
 
-
 <h1 align="center">Oracle Sage</h1>
 <p align="center">Promise driven object modeling for OracleDB.</p>
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Install & Require](#install-&-require)
+- [Connect](#connect)
+- [Defining Schemas](#defining-schemas)
+- [Initialize](#initialize)
+- [Creation](#creation)
+- [Updating](#updating)
+- [Querying](#querying)
+      - [findById(value)](#findbyidvalue)
+      - [findOne({})](#findone)
+      - [select()](#select)
+- [Model Methods](#model-methods)
+      - [get](#get)
+      - [set](#set)
+- [Model Properties](#model-properties)
+      - [valid](#valid)
+      - [errors](#errors)
+- [Associations and Population](#associations-and-population)
+  - [hasAndBelongsToMany](#hasandbelongstomany)
+  - [hasManyThrough](#hasmanythrough)
+- [Other Examples](#other-examples)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Install & Require
 
@@ -167,7 +193,7 @@ user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
 Supports:
 
 - [hasAndBelongsToMany](http://guides.rubyonrails.org/association_basics.html#the-has-and-belongs-to-many-association)
-- [hasMany :through](http://guides.rubyonrails.org/association_basics.html#the-has-many-through-association)
+- [hasManyThrough](http://guides.rubyonrails.org/association_basics.html#the-has-many-through-association)
 
 The following examples satisfies the displayed database designs. The pictures are from rails so the field types in the pictures are not the exact Oracles equivilant.
 
@@ -181,8 +207,9 @@ var assemblySchema = new sage.Schema({
   name: "varchar"
   parts: {
     type: "association",
-    hasAndBelongsToMany: "parts",
+    joinType: "hasAndBelongsToMany",
     joinTable: "assemblies_parts",
+    joinsWith: "parts",
     foreignKeys: { // foreign keys in the association table
       mine: 'assembly_id',
       theirs: 'part_id'
@@ -215,7 +242,7 @@ Assembly.findById(1).then(function(assemblyModel) {
 
 ```
 
-### hasMany :through
+### hasManyThrough
 
 ![](http://i.imgur.com/Bb05jN1.png)
 
@@ -225,8 +252,9 @@ var physicianSchema = new sage.Schema({
   name: "varchar"
   patients: {
     type: "association",
-    hasMany: "patients",
-    through: "appointments",
+    joinType: "hasMany",
+    joinTable: "appointments",
+    joinsWith: "patients",
     foreignKeys: { // foreign keys in the association table
       mine: 'physician_id',
       theirs: 'patient_id'
