@@ -26,11 +26,10 @@
     "simple-oracledb": "0.0.15"
   },
   "bugs": {
-    "url": "https://github.com/mrchess/oracle-sage/issues/new",
-    "email": "mongoose-orm@googlegroups.com"
+    "url": "https://github.com/mrchess/oracle-sage/issues/new"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/mrchess/oracle-sage.git"
+    "url": "https://github.com/mrchess/oracle-sage.git"
   }
 }
