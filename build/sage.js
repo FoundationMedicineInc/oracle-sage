@@ -45,6 +45,14 @@ var Sage = (function () {
   _createClass(Sage, [{
     key: 'model',
     value: function model(name, schema) {
+      if (!schema) {
+        var _model = this.models[name];
+        if (_model) {
+          return _model.model;
+        } else {
+          return null;
+        }
+      }
       return (0, _sage_model2.default)(name, schema, this);
     }
   }, {

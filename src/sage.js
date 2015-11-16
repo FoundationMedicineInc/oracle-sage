@@ -21,6 +21,14 @@ class Sage {
   }
 
   model(name, schema) {
+    if(!schema) {
+      let model = this.models[name];
+      if(model) { 
+        return(model.model) 
+      } else { 
+        return null 
+      }
+    }
     return sageModel(name, schema, this)
   }
 
