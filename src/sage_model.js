@@ -230,15 +230,23 @@ let model = function(name, schema, sage) {
     }
     save() {
       return new Promise((resolve, reject) => {
+        if(!this.get(this._schema.primaryKey)) {
+          console.log("No primary key. Use")
+          reject();
+        }
+
+        console.log(this.valid)
         if(this.valid) {
           // save it to the database
           let pk = schema.primaryKey;
 
           let result = sageUtil.getUpdateSQL(this.dirtyProps);
           let sql = `UPDATE ${name} SET ${result.sql} WHERE ${pk}=:${pk}`
+
           sql = sageUtil.amendDateFields(this.schema, sql);
           result.values[pk] = this.get(pk);
 
+          console.log(sql, result.values)
           sage.connection.execute(sql, result.values, (err, result) => {
             if(err) {
               console.log(err);
@@ -268,8 +276,25 @@ let model = function(name, schema, sage) {
     get normalized() {
       let result = {};
       for(let key in this.schema.definition) {
+        let value;
+
+        switch(this.schema.definition[key].type) {
+          case 'date':
+            let format = this.schema.definition[key].format;
+            let date = this.get(key);
+            if(date) {
+              try {
+                value = moment(date, format).format(format);
+              } catch(e) {
+                value = moment(date).format(format);
+              }
+            } 
+            break;
+          default: 
+            value = this.get(key)
+        }
+
         if(this.schema.definition[key].type != 'association') {
-          let value = this.get(key);
           result[key] = value;
         }
       }
@@ -287,6 +312,11 @@ let model = function(name, schema, sage) {
       return this._dirtyProps[key] || this._props[key];
     }
 
+    unset(key) {
+      this._dirtyProps[key] = undefined;
+      this._props[key] = undefined; 
+    }
+    
     // Set a property
     set(key, value) {
       if(typeof key === 'object') {
@@ -302,6 +332,20 @@ let model = function(name, schema, sage) {
       this.errors = [];
     }
 
+    get json() {
+      var result = {};
+      for(let k in this._props) {
+        result[k.toLowerCase()] = this._props[k];
+      }
+      // translate population
+      for(let p in this._schema) {
+        if(p.type === "association") {
+          console.log("todo: populate")
+        }
+      }
+      
+      return result;
+    }
     // Check against schema if it is valid
     get valid() {
       this.clearErrors();
@@ -325,10 +369,12 @@ let model = function(name, schema, sage) {
             break;
           case "clob":
             valid = true;
-            error = `${key} is not a clob`            
+            error = `${key} is not a clob`;
+            break;           
           case "char":
             valid = typeof(value) === "string";
             error = `${key} is not a char`
+            break;
           case "date":
             valid = moment(value, schemaProps.format).isValid();
             error = `${key} is not a date`;

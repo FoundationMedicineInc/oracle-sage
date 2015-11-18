@@ -179,15 +179,23 @@ var model = function model(name, schema, sage) {
         var _this5 = this;
 
         return new _bluebird2.default(function (resolve, reject) {
+          if (!_this5.get(_this5._schema.primaryKey)) {
+            console.log("No primary key. Use");
+            reject();
+          }
+
+          console.log(_this5.valid);
           if (_this5.valid) {
             // save it to the database
             var pk = schema.primaryKey;
 
             var result = _sage_util2.default.getUpdateSQL(_this5.dirtyProps);
             var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
+
             sql = _sage_util2.default.amendDateFields(_this5.schema, sql);
             result.values[pk] = _this5.get(pk);
 
+            console.log(sql, result.values);
             sage.connection.execute(sql, result.values, function (err, result) {
               if (err) {
                 console.log(err);
@@ -219,6 +227,12 @@ var model = function model(name, schema, sage) {
       value: function get(key) {
         return this._dirtyProps[key] || this._props[key];
       }
+    }, {
+      key: 'unset',
+      value: function unset(key) {
+        this._dirtyProps[key] = undefined;
+        this._props[key] = undefined;
+      }
 
       // Set a property
 
@@ -238,9 +252,6 @@ var model = function model(name, schema, sage) {
       value: function clearErrors() {
         this.errors = [];
       }
-
-      // Check against schema if it is valid
-
     }, {
       key: 'dirtyProps',
       get: function get() {
@@ -251,8 +262,25 @@ var model = function model(name, schema, sage) {
       get: function get() {
         var result = {};
         for (var key in this.schema.definition) {
+          var value = undefined;
+
+          switch (this.schema.definition[key].type) {
+            case 'date':
+              var format = this.schema.definition[key].format;
+              var date = this.get(key);
+              if (date) {
+                try {
+                  value = (0, _moment2.default)(date, format).format(format);
+                } catch (e) {
+                  value = (0, _moment2.default)(date).format(format);
+                }
+              }
+              break;
+            default:
+              value = this.get(key);
+          }
+
           if (this.schema.definition[key].type != 'association') {
-            var value = this.get(key);
             result[key] = value;
           }
         }
@@ -268,6 +296,24 @@ var model = function model(name, schema, sage) {
       get: function get() {
         return this._name;
       }
+    }, {
+      key: 'json',
+      get: function get() {
+        var result = {};
+        for (var k in this._props) {
+          result[k.toLowerCase()] = this._props[k];
+        }
+        // translate population
+        for (var p in this._schema) {
+          if (p.type === "association") {
+            console.log("todo: populate");
+          }
+        }
+
+        return result;
+      }
+      // Check against schema if it is valid
+
     }, {
       key: 'valid',
       get: function get() {
@@ -293,9 +339,11 @@ var model = function model(name, schema, sage) {
             case "clob":
               valid = true;
               error = key + ' is not a clob';
+              break;
             case "char":
               valid = typeof value === "string";
               error = key + ' is not a char';
+              break;
             case "date":
               valid = (0, _moment2.default)(value, schemaProps.format).isValid();
               error = key + ' is not a date';
