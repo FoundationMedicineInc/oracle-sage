@@ -22,6 +22,7 @@
 - [Model Methods](#model-methods)
       - [get](#get)
       - [set](#set)
+      - [unset](#unset)
       - [destroy](#destroy)
 - [Model Properties](#model-properties)
       - [valid](#valid)
@@ -145,7 +146,7 @@ User.findOne({ USERNAME: example, GENDER: 'M'}).then(function(resultModel) {
 A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the full API usage.
 
 ```javascript
-User.select("*")
+User.select() // same as select('*')
 .where('USERNAME', 'example')
 .limit(1)
 .exec().then(function(resultsAsModels) {
@@ -170,6 +171,13 @@ Set a property.
 ```javascript
 user.set('USERNAME', 'alice');
 user.set({ 'USERNAME': 'alice', 'GENDER': 'F');
+```
+##### unset
+
+Sets the attribute value to `undefined`. Does NOT delete the attribute.
+
+```javascript
+user.unset('USERNAME') // username is now undefined
 ```
 
 ##### destroy
