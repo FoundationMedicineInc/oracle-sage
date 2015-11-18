@@ -33,7 +33,8 @@ describe('models', function() {
         enum: {
           values: 'M F'.split(' '),
         }
-      }
+      },
+      is_single: 'char'
     }, {
       primaryKey: "id"
     });    
@@ -58,7 +59,21 @@ describe('models', function() {
     assert.equal(user.valid, false);
     user.set('gender', 'M');
     assert.equal(user.valid, true);
+  });   
+
+  it('should validate char', function() {
+    var User = sage.model("User", schema);
+    var user = new User({
+      name: "bob",
+      gender: "M",
+      is_single: 5
+    });
+    assert.equal(user.valid, false);
+
+    user.set('is_single', 'Y');
+    assert.equal(user.valid, true);
   });     
+
 
   it("should normalize", function() {
     var User = sage.model("User", schema);
@@ -66,5 +81,12 @@ describe('models', function() {
     assert.equal(user.normalized.id, null);
     assert.equal(user.normalized.name, "alice");
   });
+
+  it("should unset", function() {
+    var User = sage.model("User", schema);
+    var user = new User({name: "alice"});
+    user.unset('name');
+    assert.equal(user.get('name'), null);
+  });  
   
 })
