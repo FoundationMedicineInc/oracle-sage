@@ -35,5 +35,5 @@ node_modules
 .todo
 
 # local test file
-rtest.js 
-relation_test.js
+# rtest.js 
+# relation_test.js
