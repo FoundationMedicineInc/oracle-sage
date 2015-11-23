@@ -342,10 +342,16 @@ let model = function(name, schema, sage) {
       for(let k in this._props) {
         result[k.toLowerCase()] = this._props[k];
       }
+      
       // translate population
-      for(let p in this._schema) {
+      for(let p in this._schema.definition) {
         if(p.type === "association") {
-          console.log("todo: populate")
+          let models = result[p.toLowerCase()];
+          let modelsJSON = [];
+          _.each(models, function(model) {
+            modelsJSON.push(model.json);
+          });
+          result[p.toLowerCase()] = models;
         }
       }
       
