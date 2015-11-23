@@ -184,7 +184,6 @@ var model = function model(name, schema, sage) {
             reject();
           }
 
-          console.log(_this5.valid);
           if (_this5.valid) {
             // save it to the database
             var pk = schema.primaryKey;
@@ -195,7 +194,7 @@ var model = function model(name, schema, sage) {
             sql = _sage_util2.default.amendDateFields(_this5.schema, sql);
             result.values[pk] = _this5.get(pk);
 
-            console.log(sql, result.values);
+            // console.log(sql, result.values)
             sage.connection.execute(sql, result.values, function (err, result) {
               if (err) {
                 console.log(err);
@@ -313,18 +312,15 @@ var model = function model(name, schema, sage) {
         }
 
         // translate population
-        for (var p in this._schema.definition) {
-          if (p.type === "association") {
-            (function () {
-              var models = result[p.toLowerCase()];
-              var modelsJSON = [];
-              _lodash2.default.each(models, function (model) {
-                modelsJSON.push(model.json);
-              });
-              result[p.toLowerCase()] = models;
-            })();
-          }
-        }
+        _lodash2.default.each(this._schema.associations, function (association) {
+          var key = association.key.toLowerCase();
+          var models = result[key];
+          var modelsJSON = [];
+          _lodash2.default.each(models, function (model) {
+            modelsJSON.push(model.json);
+          });
+          result[key] = modelsJSON;
+        });
 
         return result;
       }

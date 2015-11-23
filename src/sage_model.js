@@ -235,7 +235,6 @@ let model = function(name, schema, sage) {
           reject();
         }
 
-        console.log(this.valid)
         if(this.valid) {
           // save it to the database
           let pk = schema.primaryKey;
@@ -246,7 +245,7 @@ let model = function(name, schema, sage) {
           sql = sageUtil.amendDateFields(this.schema, sql);
           result.values[pk] = this.get(pk);
 
-          console.log(sql, result.values)
+          // console.log(sql, result.values)
           sage.connection.execute(sql, result.values, (err, result) => {
             if(err) {
               console.log(err);
@@ -344,16 +343,15 @@ let model = function(name, schema, sage) {
       }
       
       // translate population
-      for(let p in this._schema.definition) {
-        if(p.type === "association") {
-          let models = result[p.toLowerCase()];
-          let modelsJSON = [];
-          _.each(models, function(model) {
-            modelsJSON.push(model.json);
-          });
-          result[p.toLowerCase()] = models;
-        }
-      }
+      _.each(this._schema.associations, function(association) {
+        let key = association.key.toLowerCase();
+        let models = result[key];
+        let modelsJSON = [];
+        _.each(models, function(model) {
+          modelsJSON.push(model.json);
+        });
+        result[key] = modelsJSON;        
+      });
       
       return result;
     }
