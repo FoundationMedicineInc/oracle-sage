@@ -200,7 +200,7 @@ let model = function(name, schema, sage) {
             _.each(results, (result) => {
               models.push(new associationModel(result));
             });
-            this.set(association.key, models)
+            this._directSet(association.key, models)
             resolve();
           }
         })  
@@ -327,6 +327,11 @@ let model = function(name, schema, sage) {
         this._dirtyProps[key] = value;
       }
     }
+
+    // Set a property directly to props
+    _directSet(key, value) {
+      this._props[key] = value;
+    }    
     
     clearErrors() {
       this.errors = [];

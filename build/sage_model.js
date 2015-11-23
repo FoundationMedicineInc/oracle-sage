@@ -144,7 +144,7 @@ var model = function model(name, schema, sage) {
                 _lodash2.default.each(results, function (result) {
                   models.push(new associationModel(result));
                 });
-                _this3.set(association.key, models);
+                _this3._directSet(association.key, models);
                 resolve();
               })();
             }
@@ -246,6 +246,14 @@ var model = function model(name, schema, sage) {
         } else {
           this._dirtyProps[key] = value;
         }
+      }
+
+      // Set a property directly to props
+
+    }, {
+      key: '_directSet',
+      value: function _directSet(key, value) {
+        this._props[key] = value;
       }
     }, {
       key: 'clearErrors',
