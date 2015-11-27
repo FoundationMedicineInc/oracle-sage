@@ -107,7 +107,7 @@ let model = function(name, schema, sage) {
               reject(err);
             } else {
               sage.connection.commit(function(err, result) {
-                if(err) { console.log(err); reject(); }
+                if(err) { console.log(err); reject(err); }
                 resolve(true);
               })
             }
