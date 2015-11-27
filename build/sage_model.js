@@ -504,7 +504,7 @@ var model = function model(name, schema, sage) {
         var m = new this(props, name, schema);
         return new _bluebird2.default(function (resolve, reject) {
           if (!m.valid) {
-            reject();
+            reject(m.errors);
           } else {
             var sql = _sage_util2.default.getInsertSQL(m.name, m.schema);
             var values = m.normalized;
@@ -512,11 +512,11 @@ var model = function model(name, schema, sage) {
             sage.connection.execute(sql, values, function (err, result) {
               if (err) {
                 console.log(err);
-                reject();
+                reject(err);
               } else {
                 sage.connection.commit(function (err, result) {
                   if (err) {
-                    console.log(err);reject();
+                    console.log(err);reject(err);
                   }
                   resolve(true);
                 });
