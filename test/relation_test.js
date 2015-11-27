@@ -151,7 +151,7 @@ describe("relation tests", function() {
       study.populate().then(function() {
         // assert.equal(study.get('INTERVENTIONS').length, 3);
         // study.json
-        console.log(study.json);
+        console.log(study.toJSON());
         done();
       })
     })

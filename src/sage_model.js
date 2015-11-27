@@ -96,7 +96,7 @@ let model = function(name, schema, sage) {
       let m = new this(props, name, schema);
       return new Promise(function(resolve, reject) {
         if(!m.valid) {
-          reject();
+          reject(m.errors);
         } else {
           let sql = sageUtil.getInsertSQL(m.name, m.schema);
           let values = m.normalized;
@@ -104,7 +104,7 @@ let model = function(name, schema, sage) {
           sage.connection.execute(sql, values, function(err, result) {
             if(err) {
               console.log(err);
-              reject();
+              reject(err);
             } else {
               sage.connection.commit(function(err, result) {
                 if(err) { console.log(err); reject(); }
@@ -336,7 +336,9 @@ let model = function(name, schema, sage) {
       this.errors = [];
     }
 
-    get json() {
+    // Special JSON that sends lowercase
+    // and will recieve lowercase and convert to uppercase
+    toJSON() {
       var result = {};
       for(let k in this._props) {
         result[k.toLowerCase()] = this._props[k];
@@ -348,13 +350,40 @@ let model = function(name, schema, sage) {
         let models = result[key];
         let modelsJSON = [];
         _.each(models, function(model) {
-          modelsJSON.push(model.json);
+          modelsJSON.push(model.toJSON());
         });
         result[key] = modelsJSON;        
       });
       
       return result;
     }
+
+    setFromJSON(json) {
+      for(let k in json) {
+        let value = json[k];
+        this.set(k.toUpperCase(), value);
+      }
+    }
+
+    // get json() {
+    //   var result = {};
+    //   for(let k in this._props) {
+    //     result[k.toLowerCase()] = this._props[k];
+    //   }
+      
+    //   // translate population
+    //   _.each(this._schema.associations, function(association) {
+    //     let key = association.key.toLowerCase();
+    //     let models = result[key];
+    //     let modelsJSON = [];
+    //     _.each(models, function(model) {
+    //       modelsJSON.push(model.json);
+    //     });
+    //     result[key] = modelsJSON;        
+    //   });
+      
+    //   return result;
+    // }
     // Check against schema if it is valid
     get valid() {
       this.clearErrors();

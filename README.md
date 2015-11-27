@@ -180,6 +180,15 @@ Sets the attribute value to `undefined`. Does NOT delete the attribute.
 user.unset('USERNAME') // username is now undefined
 ```
 
+##### toJSON/setFromJSON
+
+Sends a lowercased version to client, and will set from a JSON and convert all key fields to uppercase. This are two useful things because OracleDBs are typically uppercase, yet client work is usually lowercase.
+
+```javascript
+user.toJSON() // outputs json with uppercased keys
+user.setFromJSON() // will set props based and will uppercase the keys
+```
+
 ##### destroy
 
 Delete the record from database

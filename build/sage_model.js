@@ -259,6 +259,61 @@ var model = function model(name, schema, sage) {
       value: function clearErrors() {
         this.errors = [];
       }
+
+      // Special JSON that sends lowercase
+      // and will recieve lowercase and convert to uppercase
+
+    }, {
+      key: 'toJSON',
+      value: function toJSON() {
+        var result = {};
+        for (var k in this._props) {
+          result[k.toLowerCase()] = this._props[k];
+        }
+
+        // translate population
+        _lodash2.default.each(this._schema.associations, function (association) {
+          var key = association.key.toLowerCase();
+          var models = result[key];
+          var modelsJSON = [];
+          _lodash2.default.each(models, function (model) {
+            modelsJSON.push(model.toJSON());
+          });
+          result[key] = modelsJSON;
+        });
+
+        return result;
+      }
+    }, {
+      key: 'setFromJSON',
+      value: function setFromJSON(json) {
+        for (var k in json) {
+          var value = json[k];
+          this.set(k.toUpperCase(), value);
+        }
+      }
+
+      // get json() {
+      //   var result = {};
+      //   for(let k in this._props) {
+      //     result[k.toLowerCase()] = this._props[k];
+      //   }
+
+      //   // translate population
+      //   _.each(this._schema.associations, function(association) {
+      //     let key = association.key.toLowerCase();
+      //     let models = result[key];
+      //     let modelsJSON = [];
+      //     _.each(models, function(model) {
+      //       modelsJSON.push(model.json);
+      //     });
+      //     result[key] = modelsJSON;       
+      //   });
+
+      //   return result;
+      // }
+      // Check against schema if it is valid
+
     }, {
       key: 'dirtyProps',
       get: function get() {
@@ -303,29 +358,6 @@ var model = function model(name, schema, sage) {
       get: function get() {
         return this._name;
       }
-    }, {
-      key: 'json',
-      get: function get() {
-        var result = {};
-        for (var k in this._props) {
-          result[k.toLowerCase()] = this._props[k];
-        }
-
-        // translate population
-        _lodash2.default.each(this._schema.associations, function (association) {
-          var key = association.key.toLowerCase();
-          var models = result[key];
-          var modelsJSON = [];
-          _lodash2.default.each(models, function (model) {
-            modelsJSON.push(model.json);
-          });
-          result[key] = modelsJSON;
-        });
-
-        return result;
-      }
-      // Check against schema if it is valid
-
     }, {
       key: 'valid',
       get: function get() {
