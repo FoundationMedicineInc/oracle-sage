@@ -399,7 +399,7 @@ let model = function(name, schema, sage) {
 
         // Basic Type Checks
         let valid = null;
-        let error = null;        
+        let error = null;
         switch(schemaProps.type) {
           case "number":
             valid = typeof(value) === "number";
@@ -425,6 +425,9 @@ let model = function(name, schema, sage) {
               error = `${key} is not in enum`
             }
             break;
+          default:
+            valid = false;
+            error = `${key} has undefined error, ${schemaProps.type}`;      
         }
         // Make invalid if it fails type check
         if(!valid) { 

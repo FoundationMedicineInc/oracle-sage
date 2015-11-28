@@ -400,6 +400,9 @@ var model = function model(name, schema, sage) {
                 error = key + ' is not in enum';
               }
               break;
+            default:
+              valid = false;
+              error = key + ' has undefined error, ' + schemaProps.type;
           }
           // Make invalid if it fails type check
           if (!valid) {
