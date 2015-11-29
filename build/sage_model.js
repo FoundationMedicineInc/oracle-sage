@@ -105,6 +105,8 @@ var model = function model(name, schema, sage) {
     }, {
       key: 'populateOne',
       value: function populateOne(association) {
+        var _this3 = this;
+
         var self = this;
         var value = association.value;
         var model = sage.models[value.model];
@@ -132,6 +134,7 @@ var model = function model(name, schema, sage) {
         }
 
         return new _bluebird2.default(function (resolve, reject) {
+          var self = _this3;
           sage.connection.query(sql, function (err, results) {
             if (err) {
               console.log(err);
@@ -155,7 +158,7 @@ var model = function model(name, schema, sage) {
                       });
                     })();
                   } else {
-                    this._directSet(association.key, models);
+                    self._directSet(association.key, models);
                     resolve();
                   }
                 };
@@ -168,15 +171,15 @@ var model = function model(name, schema, sage) {
     }, {
       key: 'destroy',
       value: function destroy() {
-        var _this3 = this;
+        var _this4 = this;
 
         return new _bluebird2.default(function (resolve, reject) {
-          var pk = _this3.get(_this3._schema.primaryKey);
+          var pk = _this4.get(_this4._schema.primaryKey);
           if (!pk) {
             reject();
           }
 
-          var sql = knex(_this3._name).where(_this3._schema.primaryKey, pk).del().toString();
+          var sql = knex(_this4._name).where(_this4._schema.primaryKey, pk).del().toString();
           sage.connection.execute(sql, function (err, results) {
             if (err) {
               console.log(err);
@@ -190,23 +193,23 @@ var model = function model(name, schema, sage) {
     }, {
       key: 'save',
       value: function save() {
-        var _this4 = this;
+        var _this5 = this;
 
         return new _bluebird2.default(function (resolve, reject) {
-          if (!_this4.get(_this4._schema.primaryKey)) {
+          if (!_this5.get(_this5._schema.primaryKey)) {
             console.log("No primary key. Use");
             reject();
           }
 
-          if (_this4.valid) {
+          if (_this5.valid) {
             // save it to the database
             var pk = schema.primaryKey;
 
-            var result = _sage_util2.default.getUpdateSQL(_this4.dirtyProps);
+            var result = _sage_util2.default.getUpdateSQL(_this5.dirtyProps);
             var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
 
-            sql = _sage_util2.default.amendDateFields(_this4.schema, sql);
-            result.values[pk] = _this4.get(pk);
+            sql = _sage_util2.default.amendDateFields(_this5.schema, sql);
+            result.values[pk] = _this5.get(pk);
 
             // console.log(sql, result.values)
             sage.connection.execute(sql, result.values, function (err, result) {
@@ -219,7 +222,7 @@ var model = function model(name, schema, sage) {
                     console.log(err);
                     reject();
                   } else {
-                    _this4.mergeProps();
+                    _this5.mergeProps();
                     resolve();
                   }
                 });

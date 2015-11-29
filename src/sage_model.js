@@ -191,6 +191,7 @@ let model = function(name, schema, sage) {
       }
 
       return new Promise((resolve, reject) => {
+        var self = this;
         sage.connection.query(sql, (err, results) => {
           if(err) {
             console.log(err);
@@ -211,7 +212,7 @@ let model = function(name, schema, sage) {
                   populateResults();
                 });
               } else {
-                this._directSet(association.key, models)
+                self._directSet(association.key, models)
                 resolve();
               }
             }
