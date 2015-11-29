@@ -197,11 +197,25 @@ let model = function(name, schema, sage) {
             reject();
           } else {
             let models = [];
-            _.each(results, (result) => {
-              models.push(new associationModel(result));
-            });
-            this._directSet(association.key, models)
-            resolve();
+            // _.each(results, (result) => {
+            //   models.push(new associationModel(result));
+            // });
+
+            // Deep populate the results
+            let populateResults = function() {
+              let result = results.shift();
+              if(result) {
+                let model = new associationModel(result);
+                model.populate().then(function() {
+                  models.push(model);
+                  populateResults();
+                });
+              } else {
+                this._directSet(association.key, models)
+                resolve();
+              }
+            }
+            populateResults();
           }
         })  
       })      
