@@ -104,10 +104,10 @@ let model = function(name, schema, sage) {
           sage.connection.execute(sql, values, function(err, result) {
             if(err) {
               console.log(err);
-              reject(err);
+              resolve(err);
             } else {
               sage.connection.commit(function(err, result) {
-                if(err) { console.log(err); reject(err); }
+                if(err) { console.log(err); resolve(err); }
                 resolve(true);
               })
             }
