@@ -32,6 +32,28 @@ class Sage {
     return sageModel(name, schema, this)
   }
 
+  disconnect() {
+    let self = this;
+    if(self._connection) {
+      return new Promise(function(resolve, reject) {
+        self._connection.release(function(err) {
+          if(err) {
+            console.error(err.message);
+            reject(err);
+          } else {
+            self._connection = null;
+            resolve(true);
+          }
+        })
+      })
+    } else {
+      // No active connection
+      return new Promise(function(resolve, reject) {
+        fulfill(true);
+      })      
+    }
+  }
+
   connect(uri, options = {}) {
     let self = this;
     if(self._connection) {

@@ -56,6 +56,29 @@ var Sage = (function () {
       return (0, _sage_model2.default)(name, schema, this);
     }
   }, {
+    key: 'disconnect',
+    value: function disconnect() {
+      var self = this;
+      if (self._connection) {
+        return new _bluebird2.default(function (resolve, reject) {
+          self._connection.release(function (err) {
+            if (err) {
+              console.error(err.message);
+              reject(err);
+            } else {
+              self._connection = null;
+              resolve(true);
+            }
+          });
+        });
+      } else {
+        // No active connection
+        return new _bluebird2.default(function (resolve, reject) {
+          fulfill(true);
+        });
+      }
+    }
+  }, {
     key: 'connect',
     value: function connect(uri) {
       var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
