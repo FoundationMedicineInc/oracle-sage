@@ -137,7 +137,7 @@ var model = function model(name, schema, sage) {
           var self = _this3;
           sage.connection.query(sql, function (err, results) {
             if (err) {
-              console.log(err);
+              sage.log(err);
               reject();
             } else {
               (function () {
@@ -182,7 +182,7 @@ var model = function model(name, schema, sage) {
           var sql = knex(_this4._name).where(_this4._schema.primaryKey, pk).del().toString();
           sage.connection.execute(sql, function (err, results) {
             if (err) {
-              console.log(err);
+              sage.log(err);
               reject();
             } else {
               resolve();
@@ -197,7 +197,7 @@ var model = function model(name, schema, sage) {
 
         return new _bluebird2.default(function (resolve, reject) {
           if (!_this5.get(_this5._schema.primaryKey)) {
-            console.log("No primary key. Use");
+            sage.log("No primary key. Use");
             reject();
           }
 
@@ -211,15 +211,15 @@ var model = function model(name, schema, sage) {
             sql = _sage_util2.default.amendDateFields(_this5.schema, sql);
             result.values[pk] = _this5.get(pk);
 
-            // console.log(sql, result.values)
+            // sage.log(sql, result.values)
             sage.connection.execute(sql, result.values, function (err, result) {
               if (err) {
-                console.log(err);
+                sage.log(err);
                 reject();
               } else {
                 sage.connection.commit(function (err, result) {
                   if (err) {
-                    console.log(err);
+                    sage.log(err);
                     reject();
                   } else {
                     _this5.mergeProps();
@@ -452,7 +452,7 @@ var model = function model(name, schema, sage) {
         return new _bluebird2.default(function (resolve, reject) {
           sage.connection.query(sql, data, function (err, result) {
             if (err) {
-              console.log(err);
+              sage.log(err);
               reject();
             } else {
               var row = null;
@@ -480,7 +480,7 @@ var model = function model(name, schema, sage) {
         return new _bluebird2.default(function (resolve, reject) {
           sage.connection.query(sql, result.values, function (err, result) {
             if (err) {
-              console.log(err);
+              sage.log(err);
               reject();
             } else {
               var row = null;
@@ -503,7 +503,7 @@ var model = function model(name, schema, sage) {
         return new _bluebird2.default(function (resolve, reject) {
           sage.connection.query(_query, values, function (err, result) {
             if (err) {
-              console.log(err);
+              sage.log(err);
               reject();
             } else {
               resolve(result);
@@ -531,12 +531,12 @@ var model = function model(name, schema, sage) {
 
             sage.connection.execute(sql, values, function (err, result) {
               if (err) {
-                console.log(err);
+                sage.log(err);
                 resolve(err);
               } else {
                 sage.connection.commit(function (err, result) {
                   if (err) {
-                    console.log(err);resolve(err);
+                    sage.log(err);resolve(err);
                   }
                   resolve(true);
                 });

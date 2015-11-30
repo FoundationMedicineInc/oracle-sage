@@ -41,7 +41,7 @@ let model = function(name, schema, sage) {
       return new Promise(function(resolve, reject) {
         sage.connection.query(sql, data, function(err, result) {
           if(err) {
-            console.log(err);
+            sage.log(err);
             reject();
           } else {
             let row = null;
@@ -62,7 +62,7 @@ let model = function(name, schema, sage) {
       return new Promise(function(resolve, reject) {
         sage.connection.query(sql, result.values, function(err, result) {
           if(err) {
-            console.log(err);
+            sage.log(err);
             reject();
           } else {
             let row = null;
@@ -79,7 +79,7 @@ let model = function(name, schema, sage) {
       return new Promise(function(resolve, reject) {
         sage.connection.query(query, values, function(err, result) {
           if(err) {
-            console.log(err);
+            sage.log(err);
             reject();
           } else {
             resolve(result)
@@ -103,11 +103,11 @@ let model = function(name, schema, sage) {
 
           sage.connection.execute(sql, values, function(err, result) {
             if(err) {
-              console.log(err);
+              sage.log(err);
               resolve(err);
             } else {
               sage.connection.commit(function(err, result) {
-                if(err) { console.log(err); resolve(err); }
+                if(err) { sage.log(err); resolve(err); }
                 resolve(true);
               })
             }
@@ -194,7 +194,7 @@ let model = function(name, schema, sage) {
         var self = this;
         sage.connection.query(sql, (err, results) => {
           if(err) {
-            console.log(err);
+            sage.log(err);
             reject();
           } else {
             let models = [];
@@ -235,7 +235,7 @@ let model = function(name, schema, sage) {
         .toString();
         sage.connection.execute(sql, (err, results) => {
           if(err) {
-            console.log(err);
+            sage.log(err);
             reject();
           } else {
             resolve();
@@ -246,7 +246,7 @@ let model = function(name, schema, sage) {
     save() {
       return new Promise((resolve, reject) => {
         if(!this.get(this._schema.primaryKey)) {
-          console.log("No primary key. Use")
+          sage.log("No primary key. Use")
           reject();
         }
 
@@ -260,15 +260,15 @@ let model = function(name, schema, sage) {
           sql = sageUtil.amendDateFields(this.schema, sql);
           result.values[pk] = this.get(pk);
 
-          // console.log(sql, result.values)
+          // sage.log(sql, result.values)
           sage.connection.execute(sql, result.values, (err, result) => {
             if(err) {
-              console.log(err);
+              sage.log(err);
               reject()
             } else {
               sage.connection.commit((err, result) => {
                 if(err) { 
-                  console.log(err); 
+                  sage.log(err); 
                   reject();
                 } else {
                   this.mergeProps();

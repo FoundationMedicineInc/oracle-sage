@@ -10,12 +10,21 @@ import sageModel from '../build/sage_model';
 import sageSchema from '../build/sage_schema'
 
 class Sage {
-  constructor() {
+  constructor(options = {}) {
     this.Schema = sageSchema;
     this._connection = null;
 
     this.models = {}; // all the models that have currently been instantiated
+
+    this.debug = options.debug;
   }
+
+  log(o) {
+    if(this.debug) {
+      console.log(o);
+    }
+  }
+
   get connection() {
     return this._connection;
   }

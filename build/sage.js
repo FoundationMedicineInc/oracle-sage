@@ -34,15 +34,26 @@ _simpleOracledb2.default.extend(_oracledb2.default);
 
 var Sage = (function () {
   function Sage() {
+    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
     _classCallCheck(this, Sage);
 
     this.Schema = _sage_schema2.default;
     this._connection = null;
 
     this.models = {}; // all the models that have currently been instantiated
+
+    this.debug = options.debug;
   }
 
   _createClass(Sage, [{
+    key: 'log',
+    value: function log(o) {
+      if (this.debug) {
+        console.log(o);
+      }
+    }
+  }, {
     key: 'model',
     value: function model(name, schema) {
       if (!schema) {
