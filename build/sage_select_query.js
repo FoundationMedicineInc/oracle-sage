@@ -44,6 +44,10 @@ var SelectQuery = (function () {
 
       return new _bluebird2.default(function (resolve, reject) {
         var sql = _this2.knex.toString();
+
+        // Fix: [Error: ORA-01756: quoted string not properly terminated]
+        sql = sql.replace(/\\'/g, "''");
+
         _this2.sage.connection.query(sql, function (err, results) {
           if (err) {
             console.log(err);reject();

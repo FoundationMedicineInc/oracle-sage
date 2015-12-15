@@ -23,6 +23,10 @@ class SelectQuery {
   exec() {
     return new Promise((resolve, reject) => {
       var sql = this.knex.toString();
+        
+      // Fix: [Error: ORA-01756: quoted string not properly terminated]
+      sql = sql.replace(/\\'/g, "''")
+
       this.sage.connection.query(sql, (err, results) => {
         if(err) { 
           console.log(err); reject(); 
