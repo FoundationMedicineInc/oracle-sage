@@ -79,17 +79,12 @@ let model = function(name, schema, sage) {
     static _selectAllStringStatic() {
       let fields = []
       for(let key in schema.definition) {
-        fields.push(key)
+        if(schema.definition[key].type != 'association') {
+          fields.push(key)
+        }
       }
       return fields.join(',')
     }
-    _selectAllString() {
-      let fields = []
-      for(let key in schema.definition) {
-        fields.push(key)
-      }
-      return fields.join(',')
-    }    
 
     // Raw SQL query
     static query(query, values = []) {

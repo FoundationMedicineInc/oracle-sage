@@ -61,18 +61,6 @@ var model = function model(name, schema, sage) {
       // Uses the primary key definition and returns the first row on that
 
     }, {
-      key: '_selectAllString',
-      value: function _selectAllString() {
-        var fields = [];
-        for (var key in schema.definition) {
-          fields.push(key);
-        }
-        return fields.join(',');
-      }
-
-      // Raw SQL query
-
-    }, {
       key: 'populate',
 
       // **** END STATIC   
@@ -513,10 +501,15 @@ var model = function model(name, schema, sage) {
       value: function _selectAllStringStatic() {
         var fields = [];
         for (var key in schema.definition) {
-          fields.push(key);
+          if (schema.definition[key].type != 'association') {
+            fields.push(key);
+          }
         }
         return fields.join(',');
       }
+
+      // Raw SQL query
+
     }, {
       key: 'query',
       value: function query(_query) {
