@@ -117,15 +117,15 @@ var model = function model(name, schema, sage) {
 
         switch (value.joinType) {
           case "hasMany":
-            sql = knex(value.joinsWith).select('*').where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine)).toString();
+            sql = knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine)).toString();
             break;
           case "hasAndBelongsToMany":
-            sql = knex(value.joinsWith).select('*').innerJoin(function () {
+            sql = knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).innerJoin(function () {
               this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
             }, value.joinsWith + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
             break;
           case "hasManyThrough":
-            sql = knex(value.joinsWith).select('*').innerJoin(function () {
+            sql = knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).innerJoin(function () {
               this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
             }, value.joinsWith + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
             break;
@@ -502,7 +502,7 @@ var model = function model(name, schema, sage) {
         var fields = [];
         for (var key in schema.definition) {
           if (schema.definition[key].type != 'association') {
-            fields.push(key);
+            fields.push(name + '.' + key);
           }
         }
         return fields.join(',');
