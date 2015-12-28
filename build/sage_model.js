@@ -61,6 +61,18 @@ var model = function model(name, schema, sage) {
       // Uses the primary key definition and returns the first row on that
 
     }, {
+      key: '_selectAllString',
+      value: function _selectAllString() {
+        var fields = [];
+        for (var key in schema.definition) {
+          fields.push(key);
+        }
+        return fields.join(',');
+      }
+
+      // Raw SQL query
+
+    }, {
       key: 'populate',
 
       // **** END STATIC   
@@ -143,8 +155,8 @@ var model = function model(name, schema, sage) {
               (function () {
                 var models = [];
                 // _.each(results, (result) => {
-                //   models.push(new associationModel(result));
-                // });
+                //   models.push(new associationModel(result))
+                // })
 
                 // Deep populate the results
                 var populateResults = function populateResults() {
@@ -311,23 +323,23 @@ var model = function model(name, schema, sage) {
       }
 
       // get json() {
-      //   var result = {};
+      //   var result = {}
       //   for(let k in this._props) {
-      //     result[k.toLowerCase()] = this._props[k];
+      //     result[k.toLowerCase()] = this._props[k]
       //   }
 
       //   // translate population
       //   _.each(this._schema.associations, function(association) {
-      //     let key = association.key.toLowerCase();
-      //     let models = result[key];
-      //     let modelsJSON = [];
+      //     let key = association.key.toLowerCase()
+      //     let models = result[key]
+      //     let modelsJSON = []
       //     _.each(models, function(model) {
-      //       modelsJSON.push(model.json);
-      //     });
-      //     result[key] = modelsJSON;       
-      //   });
+      //       modelsJSON.push(model.json)
+      //     })
+      //     result[key] = modelsJSON       
+      //   })
 
-      //   return result;
+      //   return result
       // }
       // Check against schema if it is valid
 
@@ -448,7 +460,7 @@ var model = function model(name, schema, sage) {
         var data = {
           value: value
         };
-        var sql = 'SELECT * FROM ' + name + ' WHERE ' + pk + '=:value ORDER BY ' + pk + ' DESC FETCH FIRST 1 ROWS ONLY';
+        var sql = 'SELECT ' + self._selectAllStringStatic() + ' FROM ' + name + ' WHERE ' + pk + '=:value ORDER BY ' + pk + ' DESC FETCH FIRST 1 ROWS ONLY';
         return new _bluebird2.default(function (resolve, reject) {
           sage.connection.query(sql, data, function (err, result) {
             if (err) {
@@ -476,7 +488,7 @@ var model = function model(name, schema, sage) {
         var self = this;
         var pk = schema.primaryKey;
         var result = _sage_util2.default.getSelectANDSQL(values);
-        var sql = 'SELECT * FROM ' + name + ' WHERE ' + result.sql + ' ORDER BY ' + pk + ' DESC FETCH FIRST 1 ROWS ONLY';
+        var sql = 'SELECT ' + self._selectAllStringStatic() + ' FROM ' + name + ' WHERE ' + result.sql + ' ORDER BY ' + pk + ' DESC FETCH FIRST 1 ROWS ONLY';
         return new _bluebird2.default(function (resolve, reject) {
           sage.connection.query(sql, result.values, function (err, result) {
             if (err) {
@@ -493,8 +505,18 @@ var model = function model(name, schema, sage) {
         });
       }
 
-      // Raw SQL query
+      // Generates a string of all the fields defined in the schema to replace a * in a SELECT *
+      // We do this because tables with SDO_GEOMETRY fields or custom fields cannot currently be understood by Sage
 
+    }, {
+      key: '_selectAllStringStatic',
+      value: function _selectAllStringStatic() {
+        var fields = [];
+        for (var key in schema.definition) {
+          fields.push(key);
+        }
+        return fields.join(',');
+      }
     }, {
       key: 'query',
       value: function query(_query) {
@@ -514,6 +536,10 @@ var model = function model(name, schema, sage) {
     }, {
       key: 'select',
       value: function select(columns) {
+        // Always pass in columns
+        if (!columns) {
+          columns = this._selectAllStringStatic().split(',');
+        }
         return new _sage_select_query2.default(sage, name, this, columns);
       }
     }, {
@@ -536,7 +562,8 @@ var model = function model(name, schema, sage) {
               } else {
                 sage.connection.commit(function (err, result) {
                   if (err) {
-                    sage.log(err);resolve(err);
+                    sage.log(err);
+                    resolve(err);
                   }
                   resolve(true);
                 });

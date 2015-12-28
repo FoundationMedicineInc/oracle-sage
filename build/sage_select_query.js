@@ -50,7 +50,8 @@ var SelectQuery = (function () {
 
         _this2.sage.connection.query(sql, function (err, results) {
           if (err) {
-            console.log(err);reject();
+            console.log(err);
+            reject();
           } else {
             (function () {
               var models = [];

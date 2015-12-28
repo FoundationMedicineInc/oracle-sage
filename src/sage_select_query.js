@@ -1,45 +1,46 @@
-import Promise from 'bluebird';
-import _ from 'lodash';
+import Promise from 'bluebird'
+import _ from 'lodash'
 
-var knex = require('knex')({ client: 'oracle' });
+var knex = require('knex')({ client: 'oracle' })
 
 class SelectQuery {
   constructor(sage, tableName, model, columns) {
-    this.sage = sage;
-    this.knex = knex(tableName);
+    this.sage = sage
+    this.knex = knex(tableName)
 
-    this.model = model; // needed to convert results into models
+    this.model = model // needed to convert results into models
 
-    columns = columns || "*";
-    this.knex.select(columns);
+    columns = columns || "*"
+    this.knex.select(columns)
 
     this.knex.exec = () => {
-      return this.exec();
+      return this.exec()
     }
 
-    return this.knex;
+    return this.knex
   }
 
   exec() {
     return new Promise((resolve, reject) => {
-      var sql = this.knex.toString();
+      var sql = this.knex.toString()
         
       // Fix: [Error: ORA-01756: quoted string not properly terminated]
       sql = sql.replace(/\\'/g, "''")
 
       this.sage.connection.query(sql, (err, results) => {
         if(err) { 
-          console.log(err); reject(); 
+          console.log(err) 
+          reject() 
         } else {
-          let models = [];
+          let models = []
           _.each(results, (result) => {
-            models.push(new this.model(result));
-          });
-          resolve(models);
+            models.push(new this.model(result))
+          })
+          resolve(models)
         }
-      });
+      })
     })
   }
 }
 
-module.exports = SelectQuery;
+module.exports = SelectQuery
