@@ -176,6 +176,7 @@ var model = function model(name, schema, sage) {
         return new _bluebird2.default(function (resolve, reject) {
           var pk = _this4.get(_this4._schema.primaryKey);
           if (!pk) {
+            sage.log(err);
             reject();
           }
 
@@ -229,6 +230,7 @@ var model = function model(name, schema, sage) {
               }
             });
           } else {
+            sage.log("cannot save");
             reject();
           }
         });
@@ -547,6 +549,7 @@ var model = function model(name, schema, sage) {
         var m = new this(props, name, schema);
         return new _bluebird2.default(function (resolve, reject) {
           if (!m.valid) {
+            sage.log(err);
             reject(m.errors);
           } else {
             var sql = _sage_util2.default.getInsertSQL(m.name, m.schema);

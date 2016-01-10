@@ -124,6 +124,7 @@ let model = function(name, schema, sage) {
       let m = new this(props, name, schema)
       return new Promise(function(resolve, reject) {
         if(!m.valid) {
+          sage.log(err);
           reject(m.errors)
         } else {
           let sql = sageUtil.getInsertSQL(m.name, m.schema)
@@ -258,7 +259,10 @@ let model = function(name, schema, sage) {
     destroy() {
       return new Promise((resolve, reject) => {
         let pk = this.get(this._schema.primaryKey)
-        if(!pk) { reject() }
+        if(!pk) { 
+          sage.log(err)
+          reject() 
+        }
         
         let sql = knex(this._name)
         .where(this._schema.primaryKey, pk)
@@ -309,6 +313,7 @@ let model = function(name, schema, sage) {
             }
           })
         } else {
+          sage.log("cannot save");
           reject()
         }
       })
