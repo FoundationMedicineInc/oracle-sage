@@ -37,7 +37,13 @@ let model = function(name, schema, sage) {
       let data = {
         value: value
       }
-      let sql = `SELECT ${self._selectAllStringStatic()} FROM ${name} WHERE ${pk}=:value ORDER BY ${pk} DESC FETCH FIRST 1 ROWS ONLY`
+
+      let sql = `select * from (
+          select a.*, ROWNUM rnum from (
+            SELECT ${self._selectAllStringStatic()} FROM ${name} WHERE ${pk}=:value ORDER BY ${pk} DESC
+          ) a where rownum <= 1
+        ) where rnum >= 0`
+
       return new Promise(function(resolve, reject) {
         sage.connection.query(sql, data, function(err, result) {
           if(err) {
@@ -58,7 +64,13 @@ let model = function(name, schema, sage) {
       let self = this
       let pk = schema.primaryKey
       let result = sageUtil.getSelectANDSQL(values)
-      let sql = `SELECT ${self._selectAllStringStatic()} FROM ${name} WHERE ${result.sql} ORDER BY ${pk} DESC FETCH FIRST 1 ROWS ONLY`
+
+      let sql = `select * from (
+          select a.*, ROWNUM rnum from (
+            SELECT ${self._selectAllStringStatic()} FROM ${name} WHERE ${result.sql} ORDER BY ${pk} DESC
+          ) a where rownum <= 1
+        ) where rnum >= 0`
+
       return new Promise(function(resolve, reject) {
         sage.connection.query(sql, result.values, function(err, result) {
           if(err) {

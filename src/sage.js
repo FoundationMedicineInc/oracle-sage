@@ -21,7 +21,7 @@ class Sage {
 
   log(o) {
     if(this.debug) {
-      console.log(o);
+      console.trace(o);
     }
   }
 

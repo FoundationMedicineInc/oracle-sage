@@ -448,7 +448,9 @@ var model = function model(name, schema, sage) {
         var data = {
           value: value
         };
-        var sql = 'SELECT ' + self._selectAllStringStatic() + ' FROM ' + name + ' WHERE ' + pk + '=:value ORDER BY ' + pk + ' DESC FETCH FIRST 1 ROWS ONLY';
+
+        var sql = 'select * from (\n          select a.*, ROWNUM rnum from (\n            SELECT ' + self._selectAllStringStatic() + ' FROM ' + name + ' WHERE ' + pk + '=:value ORDER BY ' + pk + ' DESC\n          ) a where rownum <= 1\n        ) where rnum >= 0';
+
         return new _bluebird2.default(function (resolve, reject) {
           sage.connection.query(sql, data, function (err, result) {
             if (err) {
@@ -476,7 +478,9 @@ var model = function model(name, schema, sage) {
         var self = this;
         var pk = schema.primaryKey;
         var result = _sage_util2.default.getSelectANDSQL(values);
-        var sql = 'SELECT ' + self._selectAllStringStatic() + ' FROM ' + name + ' WHERE ' + result.sql + ' ORDER BY ' + pk + ' DESC FETCH FIRST 1 ROWS ONLY';
+
+        var sql = 'select * from (\n          select a.*, ROWNUM rnum from (\n            SELECT ' + self._selectAllStringStatic() + ' FROM ' + name + ' WHERE ' + result.sql + ' ORDER BY ' + pk + ' DESC\n          ) a where rownum <= 1\n        ) where rnum >= 0';
+
         return new _bluebird2.default(function (resolve, reject) {
           sage.connection.query(sql, result.values, function (err, result) {
             if (err) {
