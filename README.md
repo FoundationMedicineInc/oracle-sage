@@ -12,6 +12,7 @@
 - [Install & Require](#install-&-require)
 - [Connect](#connect)
 - [Defining Schemas](#defining-schemas)
+- [Schema Validations](#schema-validations)
 - [Initialize](#initialize)
 - [Creation](#creation)
 - [Updating](#updating)
@@ -23,6 +24,7 @@
       - [get](#get)
       - [set](#set)
       - [unset](#unset)
+      - [toJSON/setFromJSON](#tojsonsetfromjson)
       - [destroy](#destroy)
 - [Model Properties](#model-properties)
       - [valid](#valid)
@@ -95,6 +97,39 @@ Special features:
 
 - enum 
 - validators
+
+
+## Schema Validations
+
+The following validation properties are supported:
+    
+- all types
+  - `required`
+  - `validator(value)` - a custom function validator
+- number
+  - `min`
+  - `max`
+- varchar
+  - `minlength`
+  - `maxlength` 
+- clob
+  - `minlength`
+  - `maxlength`
+  
+```javascript
+var userSchema = sage.Schema({
+  ID: "number",
+  USERNAME: {
+    required: true,
+    type: "varchar",
+    maxlength: 12,
+    minlength: 4,
+    validator: function(value) {
+      return /^[a-zA-Z]+$/.test(value); // test only letters
+    }    
+  }
+})
+``` 
 
 ## Initialize
 

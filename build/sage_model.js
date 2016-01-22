@@ -445,6 +445,23 @@ var model = function model(name, schema, sage) {
                 },
                 message: key + ' must be shorter than 1,000,000 characters'
               });
+              if (schemaProps.minlength) {
+                validators.push({
+                  validator: function validator(value) {
+                    return value.length > schemaProps.minlength;
+                  },
+                  message: key + ' must be longer than ' + schemaProps.minlength + ' characters'
+                });
+              }
+
+              if (schemaProps.maxlength) {
+                validators.push({
+                  validator: function validator(value) {
+                    return value.length < schemaProps.maxlength;
+                  },
+                  message: key + ' must be shorter than ' + schemaProps.maxlength + ' characters'
+                });
+              }
               break;
             case "char":
               validators.push({

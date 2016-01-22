@@ -43,7 +43,9 @@ describe('validators', function() {
         id: "number",
         bio: { 
           required: true,
-          type: "clob"
+          type: "clob",
+          minlength: 5,
+          maxlength: 100
         }
       });    
     })    
@@ -55,6 +57,23 @@ describe('validators', function() {
 
       assert.equal(user.valid, true)
     })    
+
+    it('validates minlength', function() {
+      var User = sage.model("User", schema)
+      var user = new User({
+        bio: "123"
+      })
+
+      assert.equal(user.valid, false)
+    })   
+    it('validates maxlength', function() {
+      var User = sage.model("User", schema)
+      var user = new User({
+        bio: "tenletterstenletterstenletterstenletterstenletterstenletterstenletterstenletterstenletterstenletterstenletters"
+      })
+
+      assert.equal(user.valid, false)
+    })            
   })
 
   describe('number', function() {

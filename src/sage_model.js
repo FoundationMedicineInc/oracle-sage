@@ -498,7 +498,24 @@ let model = function(name, schema, sage) {
                 return value.length < 1000000
               },
               message: `${key} must be shorter than 1,000,000 characters`
-            })                   
+            })  
+            if(schemaProps.minlength) {
+              validators.push({
+                validator: function(value) {
+                  return (value.length > schemaProps.minlength)
+                },
+                message: `${key} must be longer than ${schemaProps.minlength} characters`
+              })                        
+            }
+
+            if(schemaProps.maxlength) {
+              validators.push({
+                validator: function(value) {
+                  return (value.length < schemaProps.maxlength)
+                },
+                message: `${key} must be shorter than ${schemaProps.maxlength} characters`
+              })                        
+            }                             
             break           
           case "char":
             validators.push({
