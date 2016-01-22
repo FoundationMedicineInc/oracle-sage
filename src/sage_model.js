@@ -442,60 +442,139 @@ let model = function(name, schema, sage) {
       for(let key in this.schema.definition) {
         let schemaProps = this.schema.definition[key]
         let value = this.get(key)
+        let validators = []
 
-        // Don't check if the value is null
-        if(value == null) {
+        // Required check
+        if(schemaProps.required) {
+          validators.push({
+            validator: function(value) {
+              return (value != null && value != undefined)
+            },
+            message: `${key} is required`
+          })
+        } else if(value == null || value == undefined) {
+          // Don't check if the value is null
+          // We continue because for example, number is null but not required.
+          // It would fail the type check below if allowed to continue
           continue
         }
-
-        // Basic Type Checks
-        let valid = null
-        let error = null
+        
         switch(schemaProps.type) {
           case "number":
-            valid = typeof(value) === "number"
-            error = `${key} is not a number`
+            validators.push({
+              validator: function(value) {
+                return typeof(value) === "number"
+              },
+              message: `${key} is not a number`
+            })
+
+            if(schemaProps.min) {
+              validators.push({
+                validator: function(value) {
+                  return (value >= schemaProps.min)
+                },
+                message: `${key} must be at least ${schemaProps.min}`
+              })
+            }
+
+            if(schemaProps.max) {
+              validators.push({
+                validator: function(value) {
+                  return (value <= schemaProps.max)
+                },
+                message: `${key} must be at most ${schemaProps.max}`
+              })
+            }            
             break
           case "clob":
-            valid = true
-            error = `${key} is not a clob`
+            validators.push({
+              validator: function(value) {
+                return typeof(value) === "string"      
+              },
+              message: `${key} is not a valid clob`
+            })       
+            validators.push({
+              validator: function(value) {
+                return value.length < 1000000
+              },
+              message: `${key} must be shorter than 1,000,000 characters`
+            })                   
             break           
           case "char":
-            valid = typeof(value) === "string"
-            error = `${key} is not a char`
+            validators.push({
+              validator: function(value) {
+                return typeof(value) === "string"      
+              },
+              message: `${key} is not a char`
+            })             
             break
           case "date":
-            valid = moment(value, schemaProps.format).isValid()
-            error = `${key} is not a date`
+            validators.push({
+              validator: function(value) {
+                return moment(value, schemaProps.format).isValid()
+              },
+              message: `${key} is not a date`
+            })                 
             break     
           case "varchar":
-            valid = typeof(value) === "string"       
-            error = `${key} is not a varchar`
+            validators.push({
+              validator: function(value) {
+                return typeof(value) === "string"      
+              },
+              message: `${key} is not a varchar`
+            })          
+
             if(schemaProps.enum) {
-              valid = schemaProps.enum.values.indexOf(value) > -1
-              error = `${key} is not in enum`
+              validators.push({
+                validator: function(value) {
+                  return schemaProps.enum.values.indexOf(value) > -1
+                },
+                message: `${key} is not in enum`
+              })              
             }
+
+            if(schemaProps.minlength) {
+              validators.push({
+                validator: function(value) {
+                  return (value.length > schemaProps.minlength)
+                },
+                message: `${key} must be longer than ${schemaProps.minlength} characters`
+              })                        
+            }
+
+            if(schemaProps.maxlength) {
+              validators.push({
+                validator: function(value) {
+                  return (value.length < schemaProps.maxlength)
+                },
+                message: `${key} must be shorter than ${schemaProps.maxlength} characters`
+              })                        
+            }            
             break
           default:
-            valid = false
-            error = `${key} has undefined error, ${schemaProps.type}`      
-        }
-        // Make invalid if it fails type check
-        if(!valid) { 
-          this.errors.push(error) 
-          isValid = false
+            this.errors.push(`${key} has undefined error, ${schemaProps.type}`)
         }
 
         // Custom Validator Checks
         if(schemaProps.validator) {
-          let valid = schemaProps.validator(value)
-
-          // Make invalid if it fails validator
-          if(!valid) {
-            this.errors.push(`${key} fails validator`)
-            isValid = false 
-          }
+          validators.push({
+            validator: schemaProps.validator,
+            message: `${key} is not vaild`
+          })
         }
+
+        // Check all validators
+        _.each(validators, (v) => {
+          var valid = v.validator(value)
+          if(!valid) {
+            this.errors.push(v.message)
+          }
+        })
+
+        if(this.errors.length > 0) { 
+          isValid = false
+        }
+
       }
       return isValid
     }

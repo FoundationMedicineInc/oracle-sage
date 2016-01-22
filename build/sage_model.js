@@ -380,65 +380,152 @@ var model = function model(name, schema, sage) {
     }, {
       key: 'valid',
       get: function get() {
+        var _this6 = this;
+
         this.clearErrors();
         var isValid = true;
-        for (var key in this.schema.definition) {
-          var schemaProps = this.schema.definition[key];
-          var value = this.get(key);
 
-          // Don't check if the value is null
-          if (value == null) {
-            continue;
+        var _loop = function _loop(key) {
+          var schemaProps = _this6.schema.definition[key];
+          var value = _this6.get(key);
+          var validators = [];
+
+          // Required check
+          if (schemaProps.required) {
+            validators.push({
+              validator: function validator(value) {
+                return value != null && value != undefined;
+              },
+              message: key + ' is required'
+            });
+          } else if (value == null || value == undefined) {
+            // Don't check if the value is null
+            // We continue because for example, number is null but not required.
+            // It would fail the type check below if allowed to continue
+            return 'continue';
           }
 
-          // Basic Type Checks
-          var valid = null;
-          var error = null;
           switch (schemaProps.type) {
             case "number":
-              valid = typeof value === "number";
-              error = key + ' is not a number';
+              validators.push({
+                validator: function validator(value) {
+                  return typeof value === "number";
+                },
+                message: key + ' is not a number'
+              });
+
+              if (schemaProps.min) {
+                validators.push({
+                  validator: function validator(value) {
+                    return value >= schemaProps.min;
+                  },
+                  message: key + ' must be at least ' + schemaProps.min
+                });
+              }
+
+              if (schemaProps.max) {
+                validators.push({
+                  validator: function validator(value) {
+                    return value <= schemaProps.max;
+                  },
+                  message: key + ' must be at most ' + schemaProps.max
+                });
+              }
               break;
             case "clob":
-              valid = true;
-              error = key + ' is not a clob';
+              validators.push({
+                validator: function validator(value) {
+                  return typeof value === "string";
+                },
+                message: key + ' is not a valid clob'
+              });
+              validators.push({
+                validator: function validator(value) {
+                  return value.length < 1000000;
+                },
+                message: key + ' must be shorter than 1,000,000 characters'
+              });
               break;
             case "char":
-              valid = typeof value === "string";
-              error = key + ' is not a char';
+              validators.push({
+                validator: function validator(value) {
+                  return typeof value === "string";
+                },
+                message: key + ' is not a char'
+              });
               break;
             case "date":
-              valid = (0, _moment2.default)(value, schemaProps.format).isValid();
-              error = key + ' is not a date';
+              validators.push({
+                validator: function validator(value) {
+                  return (0, _moment2.default)(value, schemaProps.format).isValid();
+                },
+                message: key + ' is not a date'
+              });
               break;
             case "varchar":
-              valid = typeof value === "string";
-              error = key + ' is not a varchar';
+              validators.push({
+                validator: function validator(value) {
+                  return typeof value === "string";
+                },
+                message: key + ' is not a varchar'
+              });
+
               if (schemaProps.enum) {
-                valid = schemaProps.enum.values.indexOf(value) > -1;
-                error = key + ' is not in enum';
+                validators.push({
+                  validator: function validator(value) {
+                    return schemaProps.enum.values.indexOf(value) > -1;
+                  },
+                  message: key + ' is not in enum'
+                });
+              }
+
+              if (schemaProps.minlength) {
+                validators.push({
+                  validator: function validator(value) {
+                    return value.length > schemaProps.minlength;
+                  },
+                  message: key + ' must be longer than ' + schemaProps.minlength + ' characters'
+                });
+              }
+
+              if (schemaProps.maxlength) {
+                validators.push({
+                  validator: function validator(value) {
+                    return value.length < schemaProps.maxlength;
+                  },
+                  message: key + ' must be shorter than ' + schemaProps.maxlength + ' characters'
+                });
               }
               break;
             default:
-              valid = false;
-              error = key + ' has undefined error, ' + schemaProps.type;
-          }
-          // Make invalid if it fails type check
-          if (!valid) {
-            this.errors.push(error);
-            isValid = false;
+              _this6.errors.push(key + ' has undefined error, ' + schemaProps.type);
           }
 
           // Custom Validator Checks
           if (schemaProps.validator) {
-            var _valid = schemaProps.validator(value);
-
-            // Make invalid if it fails validator
-            if (!_valid) {
-              this.errors.push(key + ' fails validator');
-              isValid = false;
-            }
+            validators.push({
+              validator: schemaProps.validator,
+              message: key + ' is not vaild'
+            });
           }
+
+          // Check all validators
+          _lodash2.default.each(validators, function (v) {
+            var valid = v.validator(value);
+            if (!valid) {
+              _this6.errors.push(v.message);
+            }
+          });
+
+          if (_this6.errors.length > 0) {
+            isValid = false;
+          }
+        };
+
+        for (var key in this.schema.definition) {
+          var _ret3 = _loop(key);
+
+          if (_ret3 === 'continue') continue;
         }
         return isValid;
       }

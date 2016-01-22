@@ -69,7 +69,6 @@ describe('models', function() {
       is_single: 5
     });
     assert.equal(user.valid, false);
-
     user.set('is_single', 'Y');
     assert.equal(user.valid, true);
   });     
