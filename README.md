@@ -104,7 +104,7 @@ Special features:
 The following validation properties are supported:
     
 - all types
-  - `required`
+  - `required` - do not use this on PK due to a bug for now
   - `validator(value)` - a custom function validator
 - number
   - `min`

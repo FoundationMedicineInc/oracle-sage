@@ -654,6 +654,7 @@ var model = function model(name, schema, sage) {
         return new _bluebird2.default(function (resolve, reject) {
           if (!m.valid) {
             sage.log(err);
+            sage.log(m.errors);
             reject(m.errors);
           } else {
             var sql = _sage_util2.default.getInsertSQL(m.name, m.schema);
