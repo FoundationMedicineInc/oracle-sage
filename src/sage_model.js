@@ -467,6 +467,8 @@ let model = function(name, schema, sage) {
         }
         
         switch(schemaProps.type) {
+          case "timestamp":
+            break
           case "number":
             validators.push({
               validator: function(value) {
