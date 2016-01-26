@@ -653,7 +653,6 @@ var model = function model(name, schema, sage) {
         var m = new this(props, name, schema);
         return new _bluebird2.default(function (resolve, reject) {
           if (!m.valid) {
-            sage.log(err);
             sage.log(m.errors);
             reject(m.errors);
           } else {

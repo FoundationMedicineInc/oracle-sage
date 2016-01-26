@@ -124,7 +124,6 @@ let model = function(name, schema, sage) {
       let m = new this(props, name, schema)
       return new Promise(function(resolve, reject) {
         if(!m.valid) {
-          sage.log(err)
           sage.log(m.errors)
           reject(m.errors)
         } else {
