@@ -4,6 +4,10 @@ var sageUtil = require('../build/sage_util');
 
 var userSchema = new sage.Schema({
   ID: "number",
+  SECRET: {
+    type: "varchar",
+    readonly: true
+  },
   CREATED_AT: {
     type: "date",
     format: "MM/DD/YYYY"
@@ -31,4 +35,11 @@ describe('utilities', function() {
     var expected = "INSERT INTO test (ID,CREATED_AT) VALUES (:ID,TO_DATE(:CREATED_AT,'MM/DD/YYYY'))"
     assert.equal(sql, expected);
   })    
+
+
+  it("should not have readonly fields in INSERT", function() {
+    var sql = sageUtil.getInsertSQL("test", userSchema)
+    assert.equal(sql.indexOf("SECRET"), -1)
+  })    
+
 })

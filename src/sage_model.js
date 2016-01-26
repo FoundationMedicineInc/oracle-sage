@@ -330,6 +330,7 @@ let model = function(name, schema, sage) {
     get dirtyProps() {
       return this._dirtyProps
     }
+
     get normalized() {
       let result = {}
       for(let key in this.schema.definition) {
@@ -352,7 +353,9 @@ let model = function(name, schema, sage) {
         }
 
         if(this.schema.definition[key].type != 'association') {
-          result[key] = value
+          if(!this.schema.definition[key].readonly) {
+            result[key] = value
+          }
         }
       }
       return result

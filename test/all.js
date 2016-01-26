@@ -22,6 +22,10 @@ describe('models', function() {
   before(function() {
     schema = new sage.Schema({
       id: "number",
+      created_at: {
+        type: "timestamp",
+        readonly: true
+      },
       name: { 
         type: "varchar",
         validator: function(v) {
@@ -79,7 +83,17 @@ describe('models', function() {
     var user = new User({name: "alice"});
     assert.equal(user.normalized.id, null);
     assert.equal(user.normalized.name, "alice");
-  });
+  })
+
+
+  it('should not have a readonly field in normalize', function() {
+    var User = sage.model("User", schema);
+    var user = new User({
+      name: "alice",
+      created_at: "today"
+    })
+    assert.equal(user.normalized.created_at, undefined)
+  })
 
   it("should unset", function() {
     var User = sage.model("User", schema);

@@ -369,7 +369,9 @@ var model = function model(name, schema, sage) {
           }
 
           if (this.schema.definition[key].type != 'association') {
-            result[key] = value;
+            if (!this.schema.definition[key].readonly) {
+              result[key] = value;
+            }
           }
         }
         return result;
