@@ -30,18 +30,6 @@ util.getUpdateSQL = function(fields = {}) {
   };  
 }
 
-util.schemaToString = function(schema, options = {}) {
-  let prefix = options.prefix || "";
-  let result = "";
-  _.each(schema.definition, function(value, key) {
-    if(value.type != "association") {
-      result = result + prefix + key + ",";
-    }
-  });
-  result = result.substring(0, result.length - 1);
-  return result;  
-}
-
 util.amendDateFields = function(schema, string) {
   let self = this;
   let fields = [];
@@ -61,6 +49,20 @@ util.amendDateFields = function(schema, string) {
   return string;   
 }
 
+// Helper for getInsertSQL
+util.schemaToString = function(schema, options = {}) {
+  let prefix = options.prefix || "";
+  let result = "";
+  _.each(schema.definition, function(value, key) {
+    if(value.type != "association") {
+      if(!value.readonly) { // NEVER INSERT READONLY FIELDS
+        result = result + prefix + key + ",";
+      }
+    }
+  });
+  result = result.substring(0, result.length - 1);
+  return result;  
+}
 
 util.getInsertSQL = function(table, schema) {
   let fields = this.schemaToString(schema);

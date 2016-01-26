@@ -40,20 +40,6 @@ util.getUpdateSQL = function () {
   };
 };
 
-util.schemaToString = function (schema) {
-  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-  var prefix = options.prefix || "";
-  var result = "";
-  _lodash2.default.each(schema.definition, function (value, key) {
-    if (value.type != "association") {
-      result = result + prefix + key + ",";
-    }
-  });
-  result = result.substring(0, result.length - 1);
-  return result;
-};
-
 util.amendDateFields = function (schema, string) {
   var self = this;
   var fields = [];
@@ -71,6 +57,24 @@ util.amendDateFields = function (schema, string) {
     string = string.replace(re, "TO_DATE(:" + field.name + ",'" + field.format + "')");
   });
   return string;
+};
+
+// Helper for getInsertSQL
+util.schemaToString = function (schema) {
+  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+  var prefix = options.prefix || "";
+  var result = "";
+  _lodash2.default.each(schema.definition, function (value, key) {
+    if (value.type != "association") {
+      if (!value.readonly) {
+        // NEVER INSERT READONLY FIELDS
+        result = result + prefix + key + ",";
+      }
+    }
+  });
+  result = result.substring(0, result.length - 1);
+  return result;
 };
 
 util.getInsertSQL = function (table, schema) {

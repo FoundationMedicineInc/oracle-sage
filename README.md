@@ -106,6 +106,7 @@ The following validation properties are supported:
 - all types
   - `required` - do not use this on PK due to a bug for now
   - `validator(value)` - a custom function validator
+
 - number
   - `min`
   - `max`
@@ -143,6 +144,10 @@ var User = sage.model(userTable, userSchema);
 ```javascript
 User.create({ USERNAME: "example" });
 ```
+
+Notes: 
+
+In the schema you can set a field to be `readonly`. This will disable it from being written to on creation.
 
 ## Updating
 
