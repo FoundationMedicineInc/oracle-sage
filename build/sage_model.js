@@ -186,7 +186,14 @@ var model = function model(name, schema, sage) {
               sage.log(err);
               reject();
             } else {
-              resolve();
+              sage.connection.commit(function (err, result) {
+                if (err) {
+                  sage.log(err);
+                  reject();
+                } else {
+                  resolve();
+                }
+              });
             }
           });
         });
