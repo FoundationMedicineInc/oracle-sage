@@ -176,7 +176,7 @@ var model = function model(name, schema, sage) {
         return new _bluebird2.default(function (resolve, reject) {
           var pk = _this4.get(_this4._schema.primaryKey);
           if (!pk) {
-            sage.log(err);
+            sage.log("Missing primary key on destroy. Who do I destroy?");
             reject();
           }
 

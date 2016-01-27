@@ -260,7 +260,7 @@ let model = function(name, schema, sage) {
       return new Promise((resolve, reject) => {
         let pk = this.get(this._schema.primaryKey)
         if(!pk) { 
-          sage.log(err)
+          sage.log("Missing primary key on destroy. Who do I destroy?")
           reject() 
         }
         
