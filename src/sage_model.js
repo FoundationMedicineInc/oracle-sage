@@ -33,6 +33,35 @@ let model = function(name, schema, sage) {
       this._dirtyProps = {}
     }
 
+    static count(values = {}) {
+      let self = this
+      let result = sageUtil.getSelectANDSQL(values)
+
+      let sql = `SELECT COUNT(*) FROM ${name}`
+
+      if(result.sql != "") {
+         sql = sql + ` WHERE ${result.sql}`
+      }
+
+      return new Promise(function(resolve, reject) {
+        sage.connection.execute(sql, result.values, function(err, result) {
+          if(err) {
+            sage.log(err)
+            reject()
+          } else {
+            var count
+            try {
+              count = result.rows[0][0]
+            } catch(e) {
+              sage.log(e)
+              reject()
+            }
+            resolve(count)
+          }
+        })
+      })
+    }
+
     static extend(object) {
       _extends = object
     }

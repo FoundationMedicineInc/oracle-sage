@@ -181,6 +181,14 @@ User.findOne({ USERNAME: example, GENDER: 'M'}).then(function(resultModel) {
 })
 ```
 
+##### count({})
+
+Accepts optional `{}` which transforms into **AND** conditions. Returns the count.
+
+```javascript
+User.count({ USERNAME: example }).then(function(count) { ... })
+```
+
 ##### select()
 
 A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the full API usage.
@@ -421,12 +429,11 @@ User.extend feature
 
 ```
 User.extend({
-  findByEmail: function() {
-    return new Promise(function(resolve, reject) {
-      this.select(...)
-    })
+  fullname: function() {
+    return(this.get('first') + this.get('last'))
   }
 })
 
-User.findByEmail("smith@example.com").then(...)
+user = new User()
+user.fullname()
 ```

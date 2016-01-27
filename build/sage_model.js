@@ -558,6 +558,38 @@ var model = function model(name, schema, sage) {
         return isValid;
       }
     }], [{
+      key: 'count',
+      value: function count() {
+        var values = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+        var self = this;
+        var result = _sage_util2.default.getSelectANDSQL(values);
+
+        var sql = 'SELECT COUNT(*) FROM ' + name;
+
+        if (result.sql != "") {
+          sql = sql + (' WHERE ' + result.sql);
+        }
+
+        return new _bluebird2.default(function (resolve, reject) {
+          sage.connection.execute(sql, result.values, function (err, result) {
+            if (err) {
+              sage.log(err);
+              reject();
+            } else {
+              var count;
+              try {
+                count = result.rows[0][0];
+              } catch (e) {
+                sage.log(e);
+                reject();
+              }
+              resolve(count);
+            }
+          });
+        });
+      }
+    }, {
       key: 'extend',
       value: function extend(object) {
         _extends = object;
