@@ -5,6 +5,7 @@ import sageSelectQuery from '../build/sage_select_query'
 import _ from 'lodash'
 
 var knex = require('knex')({ client: 'oracle' })
+var _extends = {}
 
 let model = function(name, schema, sage) {
   let modelClass = class Model {
@@ -22,11 +23,18 @@ let model = function(name, schema, sage) {
 
       // queue for pending associations to be populated
       this._associations = [] 
+
+      // apply extensions`
+      _.extend(this, _extends)
     }
 
     mergeProps() {
       this._props = _.assign(this._props, this._dirtyProps)
       this._dirtyProps = {}
+    }
+
+    static extend(object) {
+      _extends = object
     }
 
     // **** BEGIN STATIC

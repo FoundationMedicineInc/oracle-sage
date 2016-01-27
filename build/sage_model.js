@@ -29,6 +29,7 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var knex = require('knex')({ client: 'oracle' });
+var _extends = {};
 
 var model = function model(name, schema, sage) {
   var modelClass = (function () {
@@ -48,6 +49,9 @@ var model = function model(name, schema, sage) {
 
       // queue for pending associations to be populated
       this._associations = [];
+
+      // apply extensions`
+      _lodash2.default.extend(this, _extends);
     }
 
     _createClass(Model, [{
@@ -56,10 +60,6 @@ var model = function model(name, schema, sage) {
         this._props = _lodash2.default.assign(this._props, this._dirtyProps);
         this._dirtyProps = {};
       }
-
-      // **** BEGIN STATIC
-      // Uses the primary key definition and returns the first row on that
-
     }, {
       key: 'populate',
 
@@ -558,6 +558,15 @@ var model = function model(name, schema, sage) {
         return isValid;
       }
     }], [{
+      key: 'extend',
+      value: function extend(object) {
+        _extends = object;
+      }
+
+      // **** BEGIN STATIC
+      // Uses the primary key definition and returns the first row on that
+
+    }, {
       key: 'findById',
       value: function findById(value) {
         var self = this;

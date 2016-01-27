@@ -44,6 +44,17 @@ describe('models', function() {
     });    
   })
 
+  it('should extend', function() {
+    var User = sage.model("User", schema)
+    User.extend({
+      hello: function() {
+        console.log(this)
+      }
+    })
+    user = new User()
+    user.hello()
+  })
+
   it('should run a validator', function() {
     var User = sage.model("User", schema);
     var user = new User({

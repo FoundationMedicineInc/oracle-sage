@@ -414,3 +414,19 @@ User.create({USERNAME: "example"}).then(function() {
 });
             
 ```
+
+## Need to document
+
+User.extend feature
+
+```
+User.extend({
+  findByEmail: function() {
+    return new Promise(function(resolve, reject) {
+      this.select(...)
+    })
+  }
+})
+
+User.findByEmail("smith@example.com").then(...)
+```
