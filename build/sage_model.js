@@ -362,9 +362,9 @@ var model = function model(name, schema, sage) {
               var date = this.get(key);
               if (date) {
                 try {
-                  value = (0, _moment2.default)(date).format(format);
+                  value = (0, _moment2.default)(date, format).format(format);
                 } catch (e) {
-                  sage.log("error normalizing date");
+                  value = (0, _moment2.default)(date).format(format);
                 }
               }
               break;

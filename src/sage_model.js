@@ -384,9 +384,9 @@ let model = function(name, schema, sage) {
             let date = this.get(key)
             if(date) {
               try {
-                value = moment(date).format(format)
+                value = moment(date, format).format(format)
               } catch(e) {
-                sage.log("error normalizing date")
+                value = moment(date).format(format)
               }
             } 
             break
