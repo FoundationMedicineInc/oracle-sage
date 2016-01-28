@@ -583,7 +583,7 @@ let model = function(name, schema, sage) {
           case "date":
             validators.push({
               validator: function(value) {
-                return moment(value, schemaProps.format).isValid()
+                return moment(value).isValid()
               },
               message: `${key} is not a date`
             })                 
