@@ -383,11 +383,12 @@ let model = function(name, schema, sage) {
             let format = this.schema.definition[key].format
             let date = this.get(key)
             if(date) {
-              try {
-                value = moment(date, format).format(format)
-              } catch(e) {
-                value = moment(date).format(format)
-              }
+              // try {
+              //   value = moment(date, format).format(format)
+              // } catch(e) {
+              //   value = moment(date).format(format)
+              // }
+              value = moment(date).format(format)
             } 
             break
           default: 

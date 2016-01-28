@@ -361,11 +361,12 @@ var model = function model(name, schema, sage) {
               var format = this.schema.definition[key].format;
               var date = this.get(key);
               if (date) {
-                try {
-                  value = (0, _moment2.default)(date, format).format(format);
-                } catch (e) {
-                  value = (0, _moment2.default)(date).format(format);
-                }
+                // try {
+                //   value = moment(date, format).format(format)
+                // } catch(e) {
+                //   value = moment(date).format(format)
+                // }
+                value = (0, _moment2.default)(date).format(format);
               }
               break;
             default:
