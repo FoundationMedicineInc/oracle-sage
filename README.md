@@ -425,10 +425,11 @@ User.create({USERNAME: "example"}).then(function() {
 
 ## Need to document
 
-User.extend feature
+User.methods feature
+Adds to the prototype
 
 ```
-User.extend({
+User.methods({
   fullname: function() {
     return(this.get('first') + this.get('last'))
   }
@@ -436,4 +437,18 @@ User.extend({
 
 user = new User()
 user.fullname()
+```
+
+
+User.extend feature
+Add methods to the constructor
+
+```
+User.methods({
+  findSpecial: function() {
+    ...
+  }
+})
+
+User.findSpecial(...)
 ```

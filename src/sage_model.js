@@ -3,9 +3,10 @@ import moment from 'moment'
 import sageUtil from '../build/sage_util'
 import sageSelectQuery from '../build/sage_select_query'
 import _ from 'lodash'
+import objectAssign from 'object-assign'
 
 var knex = require('knex')({ client: 'oracle' })
-var _extends = {}
+var _methods = {}
 
 let model = function(name, schema, sage) {
   let modelClass = class Model {
@@ -25,7 +26,7 @@ let model = function(name, schema, sage) {
       this._associations = [] 
 
       // apply extensions`
-      _.extend(this, _extends)
+      _.extend(this, _methods)
     }
 
     mergeProps() {
@@ -63,7 +64,11 @@ let model = function(name, schema, sage) {
     }
 
     static extend(object) {
-      _extends = object
+      objectAssign(this, object)
+    }
+
+    static methods(object) {
+      _methods = object
     }
 
     // **** BEGIN STATIC

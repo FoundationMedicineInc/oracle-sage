@@ -21,6 +21,7 @@
     "knex": "0.9.0",
     "lodash": "^3.10.1",
     "moment": "^2.10.6",
+    "object-assign": "^4.0.1",
     "oracledb": "^1.3.0",
     "simple-oracledb": "0.0.15"
   },

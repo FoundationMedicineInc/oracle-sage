@@ -22,6 +22,10 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _objectAssign = require('object-assign');
+
+var _objectAssign2 = _interopRequireDefault(_objectAssign);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
@@ -29,7 +33,7 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var knex = require('knex')({ client: 'oracle' });
-var _extends = {};
+var _methods = {};
 
 var model = function model(name, schema, sage) {
   var modelClass = (function () {
@@ -51,7 +55,7 @@ var model = function model(name, schema, sage) {
       this._associations = [];
 
       // apply extensions`
-      _lodash2.default.extend(this, _extends);
+      _lodash2.default.extend(this, _methods);
     }
 
     _createClass(Model, [{
@@ -592,7 +596,12 @@ var model = function model(name, schema, sage) {
     }, {
       key: 'extend',
       value: function extend(object) {
-        _extends = object;
+        (0, _objectAssign2.default)(this, object);
+      }
+    }, {
+      key: 'methods',
+      value: function methods(object) {
+        _methods = object;
       }
 
       // **** BEGIN STATIC
