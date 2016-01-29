@@ -54,9 +54,9 @@ describe('models', function() {
     assert(user.hello)
   })
 
-  it('should extend', function() {
+  it('should add statics', function() {
     var User = sage.model("User", schema)
-    User.extend({
+    User.statics({
       hello: function() {
       }
     })

@@ -63,7 +63,7 @@ let model = function(name, schema, sage) {
       })
     }
 
-    static extend(object) {
+    static statics(object) {
       objectAssign(this, object)
     }
 

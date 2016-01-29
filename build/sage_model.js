@@ -595,8 +595,8 @@ var model = function model(name, schema, sage) {
         });
       }
     }, {
-      key: 'extend',
-      value: function extend(object) {
+      key: 'statics',
+      value: function statics(object) {
         (0, _objectAssign2.default)(this, object);
       }
     }, {

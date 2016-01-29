@@ -440,11 +440,11 @@ user.fullname()
 ```
 
 
-User.extend feature
-Add methods to the constructor
+User.statics feature
+Add statics to the constructor
 
 ```
-User.methods({
+User.statics({
   findSpecial: function() {
     ...
   }
