@@ -46,6 +46,7 @@ describe('models', function() {
 
   it('should have access to the schema as a static', function() {
     var User = sage.model("User", schema)
+    console.log(schema)
     assert(User.schema)
   })
 
