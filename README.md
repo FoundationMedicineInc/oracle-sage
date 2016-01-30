@@ -174,6 +174,8 @@ Finds model based on `value` against the schema primary key
 
 Accepts `{}` which transforms into **AND** conditions. Returns the first item, and the SELECT is ORDERED BY the schema primary key.
 
+Returns `null` if nothing is found. Otherwise returns a result represented in the model.
+
 ```javascript
 User.findOne({ USERNAME: example, GENDER: 'M'}).then(function(resultModel) {
   var user = resultModel;

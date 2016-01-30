@@ -749,6 +749,9 @@ var model = function model(name, schema, sage) {
     schema: schema
   };
 
+  // Allow access to schema from model
+  modelClass.schema = schema;
+
   return modelClass;
 };
 

@@ -44,6 +44,11 @@ describe('models', function() {
     });    
   })
 
+  it('should have access to the schema as a static', function() {
+    var User = sage.model("User", schema)
+    assert(User.schema)
+  })
+
   it('should add methods', function() {
     var User = sage.model("User", schema)
     User.methods({
