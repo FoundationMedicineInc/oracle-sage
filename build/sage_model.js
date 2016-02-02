@@ -392,6 +392,11 @@ var model = function model(name, schema, sage) {
         return this._name;
       }
     }, {
+      key: 'id',
+      get: function get() {
+        return this.get(schema.primaryKey);
+      }
+    }, {
       key: 'valid',
       get: function get() {
         var _this6 = this;

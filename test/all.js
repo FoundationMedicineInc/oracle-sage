@@ -69,6 +69,14 @@ describe('models', function() {
     assert(User.hello)
   })  
 
+
+  it('get an primary key id', function() {
+    var User = sage.model("User", schema)
+    user = new User()
+    user.set('id', 5)
+    assert.equal(user.id, 5)
+  })
+
   it('should run a validator', function() {
     var User = sage.model("User", schema);
     var user = new User({

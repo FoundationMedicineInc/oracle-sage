@@ -410,6 +410,11 @@ let model = function(name, schema, sage) {
     get name() {
       return this._name
     }
+
+    get id() {
+      return this.get(schema.primaryKey)
+    }    
+
     // Return a property
     get(key) {
       return this._dirtyProps[key] || this._props[key]
