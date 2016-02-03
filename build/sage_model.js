@@ -376,7 +376,12 @@ var model = function model(name, schema, sage) {
               }
               break;
             case "number":
-              value = parseInt(this.get(key));
+              // Need this IF statement because what if the person does not have a
+              // read only primary key and is creating a new model? Usually they would pass
+              // down NULL as the PK, and if we didn't have this it would parseInt(NULL)
+              if (this.get(key) != null || this.get(key) != undefined) {
+                value = parseInt(this.get(key));
+              }
               break;
             default:
               value = this.get(key);
