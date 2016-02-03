@@ -18,6 +18,16 @@ describe('schemas', function() {
   });    
 });
 
+describe('schemas', function() {
+  it('should get a key definition', function() {
+    var tempschema = new sage.Schema({
+      id: "number"
+    })
+    var Temp = sage.model("Temp", tempschema);
+    assert(Temp.schema.getDefinition('id'))
+    assert.equal(Temp.schema.getDefinition('abc'), undefined)
+  })
+})
 describe('models', function() {
   before(function() {
     schema = new sage.Schema({
@@ -46,7 +56,6 @@ describe('models', function() {
 
   it('should have access to the schema as a static', function() {
     var User = sage.model("User", schema)
-    console.log(schema)
     assert(User.schema)
   })
 
@@ -56,7 +65,7 @@ describe('models', function() {
       hello: function() {
       }
     })
-    user = new User()
+    var user = new User()
     assert(user.hello)
   })
 

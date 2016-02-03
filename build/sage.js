@@ -85,7 +85,7 @@ var Sage = (function () {
       } else {
         // No active connection
         return new _bluebird2.default(function (resolve, reject) {
-          fulfill(true);
+          resolve(true);
         });
       }
     }

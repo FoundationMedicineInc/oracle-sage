@@ -30,6 +30,9 @@ class Schema {
     });
     return associations;
   }
+  getDefinition(key) {
+    return this._definition[key]
+  }
 }
 
 module.exports = Schema;

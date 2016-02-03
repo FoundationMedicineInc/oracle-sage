@@ -33,6 +33,11 @@ var Schema = (function () {
   }
 
   _createClass(Schema, [{
+    key: "getDefinition",
+    value: function getDefinition(key) {
+      return this._definition[key];
+    }
+  }, {
     key: "definition",
     get: function get() {
       return this._definition;
