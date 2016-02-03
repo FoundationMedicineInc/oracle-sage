@@ -98,6 +98,10 @@ Special features:
 - enum 
 - validators
 
+Methods:
+
+- getDefinition(field) - Returns a the definition for a given field
+
 
 ## Schema Validations
 
