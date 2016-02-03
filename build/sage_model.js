@@ -500,6 +500,14 @@ var model = function model(name, schema, sage) {
                 },
                 message: key + ' is not a char'
               });
+              if (schemaProps.enum) {
+                validators.push({
+                  validator: function validator(value) {
+                    return _lodash2.default.indexOf(schemaProps.enum.values, value) > -1;
+                  },
+                  message: key + ' is not in enum'
+                });
+              }
               break;
             case "date":
               validators.push({
@@ -520,7 +528,7 @@ var model = function model(name, schema, sage) {
               if (schemaProps.enum) {
                 validators.push({
                   validator: function validator(value) {
-                    return schemaProps.enum.values.indexOf(value) > -1;
+                    return _lodash2.default.indexOf(schemaProps.enum.values, value) > -1;
                   },
                   message: key + ' is not in enum'
                 });

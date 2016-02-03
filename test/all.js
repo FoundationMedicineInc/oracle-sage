@@ -49,7 +49,7 @@ describe('models', function() {
         type: "number"
       },
       gender: {
-        type: "varchar",
+        type: "char",
         enum: {
           values: 'M F'.split(' '),
         }
@@ -123,7 +123,16 @@ describe('models', function() {
     assert.equal(user.valid, false);
     user.set('is_single', 'Y');
     assert.equal(user.valid, true);
-  });     
+  });   
+
+  it('should validate char', function() {
+    var User = sage.model("User", schema);
+    var user = new User({
+      name: "bob",
+      gender: ""
+    });
+    assert.equal(user.valid, false);
+  });      
 
 
   it("should normalize", function() {

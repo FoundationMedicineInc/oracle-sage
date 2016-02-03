@@ -592,7 +592,15 @@ let model = function(name, schema, sage) {
                 return typeof(value) === "string"      
               },
               message: `${key} is not a char`
-            })             
+            })
+            if(schemaProps.enum) {
+              validators.push({
+                validator: function(value) {
+                  return _.indexOf(schemaProps.enum.values, value) > -1
+                },
+                message: `${key} is not in enum`
+              })              
+            }                         
             break
           case "date":
             validators.push({
@@ -613,7 +621,7 @@ let model = function(name, schema, sage) {
             if(schemaProps.enum) {
               validators.push({
                 validator: function(value) {
-                  return schemaProps.enum.values.indexOf(value) > -1
+                  return _.indexOf(schemaProps.enum.values, value) > -1
                 },
                 message: `${key} is not in enum`
               })              
