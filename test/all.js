@@ -31,7 +31,10 @@ describe('schemas', function() {
 describe('models', function() {
   before(function() {
     schema = new sage.Schema({
-      id: "number",
+      id: {
+        type: "number",
+        readonly: true
+      },
       created_at: {
         type: "timestamp",
         readonly: true
@@ -41,6 +44,9 @@ describe('models', function() {
         validator: function(v) {
           return(v === "bob");
         }
+      },
+      age: {
+        type: "number"
       },
       gender: {
         type: "varchar",
@@ -125,6 +131,9 @@ describe('models', function() {
     var user = new User({name: "alice"});
     assert.equal(user.normalized.id, null);
     assert.equal(user.normalized.name, "alice");
+
+    user.set('age', "100");
+    assert.equal(user.normalized.age, 100);
   })
 
 

@@ -354,6 +354,12 @@ var model = function model(name, schema, sage) {
       get: function get() {
         var result = {};
         for (var key in this.schema.definition) {
+
+          // Do not normalize read only fields
+          if (this.schema.definition[key].readonly) {
+            continue;
+          }
+
           var value = undefined;
 
           switch (this.schema.definition[key].type) {
@@ -368,6 +374,9 @@ var model = function model(name, schema, sage) {
                 // }
                 value = (0, _moment2.default)(date).format(format);
               }
+              break;
+            case "number":
+              value = parseInt(this.get(key));
               break;
             default:
               value = this.get(key);

@@ -376,6 +376,12 @@ let model = function(name, schema, sage) {
     get normalized() {
       let result = {}
       for(let key in this.schema.definition) {
+
+        // Do not normalize read only fields
+        if(this.schema.definition[key].readonly) {
+          continue
+        }
+
         let value
 
         switch(this.schema.definition[key].type) {
@@ -390,6 +396,9 @@ let model = function(name, schema, sage) {
               // }
               value = moment(date).format(format)
             } 
+            break
+          case "number":
+            value = parseInt(this.get(key))
             break
           default: 
             value = this.get(key)
