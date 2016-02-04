@@ -78,7 +78,7 @@ class Sage {
     if(uri) {
       self._connectURI = uri
     }
-    if(_.size(connectOptions) > 1) {
+    if(_.size(connectOptions) > 0) {
       self._connectOptions = connectOptions
     }
     // Load saved values if they exist

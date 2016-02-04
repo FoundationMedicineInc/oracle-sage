@@ -110,7 +110,7 @@ var Sage = (function () {
       if (uri) {
         self._connectURI = uri;
       }
-      if (_lodash2.default.size(connectOptions) > 1) {
+      if (_lodash2.default.size(connectOptions) > 0) {
         self._connectOptions = connectOptions;
       }
       // Load saved values if they exist
