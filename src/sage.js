@@ -17,7 +17,7 @@ class Sage {
   constructor(options = {}) {
     this.Schema = sageSchema;
     this._connection = null;
-    this._connectOptions = {};
+    this._connectOptions = null;
     this.models = {}; // all the models that have currently been instantiated
 
     this.debug = options.debug;

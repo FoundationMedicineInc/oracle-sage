@@ -44,7 +44,7 @@ var Sage = (function () {
 
     this.Schema = _sage_schema2.default;
     this._connection = null;
-    this._connectOptions = {};
+    this._connectOptions = null;
     this.models = {}; // all the models that have currently been instantiated
 
     this.debug = options.debug;
