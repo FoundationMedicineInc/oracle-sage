@@ -17,7 +17,7 @@ class Sage {
   constructor(options = {}) {
     this.Schema = sageSchema;
     this._connection = null;
-
+    this._connectOptions = {};
     this.models = {}; // all the models that have currently been instantiated
 
     this.debug = options.debug;
@@ -67,11 +67,17 @@ class Sage {
     }
   }
 
-  connect(uri, options = {}) {
+  connect(uri, connectOptions = {}) {
     let self = this;
     if(self._connection) {
       return new Promise(function(resolve, reject) { resolve(); })
     }
+    // You passed in some optoins. We save them so that if you call connect() without connectOptions
+    // it will use them again
+    if(_.size(connectOptions) > 1) {
+      connectOptions = self._connectOptions
+    }
+
 
     // Make a new connection
     let auth = { 
@@ -79,7 +85,7 @@ class Sage {
       password: "oracle",
       connectString: uri || "127.0.0.1:1521/orcl"
     }
-    auth = _.defaults(options, auth);
+    auth = _.defaults(connectOptions, auth);
     return new Promise(function(resolve, reject) {
       oracledb.getConnection(auth, function(err, connection) {
         if(err) {

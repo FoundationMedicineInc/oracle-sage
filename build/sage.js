@@ -44,7 +44,7 @@ var Sage = (function () {
 
     this.Schema = _sage_schema2.default;
     this._connection = null;
-
+    this._connectOptions = {};
     this.models = {}; // all the models that have currently been instantiated
 
     this.debug = options.debug;
@@ -96,13 +96,18 @@ var Sage = (function () {
   }, {
     key: 'connect',
     value: function connect(uri) {
-      var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+      var connectOptions = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       var self = this;
       if (self._connection) {
         return new _bluebird2.default(function (resolve, reject) {
           resolve();
         });
+      }
+      // You passed in some optoins. We save them so that if you call connect() without connectOptions
+      // it will use them again
+      if (_lodash2.default.size(connectOptions) > 1) {
+        connectOptions = self._connectOptions;
       }
 
       // Make a new connection
@@ -111,7 +116,7 @@ var Sage = (function () {
         password: "oracle",
         connectString: uri || "127.0.0.1:1521/orcl"
       };
-      auth = _lodash2.default.defaults(options, auth);
+      auth = _lodash2.default.defaults(connectOptions, auth);
       return new _bluebird2.default(function (resolve, reject) {
         _oracledb2.default.getConnection(auth, function (err, connection) {
           if (err) {
