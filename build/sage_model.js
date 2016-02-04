@@ -118,7 +118,6 @@ var model = function model(name, schema, sage) {
         var associationSchema = model.schema;
 
         var sql = null;
-
         switch (value.joinType) {
           case "hasMany":
             sql = knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine)).toString();
@@ -129,9 +128,23 @@ var model = function model(name, schema, sage) {
             }, value.joinsWith + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
             break;
           case "hasManyThrough":
-            sql = knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).innerJoin(function () {
+            var throughModel = sage.models[value.joinTable];
+            var throughFields = [];
+            // We do not want to get the join keys twice
+            _lodash2.default.each(throughModel.schema.definition, function (definition, key) {
+              if (key != value.foreignKeys.mine && key != value.foreignKeys.theirs) {
+                if (definition.type != 'association') {
+                  throughFields.push('t1.' + key);
+                }
+              }
+            });
+            var associationModelSelect = associationModel._selectAllStringStatic().split(',');
+            var selectFields = throughFields.concat(associationModelSelect);
+
+            sql = knex(value.joinsWith).select(selectFields).innerJoin(function () {
               this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
             }, value.joinsWith + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
+
             break;
           default:
             throw 'unrecognized association';

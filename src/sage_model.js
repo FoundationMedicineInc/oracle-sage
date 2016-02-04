@@ -233,7 +233,6 @@ let model = function(name, schema, sage) {
       let associationSchema = model.schema
 
       let sql = null
-
       switch(value.joinType) {
         case "hasMany":
           sql = knex(value.joinsWith)
@@ -252,14 +251,28 @@ let model = function(name, schema, sage) {
           .toString()
           break
         case "hasManyThrough":
+          let throughModel = sage.models[value.joinTable]
+          let throughFields = []
+          // We do not want to get the join keys twice
+          _.each(throughModel.schema.definition, function(definition, key) {
+            if(key != value.foreignKeys.mine && key != value.foreignKeys.theirs) {
+              if(definition.type != 'association') {
+                throughFields.push(`t1.${key}`)
+              }
+            }
+          })
+          let associationModelSelect = associationModel._selectAllStringStatic().split(',')
+          let selectFields = throughFields.concat(associationModelSelect)
+
           sql = knex(value.joinsWith)
-          .select(associationModel._selectAllStringStatic().split(',')).innerJoin(function() {
+          .select(selectFields).innerJoin(function() {
             this.select('*').
             from(value.joinTable).
             where(value.foreignKeys.mine, self.get(self._schema.primaryKey))
             .as('t1')
           }, `${value.joinsWith}.${associationSchema.primaryKey}`, `t1.${value.foreignKeys.theirs}`)
-          .toString()          
+          .toString()  
+
           break
         default:
           throw('unrecognized association') 
