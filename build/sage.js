@@ -45,6 +45,7 @@ var Sage = (function () {
     this.Schema = _sage_schema2.default;
     this._connection = null;
     this._connectOptions = null;
+    this._connectURI = null;
     this.models = {}; // all the models that have currently been instantiated
 
     this.debug = options.debug;
@@ -106,8 +107,18 @@ var Sage = (function () {
       }
       // You passed in some optoins. We save them so that if you call connect() without connectOptions
       // it will use them again
+      if (uri) {
+        self._connectURI = uri;
+      }
       if (_lodash2.default.size(connectOptions) > 1) {
+        self._connectOptions = connectOptions;
+      }
+      // Load saved values if they exist
+      if (self._connectOptions) {
         connectOptions = self._connectOptions;
+      }
+      if (self._connectURI) {
+        uri = self._connectURI;
       }
 
       // Make a new connection
