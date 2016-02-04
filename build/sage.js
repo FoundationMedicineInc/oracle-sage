@@ -30,6 +30,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+// https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-3214-stmtcachesize
+// Statement caching can be disabled by setting the size to 0.
+_oracledb2.default.stmtCacheSize = 0;
+
 _simpleOracledb2.default.extend(_oracledb2.default);
 
 var Sage = (function () {

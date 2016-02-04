@@ -116,6 +116,7 @@ let model = function(name, schema, sage) {
       return new Promise(function(resolve, reject) {
         sage.connection.query(sql, result.values, function(err, result) {
           if(err) {
+            console.log(err)
             sage.log(err)
             reject()
           } else {

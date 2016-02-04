@@ -679,6 +679,7 @@ var model = function model(name, schema, sage) {
         return new _bluebird2.default(function (resolve, reject) {
           sage.connection.query(sql, result.values, function (err, result) {
             if (err) {
+              console.log(err);
               sage.log(err);
               reject();
             } else {

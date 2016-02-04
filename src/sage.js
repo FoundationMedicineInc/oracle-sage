@@ -1,6 +1,10 @@
 import Promise from 'bluebird';
 import oracledb from 'oracledb';
 
+// https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-3214-stmtcachesize
+// Statement caching can be disabled by setting the size to 0.
+oracledb.stmtCacheSize = 0;
+
 import SimpleOracleDB from 'simple-oracledb';
 SimpleOracleDB.extend(oracledb);
 
