@@ -25,8 +25,8 @@ let model = function(name, schema, sage) {
       // queue for pending associations to be populated
       this._associations = [] 
 
-      // apply extensions`
-      _.extend(this, _methods)
+      // apply extensions
+      objectAssign(this, _methods)
     }
 
     mergeProps() {
@@ -68,7 +68,7 @@ let model = function(name, schema, sage) {
     }
 
     static methods(object) {
-      _methods = object
+      _methods = _.extend(_methods, object)
     }
 
     // **** BEGIN STATIC

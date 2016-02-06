@@ -54,8 +54,8 @@ var model = function model(name, schema, sage) {
       // queue for pending associations to be populated
       this._associations = [];
 
-      // apply extensions`
-      _lodash2.default.extend(this, _methods);
+      // apply extensions
+      (0, _objectAssign2.default)(this, _methods);
     }
 
     _createClass(Model, [{
@@ -642,7 +642,7 @@ var model = function model(name, schema, sage) {
     }, {
       key: 'methods',
       value: function methods(object) {
-        _methods = object;
+        _methods = _lodash2.default.extend(_methods, object);
       }
 
       // **** BEGIN STATIC
