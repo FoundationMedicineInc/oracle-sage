@@ -380,19 +380,20 @@ var model = function model(name, schema, sage) {
               var format = this.schema.definition[key].format;
               var date = this.get(key);
               if (date) {
-                // try {
-                //   value = moment(date, format).format(format)
-                // } catch(e) {
-                //   value = moment(date).format(format)
-                // }
-                value = (0, _moment2.default)(date).format(format);
+                value = (0, _moment2.default)(date, format).format(format);
+                if (value === "Invalid date") {
+                  value = (0, _moment2.default)(date).format(format);
+                }
               }
               break;
             case "timestamp":
               var format = this.schema.definition[key].format;
               var date = this.get(key);
               if (date) {
-                value = (0, _moment2.default)(date).format(format);
+                value = (0, _moment2.default)(date, format).format(format);
+                if (value === "Invalid date") {
+                  value = (0, _moment2.default)(date).format(format);
+                }
               }
               break;
 
