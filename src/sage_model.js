@@ -411,6 +411,13 @@ let model = function(name, schema, sage) {
               value = moment(date).format(format)
             } 
             break
+          case 'timestamp':
+            let format = this.schema.definition[key].format
+            let date = this.get(key)
+            if(date) {
+              value = moment(date).format(format)
+            }
+            break
           case "number":
             // Need this IF statement because what if the person does not have a 
             // read only primary key and is creating a new model? Usually they would pass
