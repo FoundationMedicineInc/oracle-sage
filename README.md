@@ -458,3 +458,6 @@ User.statics({
 
 User.findSpecial(...)
 ```
+
+Knex
+Knex is directly exposed in sage as well through `sage.knex`
