@@ -36,6 +36,8 @@ _oracledb2.default.stmtCacheSize = 0;
 
 _simpleOracledb2.default.extend(_oracledb2.default);
 
+var knex = require('knex')({ client: 'oracle' });
+
 var Sage = (function () {
   function Sage() {
     var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
@@ -49,6 +51,7 @@ var Sage = (function () {
     this.models = {}; // all the models that have currently been instantiated
 
     this.debug = options.debug;
+    this.knex = knex;
   }
 
   _createClass(Sage, [{

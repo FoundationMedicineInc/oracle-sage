@@ -11,7 +11,9 @@ SimpleOracleDB.extend(oracledb);
 import _ from 'lodash';
 
 import sageModel from '../build/sage_model';
-import sageSchema from '../build/sage_schema'
+import sageSchema from '../build/sage_schema';
+
+var knex = require('knex')({ client: 'oracle' })
 
 class Sage {
   constructor(options = {}) {
@@ -22,6 +24,7 @@ class Sage {
     this.models = {}; // all the models that have currently been instantiated
 
     this.debug = options.debug;
+    this.knex = knex;
   }
 
   log(o) {
