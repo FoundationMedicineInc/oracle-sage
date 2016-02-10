@@ -356,6 +356,7 @@ let model = function(name, schema, sage) {
           let sql = `UPDATE ${name} SET ${result.sql} WHERE ${pk}=:${pk}`
 
           sql = sageUtil.amendDateFields(this.schema, sql)
+          sql = sageUtil.amendTimestampFields(this.schema, sql)
           result.values[pk] = this.get(pk)
 
           // sage.log(sql, result.values)
