@@ -59,6 +59,25 @@ util.amendDateFields = function (schema, string) {
   return string;
 };
 
+util.amendTimestampFields = function (schema, string) {
+  var self = this;
+  var fields = [];
+  _lodash2.default.each(schema.definition, function (value, key) {
+    var schemaProps = value;
+    if (schemaProps.type === "timestamp") {
+      fields.push({
+        name: key,
+        format: schemaProps.format
+      });
+    }
+  });
+  _lodash2.default.each(fields, function (field) {
+    var re = new RegExp(":" + field.name);
+    string = string.replace(re, "TO_TIMESTAMP(:" + field.name + ",'" + field.format + "')");
+  });
+  return string;
+};
+
 // Helper for getInsertSQL
 util.schemaToString = function (schema) {
   var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -81,6 +100,7 @@ util.getInsertSQL = function (table, schema) {
   var fields = this.schemaToString(schema);
   var keys = this.schemaToString(schema, { prefix: ":" });
   keys = this.amendDateFields(schema, keys);
+  keys = this.amendTimestampFields(schema, keys);
   return "INSERT INTO " + table + " (" + fields + ") VALUES (" + keys + ")";
 };
 

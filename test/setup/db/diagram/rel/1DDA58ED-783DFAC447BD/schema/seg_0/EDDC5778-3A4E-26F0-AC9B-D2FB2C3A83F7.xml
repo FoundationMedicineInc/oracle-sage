@@ -1,0 +1,7 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<SchemaObject class="oracle.dbtools.crest.model.design.relational.SchemaObject" name="SAGE_TEST" directorySegmentName="seg_0" id="EDDC5778-3A4E-26F0-AC9B-D2FB2C3A83F7">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-17 19:30:53 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<ordsAlias>schema_1</ordsAlias>
+</SchemaObject>

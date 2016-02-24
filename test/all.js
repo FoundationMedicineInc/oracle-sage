@@ -75,6 +75,26 @@ describe('models', function() {
     assert(user.hello)
   })
 
+  it('should clobber methods from another schema methods', function() {
+    var User = sage.model("User", schema)
+    var Guest = sage.model("Guest", schema);
+    User.methods({
+      hello: function() {
+        return "userHello";
+      }
+    });
+    Guest.methods({
+      hello: function() {
+        return "guestHello";
+      }
+    });
+    var user = new User();
+    var guest = new Guest();
+    assert.equal(user.hello(), "userHello");
+    assert.equal(guest.hello(), "guestHello");
+
+  })  
+
   it('should add statics', function() {
     var User = sage.model("User", schema)
     User.statics({

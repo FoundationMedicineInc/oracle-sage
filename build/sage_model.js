@@ -33,9 +33,9 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var knex = require('knex')({ client: 'oracle' });
-var _methods = {};
 
 var model = function model(name, schema, sage) {
+  var _methods = {};
   var modelClass = (function () {
     function Model(props, initName, initSchema) {
       _classCallCheck(this, Model);
@@ -234,6 +234,7 @@ var model = function model(name, schema, sage) {
             var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
 
             sql = _sage_util2.default.amendDateFields(_this5.schema, sql);
+            sql = _sage_util2.default.amendTimestampFields(_this5.schema, sql);
             result.values[pk] = _this5.get(pk);
 
             // sage.log(sql, result.values)

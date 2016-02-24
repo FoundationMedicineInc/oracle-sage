@@ -6,9 +6,9 @@ import _ from 'lodash'
 import objectAssign from 'object-assign'
 
 var knex = require('knex')({ client: 'oracle' })
-var _methods = {}
 
 let model = function(name, schema, sage) {
+  var _methods = {};
   let modelClass = class Model {
     constructor(props, initName, initSchema) {
       // Name and schema will inherit off function

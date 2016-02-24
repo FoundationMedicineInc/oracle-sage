@@ -1,0 +1,71 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="E908A0AA-421A-D529-442B-427553D51990" schemaObject="EDDC5778-3A4E-26F0-AC9B-D2FB2C3A83F7" name="POSTS">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-17 19:33:16 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<ordsAlias>table_3</ordsAlias>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="POST_ID" id="B833C919-A7BE-09EC-F21F-C22202ADCEEF">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-17 19:36:34 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementColumn>true</autoIncrementColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="USER_ID" id="25C98DEB-5330-06F3-9343-2D56718CA9DC">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-17 19:34:24 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="D9DF840B-A5A5-7A9B-195D-2F0C21467CA4" referredColumn="CDF29BFD-2F1A-3607-C8EF-4BB84BC2E060"/>
+</associations>
+</Column>
+<Column name="POST_BODY" id="22D062E0-6870-06D2-A908-C805C5E19A8D">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-17 19:34:45 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>500</dataTypeSize>
+<ownDataTypeParameters>500,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="16858C48-B977-B9A3-74E8-D14B63C22289" name="POSTS_PK">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-17 19:36:38 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="B833C919-A7BE-09EC-F21F-C22202ADCEEF"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="04200EE1-D28F-2DDB-3011-227E1D4537D4" name="POSTS_USER_FK">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-17 19:35:14 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="25C98DEB-5330-06F3-9343-2D56718CA9DC"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

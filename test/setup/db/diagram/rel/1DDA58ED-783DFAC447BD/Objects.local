@@ -1,0 +1,7 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<oracle.dbtools.crest.model.design.relational.RelationalDesign>
+   <object objectType="SchemaObject" objectID="EDDC5778-3A4E-26F0-AC9B-D2FB2C3A83F7" name="SAGE_TEST" seqName="seg_0"/>
+   <object objectType="Table" objectID="E908A0AA-421A-D529-442B-427553D51990" name="POSTS" seqName="seg_0"/>
+   <object objectType="Table" objectID="0E086349-40B1-E73D-B969-D483F63D32E3" name="USER" seqName="seg_0"/>
+   <object objectType="FKIndexAssociation" objectID="D9DF840B-A5A5-7A9B-195D-2F0C21467CA4" name="POSTS_USER_FK" seqName="seg_0" containerID="E908A0AA-421A-D529-442B-427553D51990" refContainerID="0E086349-40B1-E73D-B969-D483F63D32E3"/>
+</oracle.dbtools.crest.model.design.relational.RelationalDesign>
