@@ -796,18 +796,23 @@ var model = function model(name, schema, sage) {
             var readOnlyDeleted = false;
 
             if (pk) {
-              if (m.schema._definition[pk].readonly === true) {
-                delete m.schema._definition[pk].readonly;
-                readOnlyDeleted = true;
+              if (m.schema._definition[pk].sequenceName) {
+                if (m.schema._definition[pk].readonly) {
+                  delete m.schema._definition[pk].readonly;
+                  readOnlyDeleted = true;
+                }
               }
             }
 
             var sql = _sage_util2.default.getInsertSQL(m.name, m.schema);
 
+            // Update the INSERT statement with the correct nextval
+            if (m.schema._definition[pk].sequenceName) {
+              sql = sql.replace(':' + pk, m.schema._definition[pk].sequenceName + '.nextval');
+            }
             // Restore readOnly if you turned it off
             if (readOnlyDeleted) {
               m.schema._definition[pk].readonly = true; // Turn it back on
-              sql = sql.replace(':' + pk, 'SAGE_TEST.SEQUENCE_NO_TRIGGER_SEQUENCE_N.nextval');
             }
 
             // Get the values
