@@ -60,7 +60,7 @@ var Sage = (function () {
     key: 'log',
     value: function log(o) {
       if (this.debug) {
-        console.trace(o);
+        console.log(o);
       }
     }
   }, {
