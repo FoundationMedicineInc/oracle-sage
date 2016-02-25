@@ -59,7 +59,7 @@ var sage = require('oracle-sage');
 
 For more verbose outputs, set `sage.debug` to true.
 
-```
+```javascript
 var sage = require('oracle-sage');
 sage.debug = true;
 ```
@@ -306,7 +306,7 @@ You can add methods both on the constructor and instances of a model.
 
 Add functions directly to the constructor.
 
-```
+```javascript
 var User = sage.model("user");
 User.statics({
   findByEmail: function(email) {
@@ -326,7 +326,7 @@ User.findByEmail("mrchess@example.com").then(...)
 
 Add functions directly to an instance.
 
-```
+```javascript
 var User = sage.model("user");
 User.methods({
   fullname: function() {
@@ -525,7 +525,7 @@ See [Knex](http://knexjs.org/) for the full API usage.
 
 Knex is strictly used for query building. You can use it with the raw connection. For example:
 
-```
+```javascript
 var query = sql sage.knex.select().from('user').toString();
 sage.connection.execute(query, function() { ... })
 ```
