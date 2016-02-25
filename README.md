@@ -380,6 +380,7 @@ var supplierSchema = new sage.Schema({
   account: { 
     type: "association",
     joinType: "hasOne",
+    joinsWith: "accounts",
     foreignKeys: {
       mine: "id",
       theirs: "supplier_id"
