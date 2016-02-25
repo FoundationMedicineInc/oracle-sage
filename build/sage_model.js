@@ -808,7 +808,7 @@ var model = function model(name, schema, sage) {
             var sql = _sage_util2.default.getInsertSQL(m.name, m.schema);
 
             // Update the INSERT statement with the correct nextval
-            if (definition[pk].sequenceName) {
+            if (definition[pk] && definition[pk].sequenceName) {
               sql = sql.replace(':' + pk, definition[pk].sequenceName + '.nextval');
             }
             // Restore readOnly if you turned it off
