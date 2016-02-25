@@ -64,9 +64,9 @@ describe('transactions',function() {
 
   it('should populate', function(done) {
     user.populate().then(function() {
-      console.log(user)
+      // console.log(user)
       var json = user.toJSON();
-      console.log(json)
+      // console.log(json)
       expect(json.posts.length).to.equal(2);
 
       done();

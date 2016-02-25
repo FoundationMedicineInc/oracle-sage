@@ -172,6 +172,21 @@ Notes:
 
 In the schema you can set a field to be `readonly`. This will disable it from being written to on creation.
 
+There is a special case for autoincrement where you might not be able to use triggers to toggle autoincrement fields (eg. if you use Hibernate). The circumvent this, add a `sequenceName` property.
+
+eg.
+
+```javascript
+sage.Schema({
+  ID: {
+    type: "number",
+    sequenceName: "SAGE_TEST.SEQUENCE_NO_TRIGGER_SEQUENCE_N",
+    readonly: true
+  }
+  ...
+});
+```
+
 ## Updating
 
 Updating will only update modified fields.
