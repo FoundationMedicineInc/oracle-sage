@@ -119,6 +119,9 @@ var model = function model(name, schema, sage) {
 
         var sql = null;
         switch (value.joinType) {
+          case "hasOne":
+            sql = knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine)).toString();
+            break;
           case "hasMany":
             sql = knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine)).toString();
             break;
@@ -175,7 +178,11 @@ var model = function model(name, schema, sage) {
                       });
                     })();
                   } else {
-                    self._directSet(association.key, models);
+                    if (association.value.joinType === "hasOne") {
+                      self._directSet(association.key, models[0]);
+                    } else {
+                      self._directSet(association.key, models);
+                    }
                     resolve();
                   }
                 };
@@ -237,7 +244,7 @@ var model = function model(name, schema, sage) {
             sql = _sage_util2.default.amendTimestampFields(_this5.schema, sql);
             result.values[pk] = _this5.get(pk);
 
-            // sage.log(sql, result.values)
+            sage.log(sql, result.values);
             sage.connection.execute(sql, result.values, function (err, result) {
               if (err) {
                 sage.log(err);
@@ -319,11 +326,22 @@ var model = function model(name, schema, sage) {
         _lodash2.default.each(this._schema.associations, function (association) {
           var key = association.key.toLowerCase();
           var models = result[key];
-          var modelsJSON = [];
-          _lodash2.default.each(models, function (model) {
-            modelsJSON.push(model.toJSON());
-          });
-          result[key] = modelsJSON;
+
+          if (association.value.joinType === "hasOne") {
+            if (models) {
+              result[key] = models.toJSON();
+            } else {
+              result[key] = undefined;
+            }
+          } else {
+            (function () {
+              var modelsJSON = [];
+              _lodash2.default.each(models, function (model) {
+                modelsJSON.push(model.toJSON());
+              });
+              result[key] = modelsJSON;
+            })();
+          }
         });
 
         return result;
@@ -606,9 +624,9 @@ var model = function model(name, schema, sage) {
         };
 
         for (var key in this.schema.definition) {
-          var _ret3 = _loop(key);
+          var _ret4 = _loop(key);
 
-          if (_ret3 === 'continue') continue;
+          if (_ret4 === 'continue') continue;
         }
         return isValid;
       }
@@ -708,6 +726,8 @@ var model = function model(name, schema, sage) {
             } else {
               var row = null;
               if (result.length) {
+                // For some reason a value called RNUM is returned as well
+                delete result[0]["RNUM"];
                 row = new self(result[0], name, schema);
               }
               resolve(row);
@@ -772,6 +792,7 @@ var model = function model(name, schema, sage) {
             var sql = _sage_util2.default.getInsertSQL(m.name, m.schema);
             var values = m.normalized;
 
+            sage.log(sql, values);
             sage.connection.execute(sql, values, function (err, result) {
               if (err) {
                 sage.log(err);

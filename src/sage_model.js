@@ -121,7 +121,11 @@ let model = function(name, schema, sage) {
             reject()
           } else {
             let row = null
-            if(result.length) { row = new self(result[0], name, schema) }
+            if(result.length) { 
+              // For some reason a value called RNUM is returned as well
+              delete result[0]["RNUM"];
+              row = new self(result[0], name, schema);
+            }
             resolve(row)
           }
 
@@ -173,6 +177,7 @@ let model = function(name, schema, sage) {
           let sql = sageUtil.getInsertSQL(m.name, m.schema)
           let values = m.normalized
 
+          sage.log(sql, values);
           sage.connection.execute(sql, values, function(err, result) {
             if(err) {
               sage.log(err)
@@ -234,6 +239,12 @@ let model = function(name, schema, sage) {
 
       let sql = null
       switch(value.joinType) {
+        case "hasOne":
+          sql = knex(value.joinsWith)
+          .select(associationModel._selectAllStringStatic().split(','))
+          .where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine))
+          .toString()
+          break        
         case "hasMany":
           sql = knex(value.joinsWith)
           .select(associationModel._selectAllStringStatic().split(','))
@@ -300,7 +311,11 @@ let model = function(name, schema, sage) {
                   populateResults()
                 })
               } else {
-                self._directSet(association.key, models)
+                if(association.value.joinType === "hasOne") {
+                  self._directSet(association.key, models[0])
+                } else {
+                  self._directSet(association.key, models)  
+                }
                 resolve()
               }
             }
@@ -359,7 +374,7 @@ let model = function(name, schema, sage) {
           sql = sageUtil.amendTimestampFields(this.schema, sql)
           result.values[pk] = this.get(pk)
 
-          // sage.log(sql, result.values)
+          sage.log(sql, result.values);
           sage.connection.execute(sql, result.values, (err, result) => {
             if(err) {
               sage.log(err)
@@ -495,11 +510,21 @@ let model = function(name, schema, sage) {
       _.each(this._schema.associations, function(association) {
         let key = association.key.toLowerCase()
         let models = result[key]
-        let modelsJSON = []
-        _.each(models, function(model) {
-          modelsJSON.push(model.toJSON())
-        })
-        result[key] = modelsJSON        
+
+        if(association.value.joinType === "hasOne") {
+          if(models) {
+            result[key] = models.toJSON();
+          } else {
+            result[key] = undefined;
+          }
+        } else {
+          let modelsJSON = []
+          _.each(models, function(model) {
+            modelsJSON.push(model.toJSON())
+          })
+          result[key] = modelsJSON        
+        }
+
       })
       
       return result

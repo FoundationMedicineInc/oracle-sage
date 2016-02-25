@@ -23,10 +23,12 @@
     "moment": "^2.10.6",
     "object-assign": "^4.0.1",
     "oracledb": "^1.3.0",
+    "promise": "^7.1.1",
     "simple-oracledb": "0.0.15"
   },
   "devDependencies": {
-    "babel-preset-es2015": "^6.1.4"
+    "babel-preset-es2015": "^6.1.4",
+    "chai": "^3.5.0"
   },
   "bugs": {
     "url": "https://github.com/mrchess/oracle-sage/issues/new"

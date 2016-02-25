@@ -4,7 +4,7 @@
 var oracledb = require('oracledb');
 oracledb.stmtCacheSize = 0; // setting this to 0 seems to make import go faster
 
-var Promise = require("promise");
+var Promise = require("bluebird");
 var _       = require('lodash');
 var fs      = require("fs");
 
@@ -74,7 +74,7 @@ var OracleConnector = (function() {
     var self = this;
     return new Promise(function(fulfill, reject) {
       var statement = statements.shift();
-      
+      console.log(statement)
       self.connection.execute(statement, [], { autoCommit: true }, function(err, result) {
         if(config.verbose === true) { console.log(statement) }
         if(err) {

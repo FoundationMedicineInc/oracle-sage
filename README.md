@@ -10,6 +10,7 @@
 **Table of Contents**
 
 - [Install & Require](#install-&-require)
+- [Debugging](#debugging)
 - [Connect](#connect)
 - [Defining Schemas](#defining-schemas)
 - [Schema Validations](#schema-validations)
@@ -19,6 +20,7 @@
 - [Querying](#querying)
       - [findById(value)](#findbyidvalue)
       - [findOne({})](#findone)
+      - [count({})](#count)
       - [select()](#select)
 - [Model Methods](#model-methods)
       - [get](#get)
@@ -27,12 +29,20 @@
       - [toJSON/setFromJSON](#tojsonsetfromjson)
       - [destroy](#destroy)
 - [Model Properties](#model-properties)
+      - [id](#id)
       - [valid](#valid)
       - [errors](#errors)
+- [Extending Models](#extending-models)
+      - [statics({})](#statics)
+      - [methods({})](#methods)
 - [Associations and Population](#associations-and-population)
+  - [hasOne](#hasone)
   - [hasMany](#hasmany)
   - [hasManyThrough](#hasmanythrough)
   - [hasAndBelongsToMany](#hasandbelongstomany)
+- [Going Raw](#going-raw)
+      - [Connection](#connection)
+      - [Knex](#knex)
 - [Other Examples](#other-examples)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -43,6 +53,15 @@
 
 ```javascript
 var sage = require('oracle-sage');
+```
+
+## Debugging
+
+For more verbose outputs, set `sage.debug` to true.
+
+```
+var sage = require('oracle-sage');
+sage.debug = true;
 ```
 
 ## Connect
@@ -253,6 +272,13 @@ user.destroy().then(function(){});
 
 ## Model Properties
 
+##### id
+
+Quick way to see the primary key ID of a model.
+
+```javascript
+user.id // Whatever the primary key value is set to
+```
 
 ##### valid
 
@@ -272,6 +298,46 @@ user.valid // false
 user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
 ```
 
+## Extending Models
+
+You can add methods both on the constructor and instances of a model.
+
+##### statics({})
+
+Add functions directly to the constructor.
+
+```
+var User = sage.model("user");
+User.statics({
+  findByEmail: function(email) {
+    return new Promise(function(resolve, reject) {
+      User.findOne({ email: email }).then(function(result) { 
+        resolve(result);
+      });
+    }); 
+  }
+})
+
+User.findByEmail("mrchess@example.com").then(...)
+```
+
+##### methods({})
+
+
+Add functions directly to an instance.
+
+```
+var User = sage.model("user");
+User.methods({
+  fullname: function() {
+    return(this.get('first') + this.get('last'));
+  }
+})
+
+user = new User({ first: "Mr", last: "chess" });
+user.fullname(); // Mrchess
+```
+
 ## Associations and Population
 
 - Associations and naming conventions are Rails inspired.
@@ -279,12 +345,42 @@ user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
 - Saving will only save the original schema, and does not impact associations.
 
 Supports:
-
+- [hasOne](http://guides.rubyonrails.org/association_basics.html#has-one-association-reference)
 - [hasMany](http://guides.rubyonrails.org/association_basics.html#the-has-many-association)
 - [hasManyThrough](http://guides.rubyonrails.org/association_basics.html#the-has-many-through-association)
 - [hasAndBelongsToMany](http://guides.rubyonrails.org/association_basics.html#the-has-and-belongs-to-many-association)
 
 The following examples satisfies the displayed database designs. The pictures are from rails so the field types in the pictures are not the exact Oracles equivilant.
+
+### hasOne
+
+![](http://i.imgur.com/YSv19qq.png)
+
+
+```javascript
+var supplierSchema = new sage.Schema({ 
+  id: "number",
+  name: "varchar"
+  // Note this that you can really call this whatever you want. account, accounts, meta, whatever.
+  account: { 
+    type: "association",
+    joinType: "hasOne",
+    foreignKeys: {
+      mine: "id",
+      theirs: "supplier_id"
+    },
+    model: 'accounts'
+}, {
+  primaryKey: "id"
+});
+
+var accountSchema = new sage.Schema({
+  id: "number",
+  supplier_id: "number",
+  account_number: "varchar
+});
+
+```
 
 ### hasMany
 
@@ -410,6 +506,32 @@ Assembly.findById(1).then(function(assemblyModel) {
 
 ```
 
+## Going Raw
+
+##### Connection
+
+You can directly access the `node-oracledb` connection at:
+
+`sage.connection`.
+
+This is a direct exposure of:
+https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-42-connection-methods
+
+
+##### Knex
+
+Knex is directly exposed in sage as well through `sage.knex`. 
+See [Knex](http://knexjs.org/) for the full API usage.
+
+Knex is strictly used for query building. You can use it with the raw connection. For example:
+
+```
+var query = sql sage.knex.select().from('user').toString();
+sage.connection.execute(query, function() { ... })
+```
+
+See [Knex](http://knexjs.org/) for the full API usage.
+
 ## Other Examples
 
 Basic example of some common functionality.
@@ -428,36 +550,3 @@ User.create({USERNAME: "example"}).then(function() {
 });
             
 ```
-
-## Need to document
-
-User.methods feature
-Adds to the prototype
-
-```
-User.methods({
-  fullname: function() {
-    return(this.get('first') + this.get('last'))
-  }
-})
-
-user = new User()
-user.fullname()
-```
-
-
-User.statics feature
-Add statics to the constructor
-
-```
-User.statics({
-  findSpecial: function() {
-    ...
-  }
-})
-
-User.findSpecial(...)
-```
-
-Knex
-Knex is directly exposed in sage as well through `sage.knex`

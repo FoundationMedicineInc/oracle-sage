@@ -1,0 +1,36 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="8F972B1D-9BBD-49C5-2D4D-3510B038EF2B" name="SEQUENCE_NO_TRIGGER">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-25 03:33:50 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<ordsAlias>table_5</ordsAlias>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="SEQUENCE_NO_TRIGGER_ID" id="076508DD-1DA9-03ED-0D59-D7E2C1BF74E8">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-25 03:34:21 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementColumn>true</autoIncrementColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="3D2B1207-52DD-DA2A-FA89-F0EDA187FBF1" name="SEQUENCE_NO_TRIGGER_PK">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-25 03:34:31 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="076508DD-1DA9-03ED-0D59-D7E2C1BF74E8"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

@@ -1,5 +1,5 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
-<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="0E086349-40B1-E73D-B969-D483F63D32E3" schemaObject="EDDC5778-3A4E-26F0-AC9B-D2FB2C3A83F7" name="USER">
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="0E086349-40B1-E73D-B969-D483F63D32E3" schemaObject="EDDC5778-3A4E-26F0-AC9B-D2FB2C3A83F7" name="USERS">
 <createdBy>himrc</createdBy>
 <createdTime>2016-02-17 19:30:29 UTC</createdTime>
 <ownerDesignName>diagram</ownerDesignName>
@@ -8,6 +8,17 @@
 <existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
 <parsed>true</parsed>
 <columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="USER_ID" id="CDF29BFD-2F1A-3607-C8EF-4BB84BC2E060">
+<createdBy>himrc</createdBy>
+<createdTime>2016-02-17 19:31:29 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementColumn>true</autoIncrementColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
 <Column name="CREATED_AT" id="F5E2A8B2-F3E1-1B56-7642-5E16AC5D1443">
 <createdBy>himrc</createdBy>
 <createdTime>2016-02-17 19:31:48 UTC</createdTime>
@@ -18,17 +29,6 @@
 <logicalDatatype>LOGDT015</logicalDatatype>
 <defaultValue>CURRENT_TIMESTAMP</defaultValue>
 <ownDataTypeParameters>,,</ownDataTypeParameters>
-<autoIncrementCycle>false</autoIncrementCycle>
-</Column>
-<Column name="USER_ID" id="CDF29BFD-2F1A-3607-C8EF-4BB84BC2E060">
-<createdBy>himrc</createdBy>
-<createdTime>2016-02-17 19:31:29 UTC</createdTime>
-<ownerDesignName>diagram</ownerDesignName>
-<useDomainConstraints>false</useDomainConstraints>
-<use>1</use>
-<logicalDatatype>LOGDT019</logicalDatatype>
-<ownDataTypeParameters>,,</ownDataTypeParameters>
-<autoIncrementColumn>true</autoIncrementColumn>
 <autoIncrementCycle>false</autoIncrementCycle>
 </Column>
 <Column name="USERNAME" id="65579BF1-7D29-621D-E106-5ABCB88A09DB">
