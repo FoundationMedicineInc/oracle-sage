@@ -720,7 +720,6 @@ var model = function model(name, schema, sage) {
         return new _bluebird2.default(function (resolve, reject) {
           sage.connection.query(sql, result.values, function (err, result) {
             if (err) {
-              console.log(err);
               sage.log(err);
               reject();
             } else {
@@ -789,10 +788,33 @@ var model = function model(name, schema, sage) {
             sage.log(m.errors);
             reject(m.errors);
           } else {
+
+            // This is a special case where we want to use nexetval instead of a trigger
+            // for an autoincrement. Usually you would put a readonly on the primary key
+            // so let us temporarily turn it off so we can get it in the INSERT sql
+            var pk = m.schema.primaryKey;
+            var readOnlyDeleted = false;
+
+            if (pk) {
+              if (m.schema._definition[pk].readonly === true) {
+                delete m.schema._definition[pk].readonly;
+                readOnlyDeleted = true;
+              }
+            }
+
             var sql = _sage_util2.default.getInsertSQL(m.name, m.schema);
+
+            // Restore readOnly if you turned it off
+            if (readOnlyDeleted) {
+              m.schema._definition[pk].readonly = true; // Turn it back on
+              sql = sql.replace(':' + pk, 'SAGE_TEST.SEQUENCE_NO_TRIGGER_SEQUENCE_N.nextval');
+            }
+
+            // Get the values
             var values = m.normalized;
 
             sage.log(sql, values);
+
             sage.connection.execute(sql, values, function (err, result) {
               if (err) {
                 sage.log(err);

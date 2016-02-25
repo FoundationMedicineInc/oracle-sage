@@ -25,6 +25,8 @@ class Sage {
 
     this.debug = options.debug;
     this.knex = knex;
+
+    this.oracledb = oracledb;
   }
 
   log(o) {

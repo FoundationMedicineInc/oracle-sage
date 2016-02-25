@@ -52,6 +52,8 @@ var Sage = (function () {
 
     this.debug = options.debug;
     this.knex = knex;
+
+    this.oracledb = _oracledb2.default;
   }
 
   _createClass(Sage, [{
