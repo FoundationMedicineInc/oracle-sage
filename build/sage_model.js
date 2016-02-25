@@ -794,11 +794,12 @@ var model = function model(name, schema, sage) {
             // so let us temporarily turn it off so we can get it in the INSERT sql
             var pk = m.schema.primaryKey;
             var readOnlyDeleted = false;
+            var definition = m.schema._definition;
 
             if (pk) {
-              if (m.schema._definition[pk].sequenceName) {
-                if (m.schema._definition[pk].readonly) {
-                  delete m.schema._definition[pk].readonly;
+              if (definition[pk] && definition[pk].sequenceName) {
+                if (definition[pk].readonly) {
+                  delete definition[pk].readonly;
                   readOnlyDeleted = true;
                 }
               }
@@ -807,12 +808,12 @@ var model = function model(name, schema, sage) {
             var sql = _sage_util2.default.getInsertSQL(m.name, m.schema);
 
             // Update the INSERT statement with the correct nextval
-            if (m.schema._definition[pk].sequenceName) {
-              sql = sql.replace(':' + pk, m.schema._definition[pk].sequenceName + '.nextval');
+            if (definition[pk].sequenceName) {
+              sql = sql.replace(':' + pk, definition[pk].sequenceName + '.nextval');
             }
             // Restore readOnly if you turned it off
             if (readOnlyDeleted) {
-              m.schema._definition[pk].readonly = true; // Turn it back on
+              definition[pk].readonly = true; // Turn it back on
             }
 
             // Get the values
