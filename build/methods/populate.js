@@ -141,14 +141,10 @@ module.exports = function (self, name, schema, sage) {
             })();
           }
         });
-      },
-      // Close connection
-      function (next) {
-        sage.releaseConnection(connection).then(function () {
-          next();
-        });
       }], function () {
-        resolve();
+        sage.afterExecute(connection).then(function () {
+          resolve();
+        });
       });
     });
   };

@@ -109,14 +109,16 @@ var Sage = (function () {
 
   }, {
     key: 'afterExecuteCommitable',
-    value: function afterExecuteCommitable(connection, next) {
-      if (connection.isSageTransaction) {
-        return next();
-      } else {
-        sage.commit(connection).then(function () {
-          next();
-        });
-      }
+    value: function afterExecuteCommitable(connection) {
+      return new _bluebird2.default(function (resolve, reject) {
+        if (connection.isSageTransaction) {
+          return resolve();
+        } else {
+          sage.commit(connection).then(function () {
+            resolve();
+          });
+        }
+      });
     }
 
     // Used by statics and methods to figure out what to do with a connection
@@ -124,15 +126,20 @@ var Sage = (function () {
 
   }, {
     key: 'afterExecute',
-    value: function afterExecute(connection, next) {
-      if (connection.isSageTransaction) {
-        return next();
-      } else {
-        sage.releaseConnection(connection).then(function () {
-          return next();
-        });
-      }
+    value: function afterExecute(connection) {
+      return new _bluebird2.default(function (resolve, reject) {
+        if (connection.isSageTransaction) {
+          return resolve();
+        } else {
+          sage.releaseConnection(connection).then(function () {
+            resolve();
+          });
+        }
+      });
     }
+
+    // Suggest to pass in a fn because it forces you to call a commit or release
+
   }, {
     key: 'transaction',
     value: function transaction(fn) {
@@ -276,11 +283,6 @@ var Sage = (function () {
       throw 'errr';
       return false;
       var self = this;
-      return new _bluebird2.default(function (resolve, reject) {
-        self._pool.getConnection(function (err, connection) {
-          resolve(connection);
-        });
-      });
     }
   }]);
 

@@ -61,6 +61,7 @@ var model = function model(name, schema, sage) {
 
       require('./methods/populate')(this, name, schema, sage);
       require('./methods/save')(this, name, schema, sage);
+      require('./methods/destroy')(this, name, schema, sage);
     }
 
     _createClass(Model, [{
@@ -69,42 +70,6 @@ var model = function model(name, schema, sage) {
         this._props = _lodash2.default.assign(this._props, this._dirtyProps);
         this._dirtyProps = {};
       }
-    }, {
-      key: 'destroy',
-
-      // **** END STATIC   
-
-      value: function destroy() {
-        var _this = this;
-
-        return new _bluebird2.default(function (resolve, reject) {
-          var pk = _this.get(_this._schema.primaryKey);
-          if (!pk) {
-            sage.log("Missing primary key on destroy. Who do I destroy?");
-            reject();
-          }
-
-          var sql = sage.knex(_this._name).where(_this._schema.primaryKey, pk).del().toString();
-          sage.connection.execute(sql, function (err, results) {
-            if (err) {
-              sage.log(err);
-              reject();
-            } else {
-              sage.connection.commit(function (err, result) {
-                if (err) {
-                  sage.log(err);
-                  reject();
-                } else {
-                  resolve();
-                }
-              });
-            }
-          });
-        });
-      }
-
-      // Goes through and returns an object with non-entries filled with NULL
-
     }, {
       key: 'get',
 
@@ -213,6 +178,10 @@ var model = function model(name, schema, sage) {
 
     }, {
       key: 'dirtyProps',
+
+      // **** END STATIC   
+
+      // Goes through and returns an object with non-entries filled with NULL
       get: function get() {
         return this._dirtyProps;
       }
@@ -289,14 +258,14 @@ var model = function model(name, schema, sage) {
     }, {
       key: 'valid',
       get: function get() {
-        var _this2 = this;
+        var _this = this;
 
         this.clearErrors();
         var isValid = true;
 
         var _loop = function _loop(key) {
-          var schemaProps = _this2.schema.definition[key];
-          var value = _this2.get(key);
+          var schemaProps = _this.schema.definition[key];
+          var value = _this.get(key);
           var validators = [];
 
           // Required check
@@ -434,7 +403,7 @@ var model = function model(name, schema, sage) {
               }
               break;
             default:
-              _this2.errors.push(key + ' has undefined error, ' + schemaProps.type);
+              _this.errors.push(key + ' has undefined error, ' + schemaProps.type);
           }
 
           // Custom Validator Checks
@@ -449,11 +418,11 @@ var model = function model(name, schema, sage) {
           _lodash2.default.each(validators, function (v) {
             var valid = v.validator(value);
             if (!valid) {
-              _this2.errors.push(v.message);
+              _this.errors.push(v.message);
             }
           });
 
-          if (_this2.errors.length > 0) {
+          if (_this.errors.length > 0) {
             isValid = false;
           }
         };

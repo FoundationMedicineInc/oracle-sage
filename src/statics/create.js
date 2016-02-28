@@ -58,12 +58,11 @@ module.exports = function(modelClass, name, schema, sage) {
               if(err) { sage.log(err) }
               next();
             });
-          },
-          function(next) {
-            sage.afterExecuteCommitable(connection, next);
           }
         ], function() {
-          resolve();
+          sage.afterExecuteCommitable(connection).then(function() {
+            resolve();
+          });
         });
       }
     })

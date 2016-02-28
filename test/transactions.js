@@ -60,7 +60,7 @@ describe('transactions',function() {
     });
   });
 
-  it("should commit", function(done) {
+  it("should commit using a promise transaction", function(done) {
     sage.transaction().then(function(t) {
       var username = (new Date()).getTime().toString() + _.random(0, 99999);
       User.create({ USERNAME: username }, { transaction: t })
@@ -74,6 +74,24 @@ describe('transactions',function() {
       });
     });
   });
+
+
+  it("should commit using a function transaction", function(done) {
+    var username = (new Date()).getTime().toString() + _.random(0, 99999);
+    sage.transaction(function(t) {
+      User.create({ USERNAME: username }, { transaction: t }).then(function() {
+        t.commit();
+      });
+    }).then(function() {
+      return User.findOne({ USERNAME: username });
+    }).then(function(userModel) {
+      expect(userModel).to.be.ok;
+      done();
+    }).catch(function(err) {
+      console.log(err)
+    });
+  });
+
 
   it("should create a bunch in one connection", function(done) {
     var username = (new Date()).getTime().toString() + _.random(0, 99999);
@@ -223,24 +241,45 @@ describe('transactions',function() {
       });
     })    
 
-
-
-    it("should commit using a function transaction", function(done) {
+    describe('destroy', function() {
+      var user;
       var username = (new Date()).getTime().toString() + _.random(0, 99999);
-      sage.transaction(function(t) {
-        User.create({ USERNAME: username }, { transaction: t }).then(function() {
-          t.commit();
+      before(function(done) {
+        User.create({ USERNAME: username}).then(function() {
+          User.findOne({ USERNAME: username }).then(function(userModel) {
+            user = userModel;
+            done();
+          });
         });
-      }).then(function() {
-        return User.findOne({ USERNAME: username });
-      }).then(function(userModel) {
-        expect(userModel).to.be.ok;
-        done();
-      }).catch(function(err) {
-        console.log(err)
       });
-    });
 
+      it("should destroy in transaction", function(done) {
+        sage.transaction(function(t) {
+          user.destroy({ transaction: t }).then(function() {
+            t.rollback();
+          });
+        }).then(function() {
+          User.findOne({ USERNAME: username }).then(function(userModel) {
+            expect(userModel).to.be.ok;
+            done();
+          });
+        }).catch(function(err) {
+          console.log(err);
+        });
+      });
+
+      it("should destroy", function(done) {
+        user.destroy().then(function() {
+          User.findOne({ USERNAME: username }).then(function(userModel) {
+            expect(userModel).to.not.be.ok;
+            done();
+          });
+        }).catch(function(err) {
+          console.log(err);
+        });
+      });      
+
+    });
 
   })
   

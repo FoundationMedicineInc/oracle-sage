@@ -69,26 +69,29 @@ class Sage {
   // Used by statics and methods to figure out what to do with a connection
   // after the operation is performed. If this connection is part of a transaction
   // it will not close the connection.
-  afterExecuteCommitable(connection, next) {
-    if(connection.isSageTransaction) {
-      return next();
-    } else {
-      sage.commit(connection).then(function() { next(); })
-    }
+  afterExecuteCommitable(connection) {
+    return new Promise(function(resolve, reject) {
+      if(connection.isSageTransaction) {
+        return resolve();
+      } else {
+        sage.commit(connection).then(function() { resolve(); })
+      }
+    });
   }
 
   // Used by statics and methods to figure out what to do with a connection
   // after the operation is performed
-  afterExecute(connection, next) {
-    if(connection.isSageTransaction) {
-      return next();
-    } else {
-      sage.releaseConnection(connection).then(function() {
-        return next();
-      });    
-    }
+  afterExecute(connection) {
+    return new Promise(function(resolve, reject) {
+      if(connection.isSageTransaction) {
+        return resolve();
+      } else {
+        sage.releaseConnection(connection).then(function() { resolve(); })
+      }
+    });
   }
 
+  // Suggest to pass in a fn because it forces you to call a commit or release 
   transaction(fn) {
     var self = this;
     if(fn) {
@@ -145,11 +148,6 @@ class Sage {
     throw ('errr')
     return false
     var self = this;
-    return new Promise(function(resolve, reject) {
-      self._pool.getConnection(function(err, connection) {
-        resolve(connection);
-      })
-    });
   }
 
   model(name, schema) {

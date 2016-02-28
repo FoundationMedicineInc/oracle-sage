@@ -52,13 +52,11 @@ class SelectQuery {
               next();
             }
           });
-        },
-        // Close connection
-        function(next) {
-          sage.afterExecute(connection, next);
         }
       ], function() {
-        resolve(models);
+        sage.afterExecute(connection).then(function() {
+          resolve(models);
+        });            
       });
     });
   }

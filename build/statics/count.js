@@ -55,12 +55,10 @@ module.exports = function (modelClass, name, schema, sage) {
             next();
           }
         });
-      },
-      // Close connection
-      function (next) {
-        sage.afterExecute(connection, next);
       }], function () {
-        resolve(count);
+        sage.afterExecute(connection).then(function () {
+          resolve(count);
+        });
       });
     });
   };

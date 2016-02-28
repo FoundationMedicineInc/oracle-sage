@@ -29,6 +29,7 @@ let model = function(name, schema, sage) {
 
       require('./methods/populate')(this, name, schema, sage);
       require('./methods/save')(this, name, schema, sage);
+      require('./methods/destroy')(this, name, schema, sage);
     }
 
     mergeProps() {
@@ -64,36 +65,6 @@ let model = function(name, schema, sage) {
       return new sageSelectQuery(sage, name, this, columns)
     }
     // **** END STATIC    
-
-    destroy() {
-      return new Promise((resolve, reject) => {
-        let pk = this.get(this._schema.primaryKey)
-        if(!pk) { 
-          sage.log("Missing primary key on destroy. Who do I destroy?")
-          reject() 
-        }
-        
-        let sql = sage.knex(this._name)
-        .where(this._schema.primaryKey, pk)
-        .del()
-        .toString()
-        sage.connection.execute(sql, (err, results) => {
-          if(err) {
-            sage.log(err)
-            reject()
-          } else {
-            sage.connection.commit((err, result) => {
-              if(err) { 
-                sage.log(err) 
-                reject()
-              } else {
-                resolve()
-              }
-            })            
-          }
-        })
-      })
-    }
 
     // Goes through and returns an object with non-entries filled with NULL
     get dirtyProps() {

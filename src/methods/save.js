@@ -45,12 +45,11 @@ module.exports = function(self, name, schema, sage) {
             }
             next();
           });
-        },
-        function(next) {
-          sage.afterExecuteCommitable(connection, next);
         }
       ], function() {
-        resolve();
+        sage.afterExecuteCommitable(connection).then(function() {
+          resolve();
+        });
       });
 
 
