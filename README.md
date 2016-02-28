@@ -33,7 +33,7 @@
       - [valid](#valid)
       - [errors](#errors)
 - [Transactions](#transactions)
-  - [Function Style (recommended):](#function-style-recommended)
+  - [Function Style:](#function-style)
       - [commit()](#commit)
       - [rollback()](#rollback)
   - [Promise Style](#promise-style)
@@ -327,7 +327,9 @@ Create a sage transaction to perform several operations before commit.
 You can create transactions either invoking as a Promise, or by passing down
 a function.
 
-### Function Style (recommended):
+### Function Style:
+
+*RECOMMENDED*
 
 Returns a Promise. In this style, `commit` and `rollback` resolves the promise. It is suggested to always use this style as you are forced to apply a `commit()` or `rollback()` in order to resolve the promise.
 
