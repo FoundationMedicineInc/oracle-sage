@@ -67,7 +67,6 @@ describe('transactions',function() {
       .then(function() {
         return t.commit();
       }).then(function() {
-        // User not yet commit. Check on different connection
         return User.findOne({ USERNAME: username });
       }).then(function(userModel) {
         expect(userModel).to.be.ok;
@@ -75,7 +74,6 @@ describe('transactions',function() {
       });
     });
   });
-
 
   it("should create a bunch in one connection", function(done) {
     var username = (new Date()).getTime().toString() + _.random(0, 99999);
@@ -121,7 +119,9 @@ describe('transactions',function() {
       sage.transaction().then(function(t) {
         User.count(null, { transaction: t }).then(function(count) {
           expect(count > 0).to.be.ok;
-          done();
+          t.rollback().then(function() {
+            done();
+          });
         });
       });
     });      
@@ -140,7 +140,9 @@ describe('transactions',function() {
         // Just use ID 3 here because a previous test created this user
         User.findById(3, { transaction: t }).then(function(userModel) {
           expect(userModel).to.be.ok;
-          done();
+          t.rollback().then(function() {
+            done();
+          });          
         });
       });
     });      
@@ -158,7 +160,9 @@ describe('transactions',function() {
         // Just use ID 3 here because a previous test created this user
         User.select().exec({ transaction: t }).then(function(models) {
           expect(models.length).to.be.above(2);
-          done();
+          t.rollback().then(function() {
+            done();
+          });
         });
       });
     });      
@@ -168,11 +172,77 @@ describe('transactions',function() {
           return User.select().where({ USERNAME: "selectUser" }).exec({ transaction: t });
         }).then(function(results) {
           expect(results.length).to.equal(1);
-          done();
+          t.rollback().then(function() {
+            done();
+          });          
         });
       });
     });      
   });  
+
+
+  describe("save", function() {
+    var user;
+    before(function(done) {
+      var username = (new Date()).getTime().toString() + _.random(0, 99999);
+      User.create({ USERNAME: username}).then(function() {
+        User.findOne({ USERNAME: username }).then(function(userModel) {
+          user = userModel;
+          done();
+        });
+      });
+    })
+
+    it("should save", function(done) {
+      user.set("USERNAME", "gumby");
+      user.save().then(function() {
+        done();
+      });
+    })
+
+    it("should save in transactions", function(done) {
+      user.set("USERNAME", "transGumby");
+
+      sage.transaction().then(function(t) {
+        user.save({ transaction: t}).then(function() {
+          // Outside of transaction so it should not show change
+          return User.findOne({ USERNAME: "transGumby"});
+        }).then(function(userModel) {
+          expect(userModel).to.not.be.ok;
+          // Look inside the transaction
+          return User.findOne({ USERNAME: "transGumby"}, { transaction: t });
+        }).then(function(userModel) {
+          expect(userModel.get('USERNAME')).to.equal('transGumby');
+          return t.commit();
+        }).then(function() {
+          return User.findOne({ USERNAME: "transGumby"});
+        }).then(function(userModel) {
+          expect(userModel.get("USERNAME")).to.equal('transGumby');
+          done();
+        })
+      });
+    })    
+
+
+
+    it("should commit using a function transaction", function(done) {
+      var username = (new Date()).getTime().toString() + _.random(0, 99999);
+      sage.transaction(function(t) {
+        User.create({ USERNAME: username }, { transaction: t }).then(function() {
+          t.commit();
+        });
+      }).then(function() {
+        return User.findOne({ USERNAME: username });
+      }).then(function(userModel) {
+        expect(userModel).to.be.ok;
+        done();
+      }).catch(function(err) {
+        console.log(err)
+      });
+    });
+
+
+  })
   
   // // Create and set user
   // before(function(done) {

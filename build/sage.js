@@ -135,22 +135,43 @@ var Sage = (function () {
     }
   }, {
     key: 'transaction',
-    value: function transaction() {
+    value: function transaction(fn) {
       var self = this;
-      return new _bluebird2.default(function (resolve, reject) {
-        self.getConnection().then(function (connection) {
-          var transaction = {
-            connection: connection,
-            commit: function commit() {
-              return sage.commit(this.connection);
-            },
-            rollback: function rollback(transaction) {
-              return sage.releaseConnection(this.connection);
-            }
-          };
-          resolve(transaction);
+      if (fn) {
+        return new _bluebird2.default(function (resolve, reject) {
+          self.getConnection().then(function (connection) {
+            var transaction = {
+              connection: connection,
+              commit: function commit() {
+                sage.commit(this.connection).then(function () {
+                  resolve();
+                });
+              },
+              rollback: function rollback(transaction) {
+                sage.releaseConnection(this.connection).then(function () {
+                  resolve();
+                });
+              }
+            };
+            fn(transaction);
+          });
         });
-      });
+      } else {
+        return new _bluebird2.default(function (resolve, reject) {
+          self.getConnection().then(function (connection) {
+            var transaction = {
+              connection: connection,
+              commit: function commit() {
+                return sage.commit(this.connection);
+              },
+              rollback: function rollback(transaction) {
+                return sage.releaseConnection(this.connection);
+              }
+            };
+            resolve(transaction);
+          });
+        });
+      }
     }
   }, {
     key: 'releaseConnection',

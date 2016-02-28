@@ -60,6 +60,7 @@ var model = function model(name, schema, sage) {
       (0, _objectAssign2.default)(this, _methods);
 
       require('./methods/populate')(this, name, schema, sage);
+      require('./methods/save')(this, name, schema, sage);
     }
 
     _createClass(Model, [{
@@ -99,51 +100,6 @@ var model = function model(name, schema, sage) {
               });
             }
           });
-        });
-      }
-    }, {
-      key: 'save',
-      value: function save() {
-        var _this2 = this;
-
-        return new _bluebird2.default(function (resolve, reject) {
-          if (!_this2.get(_this2._schema.primaryKey)) {
-            sage.log("No primary key. Use");
-            reject();
-          }
-
-          if (_this2.valid) {
-            // save it to the database
-            var pk = schema.primaryKey;
-
-            var result = _sage_util2.default.getUpdateSQL(_this2.dirtyProps);
-            var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
-
-            sql = _sage_util2.default.amendDateFields(_this2.schema, sql);
-            sql = _sage_util2.default.amendTimestampFields(_this2.schema, sql);
-            result.values[pk] = _this2.get(pk);
-
-            sage.log(sql, result.values);
-            sage.connection.execute(sql, result.values, function (err, result) {
-              if (err) {
-                sage.log(err);
-                reject();
-              } else {
-                sage.connection.commit(function (err, result) {
-                  if (err) {
-                    sage.log(err);
-                    reject();
-                  } else {
-                    _this2.mergeProps();
-                    resolve();
-                  }
-                });
-              }
-            });
-          } else {
-            sage.log("cannot save");
-            reject();
-          }
         });
       }
 
@@ -333,14 +289,14 @@ var model = function model(name, schema, sage) {
     }, {
       key: 'valid',
       get: function get() {
-        var _this3 = this;
+        var _this2 = this;
 
         this.clearErrors();
         var isValid = true;
 
         var _loop = function _loop(key) {
-          var schemaProps = _this3.schema.definition[key];
-          var value = _this3.get(key);
+          var schemaProps = _this2.schema.definition[key];
+          var value = _this2.get(key);
           var validators = [];
 
           // Required check
@@ -478,7 +434,7 @@ var model = function model(name, schema, sage) {
               }
               break;
             default:
-              _this3.errors.push(key + ' has undefined error, ' + schemaProps.type);
+              _this2.errors.push(key + ' has undefined error, ' + schemaProps.type);
           }
 
           // Custom Validator Checks
@@ -493,11 +449,11 @@ var model = function model(name, schema, sage) {
           _lodash2.default.each(validators, function (v) {
             var valid = v.validator(value);
             if (!valid) {
-              _this3.errors.push(v.message);
+              _this2.errors.push(v.message);
             }
           });
 
-          if (_this3.errors.length > 0) {
+          if (_this2.errors.length > 0) {
             isValid = false;
           }
         };

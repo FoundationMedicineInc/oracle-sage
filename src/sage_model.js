@@ -28,6 +28,7 @@ let model = function(name, schema, sage) {
       objectAssign(this, _methods)
 
       require('./methods/populate')(this, name, schema, sage);
+      require('./methods/save')(this, name, schema, sage);
     }
 
     mergeProps() {
@@ -91,47 +92,6 @@ let model = function(name, schema, sage) {
             })            
           }
         })
-      })
-    }
-    save() {
-      return new Promise((resolve, reject) => {
-        if(!this.get(this._schema.primaryKey)) {
-          sage.log("No primary key. Use")
-          reject()
-        }
-
-        if(this.valid) {
-          // save it to the database
-          let pk = schema.primaryKey
-
-          let result = sageUtil.getUpdateSQL(this.dirtyProps)
-          let sql = `UPDATE ${name} SET ${result.sql} WHERE ${pk}=:${pk}`
-
-          sql = sageUtil.amendDateFields(this.schema, sql)
-          sql = sageUtil.amendTimestampFields(this.schema, sql)
-          result.values[pk] = this.get(pk)
-
-          sage.log(sql, result.values);
-          sage.connection.execute(sql, result.values, (err, result) => {
-            if(err) {
-              sage.log(err)
-              reject()
-            } else {
-              sage.connection.commit((err, result) => {
-                if(err) { 
-                  sage.log(err) 
-                  reject()
-                } else {
-                  this.mergeProps()
-                  resolve()
-                }
-              })
-            }
-          })
-        } else {
-          sage.log("cannot save");
-          reject()
-        }
       })
     }
 

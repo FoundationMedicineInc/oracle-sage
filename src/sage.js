@@ -45,7 +45,9 @@ class Sage {
       }
 
       self._pool.getConnection(function(err, connection) {
-        if(err) { sage.log(err); }
+        if(err) { 
+          sage.log(err); 
+        }
         resolve(connection);
       });
     });    
@@ -87,22 +89,43 @@ class Sage {
     }
   }
 
-  transaction() {
+  transaction(fn) {
     var self = this;
-    return new Promise(function(resolve, reject) {
-      self.getConnection().then(function(connection) {
-        var transaction = {
-          connection: connection,
-          commit: function() {
-            return sage.commit(this.connection);
-          },
-          rollback: function(transaction) {
-            return sage.releaseConnection(this.connection);
-          }
-        }
-        resolve(transaction);
+    if(fn) {
+      return new Promise(function(resolve, reject) {
+        self.getConnection().then(function(connection) {
+          var transaction = {
+            connection: connection,
+            commit: function() {
+              sage.commit(this.connection).then(function() {
+                resolve();
+              });
+            },
+            rollback: function(transaction) {
+              sage.releaseConnection(this.connection).then(function() {
+                resolve();
+              });
+            }
+          }        
+          fn(transaction);
+        });      
       });
-    });
+    } else {
+      return new Promise(function(resolve, reject) {
+        self.getConnection().then(function(connection) {
+          var transaction = {
+            connection: connection,
+            commit: function() {
+              return sage.commit(this.connection);
+            },
+            rollback: function(transaction) {
+              return sage.releaseConnection(this.connection);
+            }
+          }
+          resolve(transaction);
+        });
+      });
+    }
   }
 
   releaseConnection(connection) {
