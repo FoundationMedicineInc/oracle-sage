@@ -526,9 +526,9 @@ Assembly.findById(1).then(function(assemblyModel) {
 
 ##### Connection
 
-You can directly access the `node-oracledb` connection at:
+You can directly access a `node-oracledb` connection from the pool at:
 
-`sage.connection`.
+`sage.getConnection().then(function(connection) { ... });`.
 
 This is a direct exposure of:
 https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-42-connection-methods
@@ -543,7 +543,9 @@ Knex is strictly used for query building. You can use it with the raw connection
 
 ```javascript
 var query = sql sage.knex.select().from('user').toString();
-sage.connection.execute(query, function() { ... })
+sage.getConnection().then(function(connection) {
+  connection.execute(query, function() { ... })
+});
 ```
 
 See [Knex](http://knexjs.org/) for the full API usage.

@@ -4,6 +4,7 @@ var path = require('path');
 var sage = require('../build/sage');
 
 module.exports = {
+  sage: sage,
   initdb: function(options) {
     options = options || {}
 

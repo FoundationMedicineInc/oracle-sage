@@ -45,7 +45,7 @@ var Sage = (function () {
     _classCallCheck(this, Sage);
 
     this.Schema = _sage_schema2.default;
-    this._connection = null;
+    this._pool = null;
     this._connectOptions = null;
     this._connectURI = null;
     this.models = {}; // all the models that have currently been instantiated
@@ -64,6 +64,108 @@ var Sage = (function () {
       }
     }
   }, {
+    key: 'getConnection',
+    value: function getConnection() {
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+      var self = this;
+      return new _bluebird2.default(function (resolve, reject) {
+        if (options.transaction) {
+          var connection = options.transaction.connection;
+          connection.isSageTransaction = true;
+          return resolve(connection);
+        }
+
+        self._pool.getConnection(function (err, connection) {
+          if (err) {
+            sage.log(err);
+          }
+          resolve(connection);
+        });
+      });
+    }
+
+    // Promise wrap oracle connection.commit
+    // Commits operations in the connection, then releases it
+
+  }, {
+    key: 'commit',
+    value: function commit(connection) {
+      return new _bluebird2.default(function (resolve, reject) {
+        connection.commit(function (err, result) {
+          if (err) {
+            sage.log(err);
+          }
+          sage.releaseConnection(connection).then(function () {
+            resolve();
+          });
+        });
+      });
+    }
+
+    // Used by statics and methods to figure out what to do with a connection
+    // after the operation is performed. If this connection is part of a transaction
+    // it will not close the connection.
+
+  }, {
+    key: 'afterExecuteCommitable',
+    value: function afterExecuteCommitable(connection, next) {
+      if (connection.isSageTransaction) {
+        return next();
+      } else {
+        sage.commit(connection).then(function () {
+          next();
+        });
+      }
+    }
+
+    // Used by statics and methods to figure out what to do with a connection
+    // after the operation is performed
+
+  }, {
+    key: 'afterExecute',
+    value: function afterExecute(connection, next) {
+      if (connection.isSageTransaction) {
+        return next();
+      } else {
+        sage.releaseConnection(connection).then(function () {
+          return next();
+        });
+      }
+    }
+  }, {
+    key: 'transaction',
+    value: function transaction() {
+      var self = this;
+      return new _bluebird2.default(function (resolve, reject) {
+        self.getConnection().then(function (connection) {
+          var transaction = {
+            connection: connection,
+            commit: function commit() {
+              return sage.commit(this.connection);
+            },
+            rollback: function rollback(transaction) {
+              return sage.releaseConnection(this.connection);
+            }
+          };
+          resolve(transaction);
+        });
+      });
+    }
+  }, {
+    key: 'releaseConnection',
+    value: function releaseConnection(connection) {
+      return new _bluebird2.default(function (resolve, reject) {
+        connection.release(function (err) {
+          if (err) {
+            sage.log(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+    }
+  }, {
     key: 'model',
     value: function model(name, schema) {
       if (!schema) {
@@ -76,36 +178,36 @@ var Sage = (function () {
       }
       return (0, _sage_model2.default)(name, schema, this);
     }
-  }, {
-    key: 'disconnect',
-    value: function disconnect() {
-      var self = this;
-      if (self._connection) {
-        return new _bluebird2.default(function (resolve, reject) {
-          self._connection.release(function (err) {
-            if (err) {
-              console.error(err.message);
-              reject(err);
-            } else {
-              self._connection = null;
-              resolve(true);
-            }
-          });
-        });
-      } else {
-        // No active connection
-        return new _bluebird2.default(function (resolve, reject) {
-          resolve(true);
-        });
-      }
-    }
+
+    // disconnect() {
+    //   let self = this;
+    //   if(self._pool) {
+    //     return new Promise(function(resolve, reject) {
+    //       self._pool.release(function(err) {
+    //         if(err) {
+    //           console.error(err.message);
+    //           reject(err);
+    //         } else {
+    //           self._pool = null;
+    //           resolve(true);
+    //         }
+    //       })
+    //     })
+    //   } else {
+    //     // No active connection
+    //     return new Promise(function(resolve, reject) {
+    //       resolve(true);
+    //     })     
+    //   }
+    // }
+
   }, {
     key: 'connect',
     value: function connect(uri) {
       var connectOptions = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       var self = this;
-      if (self._connection) {
+      if (self._pool) {
         return new _bluebird2.default(function (resolve, reject) {
           resolve();
         });
@@ -130,16 +232,18 @@ var Sage = (function () {
       var auth = {
         user: "system",
         password: "oracle",
-        connectString: uri || "127.0.0.1:1521/orcl"
+        connectString: uri || "127.0.0.1:1521/orcl",
+        poolMin: connectOptions.poolMin,
+        poolMax: connectOptions.poolMax
       };
       auth = _lodash2.default.defaults(connectOptions, auth);
       return new _bluebird2.default(function (resolve, reject) {
-        _oracledb2.default.getConnection(auth, function (err, connection) {
+        _oracledb2.default.createPool(auth, function (err, pool) {
           if (err) {
             console.log(err);
             reject(err);
           }
-          self._connection = connection;
+          self._pool = pool;
           resolve();
         });
       });
@@ -147,7 +251,15 @@ var Sage = (function () {
   }, {
     key: 'connection',
     get: function get() {
-      return this._connection;
+      console.trace("sage connection is deprecated since pools");
+      throw 'errr';
+      return false;
+      var self = this;
+      return new _bluebird2.default(function (resolve, reject) {
+        self._pool.getConnection(function (err, connection) {
+          resolve(connection);
+        });
+      });
     }
   }]);
 
