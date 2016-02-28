@@ -14,6 +14,9 @@
 - [Connect](#connect)
 - [Defining Schemas](#defining-schemas)
 - [Schema Validations](#schema-validations)
+- [Other Schema Options](#other-schema-options)
+      - [readonly](#readonly)
+      - [sequenceName](#sequencename)
 - [Initialize](#initialize)
 - [Creation](#creation)
 - [Updating](#updating)
@@ -33,7 +36,7 @@
       - [valid](#valid)
       - [errors](#errors)
 - [Transactions](#transactions)
-  - [Function Style:](#function-style)
+  - [Function Style](#function-style)
       - [commit()](#commit)
       - [rollback()](#rollback)
   - [Promise Style](#promise-style)
@@ -163,6 +166,31 @@ var userSchema = sage.Schema({
 })
 ``` 
 
+## Other Schema Options
+
+##### readonly
+
+When set on a field, during an `update()` call, this field will not be serialized into the update even if it was attempted to be changed.
+
+##### sequenceName
+
+There is a special case for autoincrement where your Oracle database might not be able to use triggers to toggle autoincrement fields (eg. if you use Hibernate). The circumvent this, add a sequenceName property.
+
+```
+sage.Schema({
+  ID: {
+    type: "number",
+    sequenceName: "SAGE_TEST.SEQUENCE_NO_TRIGGER_SEQUENCE_N",
+    readonly: true
+  }
+  ...
+}, {
+  primaryKey: "ID"
+});
+```
+
+Now whenever you issue a create. A `nextval` will be executed on the sequence during insertion to get the value for the primary key.
+
 ## Initialize
 
 ```javascript
@@ -197,7 +225,7 @@ sage.Schema({
 
 ## Updating
 
-Updating will only update modified fields.
+Updating will only try to save the "dirty" fields. You can only update on schemas where you have defined a `primaryKey`.
 
 ```javascript
 User.findOne({ username: "example" }).then(function(user) {
@@ -235,6 +263,7 @@ Accepts optional `{}` which transforms into **AND** conditions. Returns the coun
 
 ```javascript
 User.count({ USERNAME: example }).then(function(count) { ... })
+User.count().then(function(count) { ... })
 ```
 
 ##### select()
@@ -242,12 +271,20 @@ User.count({ USERNAME: example }).then(function(count) { ... })
 A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the full API usage.
 
 ```javascript
-User.select() // same as select('*')
-.where('USERNAME', 'example')
-.limit(1)
-.exec().then(function(resultsAsModels) {
-  resultsAsModels[0].get('USERNAME') // value is "example"
-})
+User
+  .select() // same as select('*')
+  .where('USERNAME', 'example')
+  .limit(1)
+  .exec().then(function(resultsAsModels) {
+    resultsAsModels[0].get('USERNAME') // value is "example"
+  })
+
+User
+  .select("USERNAME")
+  .limit(1)
+  .exec().then(function(resultsAsModels) {
+    console.log(resultsAsModels);
+  })
 ```
 
 ## Model Methods
@@ -327,19 +364,18 @@ Create a sage transaction to perform several operations before commit.
 You can create transactions either invoking as a Promise, or by passing down
 a function.
 
-### Function Style:
-
-*RECOMMENDED*
+### Function Style
+**RECOMMENDED**
 
 Returns a Promise. In this style, `commit` and `rollback` resolves the promise. It is suggested to always use this style as you are forced to apply a `commit()` or `rollback()` in order to resolve the promise.
 
 ##### commit()
 
-Resolves the transaction promise.
+Commits the transaction and resolves the transaction promise.
 
 ##### rollback()
 
-Resolves the transaction promise.
+Rollback the transaction and resolves the transaction promise.
 
 ```javascript
 sage.transaction(function(t) {
@@ -353,15 +389,15 @@ sage.transaction(function(t) {
 
 ### Promise Style
 
-The Promise style is available in the event you need a slightly different syntax. In this style `commit` and `rollback` will return promises. Be careful using this syntax because you may forget to call `commit` or `rollback`.
+The Promise style is available in the event you need a slightly different syntax. In this style `commit` and `rollback` will return promises. Be careful using this syntax because you may forget to call `commit` or `rollback`, which will leave a connection open.
 
 ##### commit()
 
-Returns a promise.
+Commits the transaction. Returns a promise.
 
 ##### rollback()
 
-Returns a promise.
+Rollback the transaction. Returns a promise.
 
 ```javascript
 sage.transaction().then(function(t) {

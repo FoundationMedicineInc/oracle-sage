@@ -137,8 +137,28 @@ var Sage = (function () {
         }
       });
     }
-
-    // Suggest to pass in a fn because it forces you to call a commit or release
+    /**
+     Create a sage transaction to perform several operations before commit.
+      You can create transactions either invoking as a Promise, or by passing down
+     a function.
+      It is suggested to always pass down a function, as in a function you are forced
+     to apply a `commit()` or `rollback()` in order to resolve the promise.
+      The Promise style is available in the event you need a slightly different syntax.
+      Function Style:
+      sage.transaction(function(t) {
+      User.create({ transaction: t }).then(function() {
+        t.commit();
+      });
+     }).then(function() {
+      // transaction done!
+     });
+      Promise Style:
+      sage.transaction().then(function(t) {
+      User.create({ transaction: t }).then(function() {
+        t.commit();
+      });
+     });
+       */
 
   }, {
     key: 'transaction',
