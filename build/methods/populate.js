@@ -8,6 +8,10 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (self, name, schema, sage) {
@@ -74,7 +78,7 @@ module.exports = function (self, name, schema, sage) {
         var throughModel = sage.models[value.joinTable];
         var throughFields = [];
         // We do not want to get the join keys twice
-        _.each(throughModel.schema.definition, function (definition, key) {
+        _lodash2.default.each(throughModel.schema.definition, function (definition, key) {
           if (key != value.foreignKeys.mine && key != value.foreignKeys.theirs) {
             if (definition.type != 'association') {
               throughFields.push('t1.' + key);

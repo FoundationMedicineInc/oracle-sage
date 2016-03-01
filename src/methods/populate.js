@@ -1,5 +1,6 @@
 import Promise from 'bluebird'
 import async from 'async'
+import _ from 'lodash'
 
 module.exports = function(self, name, schema, sage) {
   self.populate = function() {
