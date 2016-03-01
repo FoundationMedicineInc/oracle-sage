@@ -1,11 +1,10 @@
 import Promise from 'bluebird'
 import moment from 'moment'
 import sageUtil from '../build/sage_util'
-import sageSelectQuery from '../build/sage_select_query'
+import sageSelectQuery from '../build/statics/select'
 import _ from 'lodash'
 import objectAssign from 'object-assign'
-
-var knex = require('knex')({ client: 'oracle' })
+import async from 'async'
 
 let model = function(name, schema, sage) {
   var _methods = {};
@@ -27,40 +26,15 @@ let model = function(name, schema, sage) {
 
       // apply extensions
       objectAssign(this, _methods)
+
+      require('./methods/populate')(this, name, schema, sage);
+      require('./methods/save')(this, name, schema, sage);
+      require('./methods/destroy')(this, name, schema, sage);
     }
 
     mergeProps() {
       this._props = _.assign(this._props, this._dirtyProps)
       this._dirtyProps = {}
-    }
-
-    static count(values = {}) {
-      let self = this
-      let result = sageUtil.getSelectANDSQL(values)
-
-      let sql = `SELECT COUNT(*) FROM ${name}`
-
-      if(result.sql != "") {
-         sql = sql + ` WHERE ${result.sql}`
-      }
-
-      return new Promise(function(resolve, reject) {
-        sage.connection.execute(sql, result.values, function(err, result) {
-          if(err) {
-            sage.log(err)
-            reject()
-          } else {
-            var count
-            try {
-              count = result.rows[0][0]
-            } catch(e) {
-              sage.log(e)
-              reject()
-            }
-            resolve(count)
-          }
-        })
-      })
     }
 
     static statics(object) {
@@ -70,67 +44,6 @@ let model = function(name, schema, sage) {
     static methods(object) {
       _methods = _.extend(_methods, object)
     }
-
-    // **** BEGIN STATIC
-    // Uses the primary key definition and returns the first row on that
-    static findById(value) {
-      let self = this
-      let pk = schema.primaryKey
-      let data = {
-        value: value
-      }
-
-      let sql = `select * from (
-          select a.*, ROWNUM rnum from (
-            SELECT ${self._selectAllStringStatic()} FROM ${name} WHERE ${pk}=:value ORDER BY ${pk} DESC
-          ) a where rownum <= 1
-        ) where rnum >= 0`
-
-      return new Promise(function(resolve, reject) {
-        sage.connection.query(sql, data, function(err, result) {
-          if(err) {
-            sage.log(err)
-            reject()
-          } else {
-            let row = null
-            if(result.length) { row = new self(result[0], name, schema) }
-            resolve(row)
-          }
-        })
-      })
-    }
-
-    // **** BEGIN STATIC
-    // AND'd find, returns the first result
-    static findOne(values = {}) {
-      let self = this
-      let pk = schema.primaryKey
-      let result = sageUtil.getSelectANDSQL(values)
-
-      let sql = `select * from (
-          select a.*, ROWNUM rnum from (
-            SELECT ${self._selectAllStringStatic()} FROM ${name} WHERE ${result.sql} ORDER BY ${pk} DESC
-          ) a where rownum <= 1
-        ) where rnum >= 0`
-
-      return new Promise(function(resolve, reject) {
-        sage.connection.query(sql, result.values, function(err, result) {
-          if(err) {
-            sage.log(err)
-            reject()
-          } else {
-            let row = null
-            if(result.length) { 
-              // For some reason a value called RNUM is returned as well
-              delete result[0]["RNUM"];
-              row = new self(result[0], name, schema);
-            }
-            resolve(row)
-          }
-
-        })
-      })
-    }    
 
     // Generates a string of all the fields defined in the schema to replace a * in a SELECT *
     // We do this because tables with SDO_GEOMETRY fields or custom fields cannot currently be understood by Sage
@@ -144,20 +57,6 @@ let model = function(name, schema, sage) {
       return fields.join(',')
     }
 
-    // Raw SQL query
-    static query(query, values = []) {
-      return new Promise(function(resolve, reject) {
-        sage.connection.query(query, values, function(err, result) {
-          if(err) {
-            sage.log(err)
-            reject()
-          } else {
-            resolve(result)
-          }
-        })
-      })      
-    }
-
     static select(columns) {
       // Always pass in columns
       if(!columns) {
@@ -165,266 +64,7 @@ let model = function(name, schema, sage) {
       }
       return new sageSelectQuery(sage, name, this, columns)
     }
-
-    static create(props = {}) {
-      let m = new this(props, name, schema)
-      return new Promise(function(resolve, reject) {
-        if(!m.valid) {
-          sage.log(m.errors)
-          reject(m.errors)
-        } else {
-
-          // This is a special case where we want to use nexetval instead of a trigger
-          // for an autoincrement. Usually you would put a readonly on the primary key
-          // so let us temporarily turn it off so we can get it in the INSERT sql
-          let pk = m.schema.primaryKey;
-          let readOnlyDeleted = false;
-          let definition = m.schema._definition;
-
-          if(pk) {
-            if(definition[pk] && definition[pk].sequenceName) {
-              if(definition[pk].readonly) {
-                delete definition[pk].readonly;
-                readOnlyDeleted = true;
-              }
-            }
-          }
-
-          let sql = sageUtil.getInsertSQL(m.name, m.schema)
-
-          // Update the INSERT statement with the correct nextval
-          if(definition[pk] && definition[pk].sequenceName) {
-            sql = sql.replace(`:${pk}`, `${definition[pk].sequenceName}.nextval`);            
-          }
-          // Restore readOnly if you turned it off
-          if(readOnlyDeleted) {
-            definition[pk].readonly = true; // Turn it back on
-          }
-
-          // Get the values
-          let values = m.normalized
-
-          sage.log(sql, values);
-
-          sage.connection.execute(sql, values, function(err, result) {
-            if(err) {
-              sage.log(err)
-              resolve(err)
-            } else {
-              sage.connection.commit(function(err, result) {
-                if(err) { 
-                  sage.log(err) 
-                  resolve(err) 
-                }
-                resolve(true)
-              })
-            }
-          })
-        }
-      })
-    }
     // **** END STATIC    
-
-    populate() {
-      if(!this._associations.length) {
-        this._associations = this._schema.associations
-      }
-
-      if(this._associations.length) {
-        return new Promise((resolve, reject) => {
-          this._populate().then(function() {
-            resolve()
-          })        
-        })
-      } else {
-        return new Promise(function(resolve, reject) {
-          resolve()
-        })
-      }
-    }
-
-    _populate() {
-      return new Promise((resolve, reject) => {
-        let association = this._associations.shift()
-        this.populateOne(association).then(()=> {
-          if(this._associations.length) {
-            this._populate().then(function() {
-              resolve()
-            })
-          } else {
-            resolve()
-          }
-        })        
-      })
-    }
-
-    populateOne(association) {
-      let self = this
-      let value = association.value
-      let model = sage.models[value.model]
-      let associationModel = model.model
-      let associationSchema = model.schema
-
-      let sql = null
-      switch(value.joinType) {
-        case "hasOne":
-          sql = knex(value.joinsWith)
-          .select(associationModel._selectAllStringStatic().split(','))
-          .where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine))
-          .toString()
-          break        
-        case "hasMany":
-          sql = knex(value.joinsWith)
-          .select(associationModel._selectAllStringStatic().split(','))
-          .where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine))
-          .toString()
-          break
-        case "hasAndBelongsToMany":
-          sql = knex(value.joinsWith)
-          .select(associationModel._selectAllStringStatic().split(',')).innerJoin(function() {
-            this.select('*').
-            from(value.joinTable).
-            where(value.foreignKeys.mine, self.get(self._schema.primaryKey))
-            .as('t1')
-          }, `${value.joinsWith}.${associationSchema.primaryKey}`, `t1.${value.foreignKeys.theirs}`)
-          .toString()
-          break
-        case "hasManyThrough":
-          let throughModel = sage.models[value.joinTable]
-          let throughFields = []
-          // We do not want to get the join keys twice
-          _.each(throughModel.schema.definition, function(definition, key) {
-            if(key != value.foreignKeys.mine && key != value.foreignKeys.theirs) {
-              if(definition.type != 'association') {
-                throughFields.push(`t1.${key}`)
-              }
-            }
-          })
-          let associationModelSelect = associationModel._selectAllStringStatic().split(',')
-          let selectFields = throughFields.concat(associationModelSelect)
-
-          sql = knex(value.joinsWith)
-          .select(selectFields).innerJoin(function() {
-            this.select('*').
-            from(value.joinTable).
-            where(value.foreignKeys.mine, self.get(self._schema.primaryKey))
-            .as('t1')
-          }, `${value.joinsWith}.${associationSchema.primaryKey}`, `t1.${value.foreignKeys.theirs}`)
-          .toString()  
-
-          break
-        default:
-          throw('unrecognized association') 
-      }
-
-      return new Promise((resolve, reject) => {
-        var self = this
-        sage.connection.query(sql, (err, results) => {
-          if(err) {
-            sage.log(err)
-            reject()
-          } else {
-            let models = []
-            // _.each(results, (result) => {
-            //   models.push(new associationModel(result))
-            // })
-
-            // Deep populate the results
-            let populateResults = function() {
-              let result = results.shift()
-              if(result) {
-                let model = new associationModel(result)
-                model.populate().then(function() {
-                  models.push(model)
-                  populateResults()
-                })
-              } else {
-                if(association.value.joinType === "hasOne") {
-                  self._directSet(association.key, models[0])
-                } else {
-                  self._directSet(association.key, models)  
-                }
-                resolve()
-              }
-            }
-            populateResults()
-          }
-        })  
-      })      
-         
-      
-    }
-
-    destroy() {
-      return new Promise((resolve, reject) => {
-        let pk = this.get(this._schema.primaryKey)
-        if(!pk) { 
-          sage.log("Missing primary key on destroy. Who do I destroy?")
-          reject() 
-        }
-        
-        let sql = knex(this._name)
-        .where(this._schema.primaryKey, pk)
-        .del()
-        .toString()
-        sage.connection.execute(sql, (err, results) => {
-          if(err) {
-            sage.log(err)
-            reject()
-          } else {
-            sage.connection.commit((err, result) => {
-              if(err) { 
-                sage.log(err) 
-                reject()
-              } else {
-                resolve()
-              }
-            })            
-          }
-        })
-      })
-    }
-    save() {
-      return new Promise((resolve, reject) => {
-        if(!this.get(this._schema.primaryKey)) {
-          sage.log("No primary key. Use")
-          reject()
-        }
-
-        if(this.valid) {
-          // save it to the database
-          let pk = schema.primaryKey
-
-          let result = sageUtil.getUpdateSQL(this.dirtyProps)
-          let sql = `UPDATE ${name} SET ${result.sql} WHERE ${pk}=:${pk}`
-
-          sql = sageUtil.amendDateFields(this.schema, sql)
-          sql = sageUtil.amendTimestampFields(this.schema, sql)
-          result.values[pk] = this.get(pk)
-
-          sage.log(sql, result.values);
-          sage.connection.execute(sql, result.values, (err, result) => {
-            if(err) {
-              sage.log(err)
-              reject()
-            } else {
-              sage.connection.commit((err, result) => {
-                if(err) { 
-                  sage.log(err) 
-                  reject()
-                } else {
-                  this.mergeProps()
-                  resolve()
-                }
-              })
-            }
-          })
-        } else {
-          sage.log("cannot save");
-          reject()
-        }
-      })
-    }
 
     // Goes through and returns an object with non-entries filled with NULL
     get dirtyProps() {
@@ -761,6 +401,12 @@ let model = function(name, schema, sage) {
     model: modelClass,
     schema: schema
   }
+
+  require('./statics/count')(modelClass, name, schema, sage);
+  require('./statics/create')(modelClass, name, schema, sage);
+  require('./statics/findById')(modelClass, name, schema, sage);
+  require('./statics/findOne')(modelClass, name, schema, sage);
+  // require('./statics/query')(modelClass, name, schema, sage);
 
   // Allow access to schema from model
   modelClass.schema = schema

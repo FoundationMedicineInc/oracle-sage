@@ -14,6 +14,9 @@
 - [Connect](#connect)
 - [Defining Schemas](#defining-schemas)
 - [Schema Validations](#schema-validations)
+- [Other Schema Options](#other-schema-options)
+      - [readonly](#readonly)
+      - [sequenceName](#sequencename)
 - [Initialize](#initialize)
 - [Creation](#creation)
 - [Updating](#updating)
@@ -32,6 +35,13 @@
       - [id](#id)
       - [valid](#valid)
       - [errors](#errors)
+- [Transactions](#transactions)
+  - [Function Style](#function-style)
+      - [commit()](#commit)
+      - [rollback()](#rollback)
+  - [Promise Style](#promise-style)
+      - [commit()](#commit-1)
+      - [rollback()](#rollback-1)
 - [Extending Models](#extending-models)
       - [statics({})](#statics)
       - [methods({})](#methods)
@@ -44,6 +54,7 @@
       - [Connection](#connection)
       - [Knex](#knex)
 - [Other Examples](#other-examples)
+- [Contributing](#contributing)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -155,6 +166,31 @@ var userSchema = sage.Schema({
 })
 ``` 
 
+## Other Schema Options
+
+##### readonly
+
+When set on a field, during an `update()` call, this field will not be serialized into the update even if it was attempted to be changed.
+
+##### sequenceName
+
+There is a special case for autoincrement where your Oracle database might not be able to use triggers to toggle autoincrement fields (eg. if you use Hibernate). The circumvent this, add a sequenceName property.
+
+```
+sage.Schema({
+  ID: {
+    type: "number",
+    sequenceName: "SAGE_TEST.SEQUENCE_NO_TRIGGER_SEQUENCE_N",
+    readonly: true
+  }
+  ...
+}, {
+  primaryKey: "ID"
+});
+```
+
+Now whenever you issue a create. A `nextval` will be executed on the sequence during insertion to get the value for the primary key.
+
 ## Initialize
 
 ```javascript
@@ -189,7 +225,7 @@ sage.Schema({
 
 ## Updating
 
-Updating will only update modified fields.
+Updating will only try to save the "dirty" fields. You can only update on schemas where you have defined a `primaryKey`.
 
 ```javascript
 User.findOne({ username: "example" }).then(function(user) {
@@ -227,6 +263,7 @@ Accepts optional `{}` which transforms into **AND** conditions. Returns the coun
 
 ```javascript
 User.count({ USERNAME: example }).then(function(count) { ... })
+User.count().then(function(count) { ... })
 ```
 
 ##### select()
@@ -234,12 +271,20 @@ User.count({ USERNAME: example }).then(function(count) { ... })
 A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the full API usage.
 
 ```javascript
-User.select() // same as select('*')
-.where('USERNAME', 'example')
-.limit(1)
-.exec().then(function(resultsAsModels) {
-  resultsAsModels[0].get('USERNAME') // value is "example"
-})
+User
+  .select() // same as select('*')
+  .where('USERNAME', 'example')
+  .limit(1)
+  .exec().then(function(resultsAsModels) {
+    resultsAsModels[0].get('USERNAME') // value is "example"
+  })
+
+User
+  .select("USERNAME")
+  .limit(1)
+  .exec().then(function(resultsAsModels) {
+    console.log(resultsAsModels);
+  })
 ```
 
 ## Model Methods
@@ -311,6 +356,57 @@ user.errors // []
 user.set({'USERNAME': 12345, GENDER: 'xyz');
 user.valid // false
 user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
+```
+## Transactions
+
+Create a sage transaction to perform several operations before commit.
+
+You can create transactions either invoking as a Promise, or by passing down
+a function.
+
+### Function Style
+**RECOMMENDED**
+
+Returns a Promise. In this style, `commit` and `rollback` resolves the promise. It is suggested to always use this style as you are forced to apply a `commit()` or `rollback()` in order to resolve the promise.
+
+##### commit()
+
+Commits the transaction and resolves the transaction promise.
+
+##### rollback()
+
+Rollback the transaction and resolves the transaction promise.
+
+```javascript
+sage.transaction(function(t) {
+  User.create({ transaction: t }).then(function() {
+    t.commit(); // Resolves the promise
+  });
+}).then(function() {
+  // transaction done!
+});
+```
+
+### Promise Style
+
+The Promise style is available in the event you need a slightly different syntax. In this style `commit` and `rollback` will return promises. Be careful using this syntax because you may forget to call `commit` or `rollback`, which will leave a connection open.
+
+##### commit()
+
+Commits the transaction. Returns a promise.
+
+##### rollback()
+
+Rollback the transaction. Returns a promise.
+
+```javascript
+sage.transaction().then(function(t) {
+  User.create({ transaction: t }).then(function() {
+    return t.rollback(); 
+  }).then(function() {
+    // done!!
+  })
+});
 ```
 
 ## Extending Models
@@ -526,9 +622,9 @@ Assembly.findById(1).then(function(assemblyModel) {
 
 ##### Connection
 
-You can directly access the `node-oracledb` connection at:
+You can directly access a `node-oracledb` connection from the pool at:
 
-`sage.connection`.
+`sage.getConnection().then(function(connection) { ... });`.
 
 This is a direct exposure of:
 https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-42-connection-methods
@@ -543,7 +639,9 @@ Knex is strictly used for query building. You can use it with the raw connection
 
 ```javascript
 var query = sql sage.knex.select().from('user').toString();
-sage.connection.execute(query, function() { ... })
+sage.getConnection().then(function(connection) {
+  connection.execute(query, function() { ... })
+});
 ```
 
 See [Knex](http://knexjs.org/) for the full API usage.
@@ -566,3 +664,18 @@ User.create({USERNAME: "example"}).then(function() {
 });
             
 ```
+
+## Contributing
+
+The tests suite assumes you have a local Oracle 11g database set up with the following information:
+
+```
+Hostname: localhost
+Port: 1521
+Service name: orcl
+Username: SAGE_TEST
+Password: oracle
+```
+
+You can install a VM here.
+https://blogs.oracle.com/opal/entry/the_easiest_way_to_enable

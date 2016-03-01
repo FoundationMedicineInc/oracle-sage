@@ -10,6 +10,10 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _async = require('async');
+
+var _async2 = _interopRequireDefault(_async);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -31,7 +35,9 @@ var SelectQuery = (function () {
     this.knex.select(columns);
 
     this.knex.exec = function () {
-      return _this.exec();
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+      return _this.exec(options);
     };
 
     return this.knex;
@@ -40,27 +46,42 @@ var SelectQuery = (function () {
   _createClass(SelectQuery, [{
     key: 'exec',
     value: function exec() {
-      var _this2 = this;
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
+      var models = [];
+      var self = this;
       return new _bluebird2.default(function (resolve, reject) {
-        var sql = _this2.knex.toString();
+        var connection;
+        _async2.default.series([
+        // Establish Connection
+        function (next) {
+          sage.getConnection({ transaction: options.transaction }).then(function (c) {
+            connection = c;
+            next();
+          });
+        },
+        // Perform operation
+        function (next) {
+          var sql = self.knex.toString();
 
-        // Fix: [Error: ORA-01756: quoted string not properly terminated]
-        sql = sql.replace(/\\'/g, "''");
+          // Fix: [Error: ORA-01756: quoted string not properly terminated]
+          sql = sql.replace(/\\'/g, "''");
 
-        _this2.sage.connection.query(sql, function (err, results) {
-          if (err) {
-            console.log(err);
-            reject();
-          } else {
-            (function () {
-              var models = [];
+          sage.log(sql);
+          connection.query(sql, function (err, results) {
+            if (err) {
+              sage.log(err);
+            } else {
               _lodash2.default.each(results, function (result) {
-                models.push(new _this2.model(result));
+                models.push(new self.model(result));
               });
-              resolve(models);
-            })();
-          }
+              next();
+            }
+          });
+        }], function () {
+          sage.afterExecute(connection).then(function () {
+            resolve(models);
+          });
         });
       });
     }

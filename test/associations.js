@@ -29,6 +29,7 @@ describe('transactions',function() {
     User.create({ USERNAME: "mrchess" }).then(function(err) {
       User.findOne({ USERNAME: "mrchess" }).then(function(userModel) {
         user = userModel;
+        console.log('found user', user.id)
         done();
       });
     }).catch(function(err) { console.log('err', err) });
@@ -68,7 +69,6 @@ describe('transactions',function() {
       var json = user.toJSON();
       // console.log(json)
       expect(json.posts.length).to.equal(2);
-
       done();
     });
   });
