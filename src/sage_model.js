@@ -30,13 +30,17 @@ let model = function(name, schema, sage) {
       require('./methods/populate')(this, name, schema, sage);
       require('./methods/save')(this, name, schema, sage);
       require('./methods/destroy')(this, name, schema, sage);
+      require('./methods/reload')(this, name, schema, sage);
     }
 
     mergeProps() {
       this._props = _.assign(this._props, this._dirtyProps)
-      this._dirtyProps = {}
+      this.resetDirtyProps();
     }
 
+    resetDirtyProps() {
+      this._dirtyProps = {}
+    }
     static statics(object) {
       objectAssign(this, object)
     }

@@ -31,6 +31,7 @@
       - [unset](#unset)
       - [toJSON/setFromJSON](#tojsonsetfromjson)
       - [destroy](#destroy)
+      - [reload](#reload)
 - [Model Properties](#model-properties)
       - [id](#id)
       - [valid](#valid)
@@ -328,6 +329,14 @@ Delete the record from database
 
 ```javascript
 user.destroy().then(function(){});
+```
+
+##### reload
+
+Reload the record from database
+
+```javascript
+user.reload().then(function(){ ... });
 ```
 
 ## Model Properties

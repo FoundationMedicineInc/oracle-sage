@@ -198,6 +198,37 @@ describe('transactions',function() {
     });      
   });  
 
+  describe("reload", function() {
+    var user;
+    before(function(done) {
+      var username = (new Date()).getTime().toString() + _.random(0, 99999);
+      User.create({ USERNAME: username}).then(function() {
+        User.findOne({ USERNAME: username }).then(function(userModel) {
+          user = userModel;
+          done();
+        });
+      });
+    })
+
+    it("should reload", function(done) {
+      var outOfSyncUser;
+      User.findOne({ USERNAME: user.get('USERNAME') }).then(function(userModel) {
+        outOfSyncUser= userModel;
+        sage.transaction(function(t) {
+          user.set("USERNAME", "gumby");
+          user.save({ transaciton: t }).then(function() {
+            expect(outOfSyncUser.get("USERNAME")).to.not.equal("gumby");
+            outOfSyncUser.reload({ transaciton: t }).then(function() {
+              expect(outOfSyncUser.get("USERNAME")).to.equal("gumby");
+              t.rollback();
+            });
+          });
+        }).then(function() {
+          done();
+        });
+      });
+    });
+  });
 
   describe("save", function() {
     var user;
@@ -216,7 +247,7 @@ describe('transactions',function() {
       user.save().then(function() {
         done();
       });
-    })
+    });
 
     it("should save in transactions", function(done) {
       user.set("USERNAME", "transGumby");

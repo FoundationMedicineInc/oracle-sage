@@ -62,12 +62,18 @@ var model = function model(name, schema, sage) {
       require('./methods/populate')(this, name, schema, sage);
       require('./methods/save')(this, name, schema, sage);
       require('./methods/destroy')(this, name, schema, sage);
+      require('./methods/reload')(this, name, schema, sage);
     }
 
     _createClass(Model, [{
       key: 'mergeProps',
       value: function mergeProps() {
         this._props = _lodash2.default.assign(this._props, this._dirtyProps);
+        this.resetDirtyProps();
+      }
+    }, {
+      key: 'resetDirtyProps',
+      value: function resetDirtyProps() {
         this._dirtyProps = {};
       }
     }, {
