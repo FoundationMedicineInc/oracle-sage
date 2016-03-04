@@ -20,7 +20,6 @@ module.exports = function (self, name, schema, sage) {
 
     var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-    console.log('attempting to save');
     var self = this;
     return new _bluebird2.default(function (resolve, reject) {
       if (!_this.get(_this._schema.primaryKey)) {
