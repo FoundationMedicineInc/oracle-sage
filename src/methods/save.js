@@ -4,6 +4,7 @@ import async from 'async'
 
 module.exports = function(self, name, schema, sage) {
   self.save = function(options = {}) {
+    console.log('attempting to save')
     var self = this;
     return new Promise((resolve, reject) => {
       if(!this.get(this._schema.primaryKey)) {
@@ -18,6 +19,7 @@ module.exports = function(self, name, schema, sage) {
       // save it to the database
       let pk = schema.primaryKey
 
+      console.log('dirty', this.dirtyProps)
       let result = sageUtil.getUpdateSQL(this.dirtyProps)
       let sql = `UPDATE ${name} SET ${result.sql} WHERE ${pk}=:${pk}`
 

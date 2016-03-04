@@ -233,10 +233,15 @@ let model = function(name, schema, sage) {
       this.clearErrors()
       let isValid = true
       for(let key in this.schema.definition) {
-        let schemaProps = this.schema.definition[key]
+        let schemaProps = this.schema.definition[key];
         let value = this.get(key)
         let validators = []
 
+        // Dont validate association
+        if(schemaProps.type === "association") {
+          continue;
+        }
+        
         // Required check
         if(schemaProps.required) {
           validators.push({

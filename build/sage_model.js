@@ -274,6 +274,11 @@ var model = function model(name, schema, sage) {
           var value = _this.get(key);
           var validators = [];
 
+          // Dont validate association
+          if (schemaProps.type === "association") {
+            return 'continue';
+          }
+
           // Required check
           if (schemaProps.required) {
             validators.push({

@@ -20,6 +20,7 @@ module.exports = function (self, name, schema, sage) {
 
     var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
+    console.log('attempting to save');
     var self = this;
     return new _bluebird2.default(function (resolve, reject) {
       if (!_this.get(_this._schema.primaryKey)) {
@@ -34,6 +35,7 @@ module.exports = function (self, name, schema, sage) {
       // save it to the database
       var pk = schema.primaryKey;
 
+      console.log('dirty', _this.dirtyProps);
       var result = _sage_util2.default.getUpdateSQL(_this.dirtyProps);
       var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
 
