@@ -35,7 +35,6 @@ module.exports = function (self, name, schema, sage) {
       // save it to the database
       var pk = schema.primaryKey;
 
-      console.log('dirty', _this.dirtyProps);
       var result = _sage_util2.default.getUpdateSQL(_this.dirtyProps);
       var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
 
