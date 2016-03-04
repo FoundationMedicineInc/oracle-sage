@@ -73,13 +73,9 @@ util.amendTimestampFields = function (schema, string) {
   });
   _lodash2.default.each(fields, function (field) {
     var re = new RegExp(":" + field.name);
-    if (field.format === "YY-MMM-DD HH:mm:ss.SS") {
-      // https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions193.htm
-      var oracleFormat = "DD-Mon-RR HH24:MI:SS.FF";
-      string = string.replace(re, "TO_TIMESTAMP(:" + field.name + ",'" + oracleFormat + "')");
-    } else {
-      throw "Unsupported timestamp format. Use YY-MMM-DD HH:mm:ss.SS";
-    }
+    // https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions193.htm
+    var oracleFormat = "DD-Mon-RR HH24:MI:SS.FF";
+    string = string.replace(re, "TO_TIMESTAMP(:" + field.name + ",'" + oracleFormat + "')");
   });
   return string;
 };
