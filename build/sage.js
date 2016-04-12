@@ -79,8 +79,10 @@ var Sage = (function () {
         self._pool.getConnection(function (err, connection) {
           if (err) {
             sage.log(err);
+            sage.log("Out of connections!");
+            return reject();
           }
-          resolve(connection);
+          return resolve(connection);
         });
       });
     }
