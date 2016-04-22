@@ -35,6 +35,8 @@ module.exports = function (self, name, schema, sage) {
       var pk = schema.primaryKey;
 
       var result = _sage_util2.default.getUpdateSQL(_this.dirtyProps);
+      result.values = _sage_util2.default.fixDateBug(_this.schema, result.values);
+
       var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
 
       sql = _sage_util2.default.amendDateFields(_this.schema, sql);

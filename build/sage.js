@@ -247,7 +247,7 @@ var Sage = (function () {
     //     // No active connection
     //     return new Promise(function(resolve, reject) {
     //       resolve(true);
-    //     })     
+    //     })
     //   }
     // }
 

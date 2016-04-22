@@ -18,7 +18,9 @@ module.exports = function(self, name, schema, sage) {
       // save it to the database
       let pk = schema.primaryKey
 
-      let result = sageUtil.getUpdateSQL(this.dirtyProps)
+      let result = sageUtil.getUpdateSQL(this.dirtyProps);
+      result.values = sageUtil.fixDateBug(this.schema, result.values);
+
       let sql = `UPDATE ${name} SET ${result.sql} WHERE ${pk}=:${pk}`
 
       sql = sageUtil.amendDateFields(this.schema, sql)

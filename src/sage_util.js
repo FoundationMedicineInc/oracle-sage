@@ -46,11 +46,9 @@ util.amendDateFields = function(schema, string) {
     let re = new RegExp(":" + field.name);
 
     // https://github.com/oracle/node-oracledb/issues/414
-    // Shift it to noon so that it can never fall back to a previous time
-    var dateBugFix = ' 12:00:00';
     var dateBugFixTime = ' HH24:MI:SS';
 
-    string = string.replace(re, "TO_DATE(:" + field.name + dateBugFix + ",'" + field.format + dateBugFixTime + "')");
+    string = string.replace(re, "TO_DATE(:" + field.name + ",'" + field.format + dateBugFixTime + "')");
     // string = string.replace(re, "TO_DATE(:" + field.name + ",'" + field.format +"')");
   });
   return string;
@@ -75,6 +73,19 @@ util.amendTimestampFields = function(schema, string) {
     string = string.replace(re, "TO_TIMESTAMP(:" + field.name + ",'" + oracleFormat +"')");
   });
   return string;
+}
+
+
+// https://github.com/oracle/node-oracledb/issues/414
+// Goes thorugh and gets all DATE fields and sets the time to 12:00:00
+util.fixDateBug = function(schema, values) {
+  _.each(schema.definition, function(value, key) {
+    let schemaProps = value;
+    if(schemaProps.type === "date") {
+      values[key] = values[key] + ' 12:00:00';
+    }
+  });
+  return values;
 }
 
 // Helper for getInsertSQL

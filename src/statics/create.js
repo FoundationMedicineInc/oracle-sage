@@ -32,7 +32,7 @@ module.exports = function(modelClass, name, schema, sage) {
 
         // Update the INSERT statement with the correct nextval
         if(definition[pk] && definition[pk].sequenceName) {
-          sql = sql.replace(`:${pk}`, `${definition[pk].sequenceName}.nextval`);            
+          sql = sql.replace(`:${pk}`, `${definition[pk].sequenceName}.nextval`);
         }
         // Restore readOnly if you turned it off
         if(readOnlyDeleted) {
@@ -40,7 +40,9 @@ module.exports = function(modelClass, name, schema, sage) {
         }
 
         // Get the values
-        let values = m.normalized
+        let values = m.normalized;
+
+        values = sageUtil.fixDateBug(m.schema, values);
 
         var connection;
         async.series([

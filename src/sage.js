@@ -45,14 +45,14 @@ class Sage {
       }
 
       self._pool.getConnection(function(err, connection) {
-        if(err) { 
-          sage.log(err); 
+        if(err) {
+          sage.log(err);
           sage.log("Out of connections!");
           return reject();
         }
         return resolve(connection);
       });
-    });    
+    });
   }
 
   // Promise wrap oracle connection.commit
@@ -64,7 +64,7 @@ class Sage {
         sage.releaseConnection(connection).then(function() {
           resolve();
         });
-      });      
+      });
     });
   }
 
@@ -91,7 +91,7 @@ class Sage {
         sage.releaseConnection(connection).then(function() { resolve(); })
       }
     });
-  } 
+  }
   /**
    Create a sage transaction to perform several operations before commit.
 
@@ -140,9 +140,9 @@ class Sage {
                 resolve();
               });
             }
-          }        
+          }
           fn(transaction);
-        });      
+        });
       });
     } else {
       return new Promise(function(resolve, reject) {
@@ -171,7 +171,7 @@ class Sage {
           resolve();
         }
       });
-    });    
+    });
   }
 
   get connection() {
@@ -184,10 +184,10 @@ class Sage {
   model(name, schema) {
     if(!schema) {
       let model = this.models[name];
-      if(model) { 
-        return(model.model) 
-      } else { 
-        return null 
+      if(model) {
+        return(model.model)
+      } else {
+        return null
       }
     }
     return sageModel(name, schema, this)
@@ -211,7 +211,7 @@ class Sage {
   //     // No active connection
   //     return new Promise(function(resolve, reject) {
   //       resolve(true);
-  //     })      
+  //     })
   //   }
   // }
 
@@ -237,7 +237,7 @@ class Sage {
     }
 
     // Make a new connection
-    let auth = { 
+    let auth = {
       user: "system",
       password: "oracle",
       connectString: uri || "127.0.0.1:1521/orcl",
@@ -249,7 +249,7 @@ class Sage {
       oracledb.createPool(auth, function(err, pool) {
         if(err) {
           console.log(err);
-          reject(err); 
+          reject(err);
         }
         self._pool = pool;
         resolve();

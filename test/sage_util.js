@@ -26,13 +26,13 @@ describe('utilities', function() {
   it("should amend date fields", function() {
     var sql = sageUtil.schemaToString(userSchema, {prefix: ":"});
     sql = sageUtil.amendDateFields(userSchema, sql);
-    var expected = ":ID,TO_DATE(:CREATED_AT 12:00:00,'MM/DD/YYYY HH24:MI:SS')";
+    var expected = ":ID,TO_DATE(:CREATED_AT,'MM/DD/YYYY HH24:MI:SS')";
     assert.equal(sql, expected);
   })
 
   it("should build a full query", function() {
     var sql = sageUtil.getInsertSQL("test", userSchema);
-    var expected = "INSERT INTO test (ID,CREATED_AT) VALUES (:ID,TO_DATE(:CREATED_AT 12:00:00,'MM/DD/YYYY HH24:MI:SS'))"
+    var expected = "INSERT INTO test (ID,CREATED_AT) VALUES (:ID,TO_DATE(:CREATED_AT,'MM/DD/YYYY HH24:MI:SS'))"
     assert.equal(sql, expected);
   })
 
