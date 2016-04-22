@@ -82,7 +82,9 @@ util.fixDateBug = function(schema, values) {
   _.each(schema.definition, function(value, key) {
     let schemaProps = value;
     if(schemaProps.type === "date") {
-      values[key] = values[key] + ' 12:00:00';
+      if(values[key]) { // possible it is not set, eg. undefined/null
+        values[key] = values[key] + ' 12:00:00';
+      }
     }
   });
   return values;
