@@ -636,7 +636,7 @@ You can directly access a `node-oracledb` connection from the pool at:
 ```javascript
 sage.getConnection().then(function(connection) {
   connection.execute(query, function(err, result) {
-    ...
+    // Do something
 
     // Remember to release the connection
     sage.releaseConnection(connection).then(function() {
