@@ -97,12 +97,12 @@ var userSchema = sage.Schema({
   CREATED_AT: {
     type: "date",
     format: "MM/DD/YYYY"
-  },  
+  },
   USERNAME: {
     type: "varchar"
     validator: function(value) {
       return /^[a-zA-Z]+$/.test(value); // test only letters
-    },    
+    },
   },
   GENDER: {
     type: "char",
@@ -126,7 +126,7 @@ Supports types:
 
 Special features:
 
-- enum 
+- enum
 - validators
 
 Methods:
@@ -137,7 +137,7 @@ Methods:
 ## Schema Validations
 
 The following validation properties are supported:
-    
+
 - all types
   - `required` - do not use this on PK due to a bug for now
   - `validator(value)` - a custom function validator
@@ -147,11 +147,11 @@ The following validation properties are supported:
   - `max`
 - varchar
   - `minlength`
-  - `maxlength` 
+  - `maxlength`
 - clob
   - `minlength`
   - `maxlength`
-  
+
 ```javascript
 var userSchema = sage.Schema({
   ID: "number",
@@ -162,10 +162,10 @@ var userSchema = sage.Schema({
     minlength: 4,
     validator: function(value) {
       return /^[a-zA-Z]+$/.test(value); // test only letters
-    }    
+    }
   }
 })
-``` 
+```
 
 ## Other Schema Options
 
@@ -205,7 +205,7 @@ var User = sage.model(userTable, userSchema);
 User.create({ USERNAME: "example" });
 ```
 
-Notes: 
+Notes:
 
 In the schema you can set a field to be `readonly`. This will disable it from being written to on creation.
 
@@ -292,7 +292,7 @@ User
 
 ##### get
 
-Get a property. 
+Get a property.
 
 ```javascript
 user.get('USERNAME'); // returns "example" (based off above schema)
@@ -411,7 +411,7 @@ Rollback the transaction. Returns a promise.
 ```javascript
 sage.transaction().then(function(t) {
   User.create({ transaction: t }).then(function() {
-    return t.rollback(); 
+    return t.rollback();
   }).then(function() {
     // done!!
   })
@@ -431,10 +431,10 @@ var User = sage.model("user");
 User.statics({
   findByEmail: function(email) {
     return new Promise(function(resolve, reject) {
-      User.findOne({ email: email }).then(function(result) { 
+      User.findOne({ email: email }).then(function(result) {
         resolve(result);
       });
-    }); 
+    });
   }
 })
 
@@ -478,11 +478,11 @@ The following examples satisfies the displayed database designs. The pictures ar
 
 
 ```javascript
-var supplierSchema = new sage.Schema({ 
+var supplierSchema = new sage.Schema({
   id: "number",
   name: "varchar"
   // Note this that you can really call this whatever you want. account, accounts, meta, whatever.
-  account: { 
+  account: {
     type: "association",
     joinType: "hasOne",
     joinsWith: "accounts",
@@ -508,7 +508,7 @@ var accountSchema = new sage.Schema({
 ![](http://i.imgur.com/t3e1YFf.png)
 
 ```javascript
-var customersSchema = new sage.Schema({ 
+var customersSchema = new sage.Schema({
   id: "number",
   name: "varchar"
   orders: {
@@ -540,7 +540,7 @@ var ordersSchema = new sage.Schema({
 ![](http://i.imgur.com/Bb05jN1.png)
 
 ```javascript
-var physicianSchema = new sage.Schema({ 
+var physicianSchema = new sage.Schema({
   id: "number",
   name: "varchar"
   patients: {
@@ -558,7 +558,7 @@ var physicianSchema = new sage.Schema({
   primaryKey: "id"
 });
 
-// It is not necessary to put the association here unless you want to populate 
+// It is not necessary to put the association here unless you want to populate
 // physicians on a patient model
 var patientSchema = new sage.Schema({
   id: "number",
@@ -587,7 +587,7 @@ Physician.findById(1).then(function(physician) {
 ![](http://i.imgur.com/fj6KKBB.png)
 
 ```javascript
-var assemblySchema = new sage.Schema({ 
+var assemblySchema = new sage.Schema({
   id: "number",
   name: "varchar"
   parts: {
@@ -605,7 +605,7 @@ var assemblySchema = new sage.Schema({
   primaryKey: "id"
 });
 
-// It is not necessary to put the association here unless you want to populate 
+// It is not necessary to put the association here unless you want to populate
 // assemblies on a parts model
 var partsSchema = new sage.Schema({
   id: "number",
@@ -633,7 +633,19 @@ Assembly.findById(1).then(function(assemblyModel) {
 
 You can directly access a `node-oracledb` connection from the pool at:
 
-`sage.getConnection().then(function(connection) { ... });`.
+```
+sage.getConnection().then(function(connection) {
+  connection.execute(query, function(err, result) {
+    ...
+
+    // Remember to release the connection
+    sage.releaseConnection(connection).then(function() {
+      // I am done!
+    });
+
+  });
+});
+```
 
 This is a direct exposure of:
 https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-42-connection-methods
@@ -641,7 +653,7 @@ https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-42-connection-me
 
 ##### Knex
 
-Knex is directly exposed in sage as well through `sage.knex`. 
+Knex is directly exposed in sage as well through `sage.knex`.
 See [Knex](http://knexjs.org/) for the full API usage.
 
 Knex is strictly used for query building. You can use it with the raw connection. For example:
@@ -664,14 +676,14 @@ var user;
 User.create({USERNAME: "example"}).then(function() {
   return User.findOne({USERNAME: "example"});
 }).then(function(resultModel) {
-  user = resultModel;  
+  user = resultModel;
   user.get('USERNAME'); // example
   user.set('USERNAME', 'alice');
   return user.save();
 }).then(function() {
   user.get('USERNAME'); // alice
 });
-            
+
 ```
 
 ## Contributing
