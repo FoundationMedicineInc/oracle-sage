@@ -27,7 +27,7 @@ util.getUpdateSQL = function(fields = {}) {
   return {
     sql: sql,
     values: values
-  };  
+  };
 }
 
 util.amendDateFields = function(schema, string) {
@@ -44,9 +44,16 @@ util.amendDateFields = function(schema, string) {
   });
   _.each(fields, function(field) {
     let re = new RegExp(":" + field.name);
-    string = string.replace(re, "TO_DATE(:" + field.name + ",'" + field.format +"')");
+
+    // https://github.com/oracle/node-oracledb/issues/414
+    // Shift it to noon so that it can never fall back to a previous time
+    var dateBugFix = ' 12:00:00';
+    var dateBugFixTime = ' HH24:MI:SS';
+
+    string = string.replace(re, "TO_DATE(:" + field.name + dateBugFix + ",'" + field.format + dateBugFixTime + "')");
+    // string = string.replace(re, "TO_DATE(:" + field.name + ",'" + field.format +"')");
   });
-  return string;   
+  return string;
 }
 
 util.amendTimestampFields = function(schema, string) {
@@ -67,7 +74,7 @@ util.amendTimestampFields = function(schema, string) {
     var oracleFormat = "DD-Mon-RR HH24:MI:SS.FF"
     string = string.replace(re, "TO_TIMESTAMP(:" + field.name + ",'" + oracleFormat +"')");
   });
-  return string;   
+  return string;
 }
 
 // Helper for getInsertSQL
@@ -82,7 +89,7 @@ util.schemaToString = function(schema, options = {}) {
     }
   });
   result = result.substring(0, result.length - 1);
-  return result;  
+  return result;
 }
 
 util.getInsertSQL = function(table, schema) {

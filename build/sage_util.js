@@ -54,7 +54,14 @@ util.amendDateFields = function (schema, string) {
   });
   _lodash2.default.each(fields, function (field) {
     var re = new RegExp(":" + field.name);
-    string = string.replace(re, "TO_DATE(:" + field.name + ",'" + field.format + "')");
+
+    // https://github.com/oracle/node-oracledb/issues/414
+    // Shift it to noon so that it can never fall back to a previous time
+    var dateBugFix = ' 12:00:00';
+    var dateBugFixTime = ' HH24:MI:SS';
+
+    string = string.replace(re, "TO_DATE(:" + field.name + dateBugFix + ",'" + field.format + dateBugFixTime + "')");
+    // string = string.replace(re, "TO_DATE(:" + field.name + ",'" + field.format +"')");
   });
   return string;
 };
