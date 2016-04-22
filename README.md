@@ -633,7 +633,7 @@ Assembly.findById(1).then(function(assemblyModel) {
 
 You can directly access a `node-oracledb` connection from the pool at:
 
-```
+```javascript
 sage.getConnection().then(function(connection) {
   connection.execute(query, function(err, result) {
     ...
