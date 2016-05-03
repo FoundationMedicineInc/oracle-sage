@@ -13,7 +13,7 @@ let model = function(name, schema, sage) {
       // Name and schema will inherit off function
       // Create uses the constructor as well so naming has to be different
       this._name = initName || name
-      
+
       this._schema = initSchema || schema
 
       this._props = props || {}
@@ -22,7 +22,7 @@ let model = function(name, schema, sage) {
       this.errors = []
 
       // queue for pending associations to be populated
-      this._associations = [] 
+      this._associations = []
 
       // apply extensions
       objectAssign(this, _methods)
@@ -68,7 +68,7 @@ let model = function(name, schema, sage) {
       }
       return new sageSelectQuery(sage, name, this, columns)
     }
-    // **** END STATIC    
+    // **** END STATIC
 
     // Goes through and returns an object with non-entries filled with NULL
     get dirtyProps() {
@@ -93,9 +93,9 @@ let model = function(name, schema, sage) {
             if(date) {
               value = moment(date, format).format(format)
               if(value === "Invalid date") {
-                value = moment(date).format(format) 
+                value = moment(date).format(format)
               }
-            } 
+            }
             break
           case "timestamp":
             var format = this.schema.definition[key].format
@@ -103,20 +103,20 @@ let model = function(name, schema, sage) {
             if(date) {
               value = moment(date, format).format(format)
               if(value === "Invalid date") {
-                value = moment(date).format(format) 
+                value = moment(date).format(format)
               }
             }
             break
 
           case "number":
-            // Need this IF statement because what if the person does not have a 
+            // Need this IF statement because what if the person does not have a
             // read only primary key and is creating a new model? Usually they would pass
             // down NULL as the PK, and if we didn't have this it would parseInt(NULL)
             if(this.get(key) != null || this.get(key) != undefined) {
               value = parseInt(this.get(key))
             }
             break
-          default: 
+          default:
             value = this.get(key)
         }
 
@@ -138,7 +138,7 @@ let model = function(name, schema, sage) {
 
     get id() {
       return this.get(schema.primaryKey)
-    }    
+    }
 
     // Return a property
     get(key) {
@@ -147,9 +147,9 @@ let model = function(name, schema, sage) {
 
     unset(key) {
       this._dirtyProps[key] = undefined
-      this._props[key] = undefined 
+      this._props[key] = undefined
     }
-    
+
     // Set a property
     set(key, value) {
       if(typeof key === 'object') {
@@ -164,8 +164,8 @@ let model = function(name, schema, sage) {
     // Set a property directly to props
     _directSet(key, value) {
       this._props[key] = value
-    }    
-    
+    }
+
     clearErrors() {
       this.errors = []
     }
@@ -177,7 +177,7 @@ let model = function(name, schema, sage) {
       for(let k in this._props) {
         result[k.toLowerCase()] = this._props[k]
       }
-      
+
       // translate population
       _.each(this._schema.associations, function(association) {
         let key = association.key.toLowerCase()
@@ -194,11 +194,11 @@ let model = function(name, schema, sage) {
           _.each(models, function(model) {
             modelsJSON.push(model.toJSON())
           })
-          result[key] = modelsJSON        
+          result[key] = modelsJSON
         }
 
       })
-      
+
       return result
     }
 
@@ -214,7 +214,7 @@ let model = function(name, schema, sage) {
     //   for(let k in this._props) {
     //     result[k.toLowerCase()] = this._props[k]
     //   }
-      
+
     //   // translate population
     //   _.each(this._schema.associations, function(association) {
     //     let key = association.key.toLowerCase()
@@ -223,9 +223,9 @@ let model = function(name, schema, sage) {
     //     _.each(models, function(model) {
     //       modelsJSON.push(model.json)
     //     })
-    //     result[key] = modelsJSON        
+    //     result[key] = modelsJSON
     //   })
-      
+
     //   return result
     // }
     // Check against schema if it is valid
@@ -241,7 +241,7 @@ let model = function(name, schema, sage) {
         if(schemaProps.type === "association") {
           continue;
         }
-        
+
         // Required check
         if(schemaProps.required) {
           validators.push({
@@ -250,13 +250,13 @@ let model = function(name, schema, sage) {
             },
             message: `${key} is required`
           })
-        } else if(value == null || value == undefined) {
+        } else if(value === null || value === undefined) {
           // Don't check if the value is null
           // We continue because for example, number is null but not required.
           // It would fail the type check below if allowed to continue
           continue
         }
-        
+
         switch(schemaProps.type) {
           case "timestamp":
             break
@@ -284,28 +284,28 @@ let model = function(name, schema, sage) {
                 },
                 message: `${key} must be at most ${schemaProps.max}`
               })
-            }            
+            }
             break
           case "clob":
             validators.push({
               validator: function(value) {
-                return typeof(value) === "string"      
+                return typeof(value) === "string"
               },
               message: `${key} is not a valid clob`
-            })       
+            })
             validators.push({
               validator: function(value) {
                 return value.length < 1000000
               },
               message: `${key} must be shorter than 1,000,000 characters`
-            })  
+            })
             if(schemaProps.minlength) {
               validators.push({
                 validator: function(value) {
                   return (value.length > schemaProps.minlength)
                 },
                 message: `${key} must be longer than ${schemaProps.minlength} characters`
-              })                        
+              })
             }
 
             if(schemaProps.maxlength) {
@@ -314,13 +314,13 @@ let model = function(name, schema, sage) {
                   return (value.length < schemaProps.maxlength)
                 },
                 message: `${key} must be shorter than ${schemaProps.maxlength} characters`
-              })                        
-            }                             
-            break           
+              })
+            }
+            break
           case "char":
             validators.push({
               validator: function(value) {
-                return typeof(value) === "string"      
+                return typeof(value) === "string"
               },
               message: `${key} is not a char`
             })
@@ -330,8 +330,8 @@ let model = function(name, schema, sage) {
                   return _.indexOf(schemaProps.enum.values, value) > -1
                 },
                 message: `${key} is not in enum`
-              })              
-            }                         
+              })
+            }
             break
           case "date":
             validators.push({
@@ -339,15 +339,15 @@ let model = function(name, schema, sage) {
                 return moment(value).isValid()
               },
               message: `${key} is not a date`
-            })                 
-            break     
+            })
+            break
           case "varchar":
             validators.push({
               validator: function(value) {
-                return typeof(value) === "string"      
+                return typeof(value) === "string"
               },
               message: `${key} is not a varchar`
-            })          
+            })
 
             if(schemaProps.enum) {
               validators.push({
@@ -355,7 +355,7 @@ let model = function(name, schema, sage) {
                   return _.indexOf(schemaProps.enum.values, value) > -1
                 },
                 message: `${key} is not in enum`
-              })              
+              })
             }
 
             if(schemaProps.minlength) {
@@ -364,7 +364,7 @@ let model = function(name, schema, sage) {
                   return (value.length > schemaProps.minlength)
                 },
                 message: `${key} must be longer than ${schemaProps.minlength} characters`
-              })                        
+              })
             }
 
             if(schemaProps.maxlength) {
@@ -373,8 +373,8 @@ let model = function(name, schema, sage) {
                   return (value.length < schemaProps.maxlength)
                 },
                 message: `${key} must be shorter than ${schemaProps.maxlength} characters`
-              })                        
-            }            
+              })
+            }
             break
           default:
             this.errors.push(`${key} has undefined error, ${schemaProps.type}`)
@@ -396,7 +396,7 @@ let model = function(name, schema, sage) {
           }
         })
 
-        if(this.errors.length > 0) { 
+        if(this.errors.length > 0) {
           isValid = false
         }
 
@@ -419,7 +419,7 @@ let model = function(name, schema, sage) {
 
   // Allow access to schema from model
   modelClass.schema = schema
-  
+
   return(modelClass)
 }
 

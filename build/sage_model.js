@@ -175,7 +175,7 @@ var model = function model(name, schema, sage) {
       //     _.each(models, function(model) {
       //       modelsJSON.push(model.json)
       //     })
-      //     result[key] = modelsJSON       
+      //     result[key] = modelsJSON
       //   })
 
       //   return result
@@ -185,7 +185,7 @@ var model = function model(name, schema, sage) {
     }, {
       key: 'dirtyProps',
 
-      // **** END STATIC   
+      // **** END STATIC
 
       // Goes through and returns an object with non-entries filled with NULL
       get: function get() {
@@ -287,7 +287,7 @@ var model = function model(name, schema, sage) {
               },
               message: key + ' is required'
             });
-          } else if (value == null || value == undefined) {
+          } else if (value === null || value === undefined) {
             // Don't check if the value is null
             // We continue because for example, number is null but not required.
             // It would fail the type check below if allowed to continue
