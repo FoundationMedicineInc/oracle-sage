@@ -12,7 +12,7 @@ module.exports = function(self, name, schema, sage) {
       return new Promise((resolve, reject) => {
         this._populate().then(function() {
           resolve()
-        })        
+        })
       })
     } else {
       return new Promise(function(resolve, reject) {
@@ -32,7 +32,7 @@ module.exports = function(self, name, schema, sage) {
         } else {
           resolve()
         }
-      })        
+      })
     })
   }
 
@@ -50,7 +50,7 @@ module.exports = function(self, name, schema, sage) {
         .select(associationModel._selectAllStringStatic().split(','))
         .where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine))
         .toString()
-        break        
+        break
       case "hasMany":
         sql = sage.knex(value.joinsWith)
         .select(associationModel._selectAllStringStatic().split(','))
@@ -88,11 +88,11 @@ module.exports = function(self, name, schema, sage) {
           where(value.foreignKeys.mine, self.get(self._schema.primaryKey))
           .as('t1')
         }, `${value.joinsWith}.${associationSchema.primaryKey}`, `t1.${value.foreignKeys.theirs}`)
-        .toString()  
+        .toString()
 
         break
       default:
-        throw('unrecognized association') 
+        throw('unrecognized association')
     }
 
     return new Promise((resolve, reject) => {
@@ -103,11 +103,11 @@ module.exports = function(self, name, schema, sage) {
           sage.getConnection().then(function(c) {
             connection = c;
             next();
-          }).catch(function(err) { sage.log(err) });            
+          }).catch(function(err) { sage.log(err) });
         },
         // Perform operation
         function(next) {
-          connection.query(sql, (err, results) => {
+          connection.query(sql, [], { maxRows: 99999 }, (err, results) => {
             if(err) {
               sage.log(err)
               return next();
@@ -130,7 +130,7 @@ module.exports = function(self, name, schema, sage) {
                   if(association.value.joinType === "hasOne") {
                     self._directSet(association.key, models[0])
                   } else {
-                    self._directSet(association.key, models)  
+                    self._directSet(association.key, models)
                   }
                   return next();
                 }
@@ -143,8 +143,8 @@ module.exports = function(self, name, schema, sage) {
         sage.afterExecute(connection).then(function() {
           resolve();
         });
-      });  
-    });   
+      });
+    });
 
   }
 }

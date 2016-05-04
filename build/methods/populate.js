@@ -110,7 +110,7 @@ module.exports = function (self, name, schema, sage) {
       },
       // Perform operation
       function (next) {
-        connection.query(sql, function (err, results) {
+        connection.query(sql, [], { maxRows: 99999 }, function (err, results) {
           if (err) {
             sage.log(err);
             return next();
