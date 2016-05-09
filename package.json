@@ -32,10 +32,10 @@
     "chai": "^3.5.0"
   },
   "bugs": {
-    "url": "https://github.com/mrchess/oracle-sage/issues/new"
+    "url": "https://github.com/FoundationMedicineInc/oracle-sage/issues/new"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mrchess/oracle-sage.git"
+    "url": "https://github.com/FondationMedicineInc/oracle-sage.git"
   }
 }
