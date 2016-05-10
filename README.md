@@ -9,7 +9,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Install & Require](#install-&-require)
+- [Install & Require](#install--require)
 - [Debugging](#debugging)
 - [Connect](#connect)
 - [Defining Schemas](#defining-schemas)
@@ -498,7 +498,7 @@ var supplierSchema = new sage.Schema({
 var accountSchema = new sage.Schema({
   id: "number",
   supplier_id: "number",
-  account_number: "varchar
+  account_number: "varchar"
 });
 
 ```
