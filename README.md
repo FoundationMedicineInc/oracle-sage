@@ -62,7 +62,7 @@
 
 ## Install & Require
 
-** NOTICE: oracle-sage uses the official node-oracledb module, which is complex to install. Be sure you have followed the official directions to install node-oracledb before installing Sage**
+**NOTICE: oracle-sage uses the official node-oracledb module, which is complex to install. Be sure you have followed the official directions to install node-oracledb before installing Sage**
 
 First, you must have `node-oracledb` installed. You can find the install instructions at their repository [here](https://github.com/oracle/node-oracledb#-installation).
 
