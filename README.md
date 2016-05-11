@@ -9,7 +9,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Install & Require](#install--require)
+- [Installation](#installation)
 - [Debugging](#debugging)
 - [Connect](#connect)
 - [Defining Schemas](#defining-schemas)
@@ -51,7 +51,7 @@
   - [hasMany](#hasmany)
   - [hasManyThrough](#hasmanythrough)
   - [hasAndBelongsToMany](#hasandbelongstomany)
-- [Going Raw](#going-raw)
+- [Raw Connection](#raw-connection)
       - [Connection](#connection)
       - [Knex](#knex)
 - [Other Examples](#other-examples)
@@ -60,7 +60,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Install & Require
+## Installation
 
 **NOTICE: oracle-sage uses the official node-oracledb module, which is complex to install. Be sure you have followed the official directions to install node-oracledb before installing Sage**
 
@@ -396,7 +396,7 @@ Rollback the transaction and resolves the transaction promise.
 
 ```javascript
 sage.transaction(function(t) {
-  User.create({ transaction: t }).then(function() {
+  User.create({ username: "demo" }, { transaction: t }).then(function() {
     t.commit(); // Resolves the promise
   });
 }).then(function() {
@@ -418,7 +418,7 @@ Rollback the transaction. Returns a promise.
 
 ```javascript
 sage.transaction().then(function(t) {
-  User.create({ transaction: t }).then(function() {
+  User.create({ username: "demo" }, { transaction: t }).then(function() {
     return t.rollback();
   }).then(function() {
     // done!!
@@ -635,7 +635,7 @@ Assembly.findById(1).then(function(assemblyModel) {
 
 ```
 
-## Going Raw
+## Raw Connection
 
 ##### Connection
 
@@ -667,7 +667,7 @@ See [Knex](http://knexjs.org/) for the full API usage.
 Knex is strictly used for query building. You can use it with the raw connection. For example:
 
 ```javascript
-var query = sql sage.knex.select().from('user').toString();
+var query = sage.knex.select().from('user').toString();
 sage.getConnection().then(function(connection) {
   connection.execute(query, function() { ... })
 });
