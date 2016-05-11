@@ -62,11 +62,18 @@
 
 ## Install & Require
 
+** NOTICE: oracle-sage uses the official node-oracledb module, which is complex to install. Be sure you have followed the official directions to install node-oracledb before installing Sage**
+
+First, you must have `node-oracledb` installed. You can find the install instructions at their repository [here](https://github.com/oracle/node-oracledb#-installation).
+
+After that, you're good to go! Simply do...
+
 `$ npm install oracle-sage`
 
 ```javascript
 var sage = require('oracle-sage');
 ```
+
 
 ## Debugging
 
