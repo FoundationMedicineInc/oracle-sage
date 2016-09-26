@@ -136,7 +136,6 @@ class Sage {
           var transaction = {
             connection: connection,
             commit: function() {
-              console.log('commiting thru transaction');
               sage.commit(this.connection).then(resolve).catch(reject);
             },
             rollback: function(transaction) {
@@ -157,7 +156,7 @@ class Sage {
             return sage.releaseConnection(this.connection);
           }
         }
-        return Promise.resolve(transaction);
+        return transaction;
       });
     }
   }

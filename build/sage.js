@@ -174,7 +174,6 @@ var Sage = (function () {
             var transaction = {
               connection: connection,
               commit: function commit() {
-                console.log('commiting thru transaction');
                 sage.commit(this.connection).then(resolve).catch(reject);
               },
               rollback: function rollback(transaction) {
@@ -195,7 +194,7 @@ var Sage = (function () {
               return sage.releaseConnection(this.connection);
             }
           };
-          return _bluebird2.default.resolve(transaction);
+          return transaction;
         });
       }
     }
