@@ -1,15 +1,16 @@
-import Promise from 'bluebird'
-import sageUtil from '../../build/sage_util'
+import Promise from 'bluebird';
+import sageUtil from '../../build/sage_util';
+import logger from '../logger';
 
 module.exports = function(self, name, schema, sage) {
   self.reload = function(options = {}) {
     var self = this;
     return new Promise((resolve, reject) => {
       if(!this.get(this._schema.primaryKey)) {
-        sage.log("No primary key. I don't know who to reload.")
-        reject()
+        logger.warn("No primary key. I don't know who to reload.")
+        return reject()
       }
-  
+
       let pk = schema.primaryKey
 
       var query = {};
@@ -18,8 +19,9 @@ module.exports = function(self, name, schema, sage) {
       sage.models[name].model.findOne(query, options).then(function(model) {
         self._props = model._props;
         self.resetDirtyProps();
-        resolve();
-      });
+        return resolve();
+      }).catch(reject);
+
     });
   }
 }

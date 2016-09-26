@@ -12,6 +12,10 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
+var _logger = require('../logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (modelClass, name, schema, sage) {
@@ -33,12 +37,13 @@ module.exports = function (modelClass, name, schema, sage) {
       function (next) {
         sage.getConnection({ transaction: options.transaction }).then(function (c) {
           connection = c;
-          next();
-        });
+          return next();
+        }).catch(next);
       }, function (next) {
         connection.query(sql, result.values, function (err, result) {
           if (err) {
-            sage.log(err);
+            _logger2.default.error(err);
+            return next(err);
           } else {
             var row = null;
             if (result.length) {
@@ -50,10 +55,16 @@ module.exports = function (modelClass, name, schema, sage) {
           }
           next();
         });
-      }], function () {
+      }], function (err) {
+        if (err) {
+          _logger2.default.error(err);
+        }
         sage.afterExecute(connection).then(function () {
-          resolve(finalResult);
-        });
+          if (err) {
+            return reject(err);
+          }
+          return resolve(finalResult);
+        }).catch(reject);
       });
     });
   };

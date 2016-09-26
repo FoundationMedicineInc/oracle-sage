@@ -1,6 +1,7 @@
-import Promise from 'bluebird'
-import sageUtil from '../../build/sage_util'
-import async from 'async'
+import Promise from 'bluebird';
+import sageUtil from '../../build/sage_util';
+import async from 'async';
+import logger from '../logger';
 
 module.exports = function(modelClass, name, schema, sage) {
 
@@ -19,6 +20,7 @@ module.exports = function(modelClass, name, schema, sage) {
       ) where rnum >= 0`
 
     var resultModel;
+
     return new Promise(function(resolve, reject) {
       var connection;
       async.series([
@@ -26,27 +28,33 @@ module.exports = function(modelClass, name, schema, sage) {
         function(next) {
           sage.getConnection({ transaction: options.transaction }).then(function(c) {
             connection = c;
-            next();
-          });
+            return next();
+          }).catch(next);
         },
         function(next) {
-          sage.log(sql, data)
+          logger.debug(sql, data);
+
           connection.query(sql, data, function(err, result) {
-            if(err) {
-              sage.log(err)
-            } else {
+            if(!err) {
               let row = null
               if(result.length) { row = new self(result[0], name, schema) }
               resultModel = row;
             }
-            next();
+            next(err);
           });
         }
-      ], function() {
+      ], function(err) {
+        if(err) {
+          logger.error(err);
+        }
         sage.afterExecute(connection).then(function() {
-          resolve(resultModel);
-        });        
+          if(err) {
+            return reject(err);
+          }
+          return resolve(resultModel);
+        }).catch(reject);
+
       });
     })
-  }       
+  }
 }

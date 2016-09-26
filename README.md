@@ -77,11 +77,10 @@ var sage = require('oracle-sage');
 
 ## Debugging
 
-For more verbose outputs, set `sage.debug` to true.
+For more verbose outputs you can configure `sage.logger`, which is an instance of this popular Winston logger. By default the level is set to 0.
 
 ```javascript
-var sage = require('oracle-sage');
-sage.debug = true;
+sage.logger.transports.console.level = 'debug';
 ```
 
 ## Connect

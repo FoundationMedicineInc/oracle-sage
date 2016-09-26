@@ -14,6 +14,10 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
+var _logger = require('../logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -58,7 +62,7 @@ var SelectQuery = (function () {
           sage.getConnection({ transaction: options.transaction }).then(function (c) {
             connection = c;
             next();
-          });
+          }).catch(next);
         },
         // Perform operation
         function (next) {
@@ -67,21 +71,27 @@ var SelectQuery = (function () {
           // Fix: [Error: ORA-01756: quoted string not properly terminated]
           sql = sql.replace(/\\'/g, "''");
 
-          sage.log(sql);
+          _logger2.default.debug(sql);
+
           connection.query(sql, function (err, results) {
-            if (err) {
-              sage.log(err);
-            } else {
+            if (!err) {
               _lodash2.default.each(results, function (result) {
                 models.push(new self.model(result));
               });
-              next();
             }
+            next(err);
           });
-        }], function () {
+        }], function (err) {
+          if (err) {
+            _logger2.default.error(err);
+          }
           sage.afterExecute(connection).then(function () {
-            resolve(models);
-          });
+            if (err) {
+              return reject(err);
+            }
+
+            return resolve(models);
+          }).catch(reject);
         });
       });
     }

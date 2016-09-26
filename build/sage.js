@@ -10,6 +10,10 @@ var _oracledb = require('oracledb');
 
 var _oracledb2 = _interopRequireDefault(_oracledb);
 
+var _logger = require('./logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
 var _simpleOracledb = require('simple-oracledb');
 
 var _simpleOracledb2 = _interopRequireDefault(_simpleOracledb);
@@ -54,13 +58,16 @@ var Sage = (function () {
     this.knex = knex;
 
     this.oracledb = _oracledb2.default;
+
+    this.logger = _logger2.default;
   }
 
   _createClass(Sage, [{
     key: 'log',
     value: function log(o) {
+      _logger2.default.warn('This is deprecated.');
       if (this.debug) {
-        console.log(o);
+        _logger2.default.log(o);
       }
     }
   }, {
@@ -78,9 +85,8 @@ var Sage = (function () {
 
         self._pool.getConnection(function (err, connection) {
           if (err) {
-            sage.log(err);
-            sage.log("Out of connections!");
-            return reject();
+            _logger2.default.error('Out of connections!', err);
+            return reject(err);
           }
           return resolve(connection);
         });
@@ -96,11 +102,15 @@ var Sage = (function () {
       return new _bluebird2.default(function (resolve, reject) {
         connection.commit(function (err, result) {
           if (err) {
-            sage.log(err);
+            _logger2.default.error('Could not commit', err);
+            // Do not return yet. Release connection first.
           }
           sage.releaseConnection(connection).then(function () {
-            resolve();
-          });
+            if (err) {
+              return reject(err);
+            }
+            return resolve();
+          }).catch(reject);
         });
       });
     }
@@ -112,15 +122,11 @@ var Sage = (function () {
   }, {
     key: 'afterExecuteCommitable',
     value: function afterExecuteCommitable(connection) {
-      return new _bluebird2.default(function (resolve, reject) {
-        if (connection.isSageTransaction) {
-          return resolve();
-        } else {
-          sage.commit(connection).then(function () {
-            resolve();
-          });
-        }
-      });
+      if (connection.isSageTransaction) {
+        return _bluebird2.default.resolve();
+      } else {
+        return sage.commit(connection);
+      }
     }
 
     // Used by statics and methods to figure out what to do with a connection
@@ -129,15 +135,11 @@ var Sage = (function () {
   }, {
     key: 'afterExecute',
     value: function afterExecute(connection) {
-      return new _bluebird2.default(function (resolve, reject) {
-        if (connection.isSageTransaction) {
-          return resolve();
-        } else {
-          sage.releaseConnection(connection).then(function () {
-            resolve();
-          });
-        }
-      });
+      if (connection.isSageTransaction) {
+        return _bluebird2.default.resolve();
+      } else {
+        return sage.releaseConnection(connection);
+      }
     }
     /**
      Create a sage transaction to perform several operations before commit.
@@ -172,33 +174,27 @@ var Sage = (function () {
             var transaction = {
               connection: connection,
               commit: function commit() {
-                sage.commit(this.connection).then(function () {
-                  resolve();
-                });
+                sage.commit(this.connection).then(resolve).catch(reject);
               },
               rollback: function rollback(transaction) {
-                sage.releaseConnection(this.connection).then(function () {
-                  resolve();
-                });
+                sage.releaseConnection(this.connection).then(resolve).catch(reject);
               }
             };
             fn(transaction);
           });
         });
       } else {
-        return new _bluebird2.default(function (resolve, reject) {
-          self.getConnection().then(function (connection) {
-            var transaction = {
-              connection: connection,
-              commit: function commit() {
-                return sage.commit(this.connection);
-              },
-              rollback: function rollback(transaction) {
-                return sage.releaseConnection(this.connection);
-              }
-            };
-            resolve(transaction);
-          });
+        return self.getConnection().then(function (connection) {
+          var transaction = {
+            connection: connection,
+            commit: function commit() {
+              return sage.commit(this.connection);
+            },
+            rollback: function rollback(transaction) {
+              return sage.releaseConnection(this.connection);
+            }
+          };
+          return transaction;
         });
       }
     }
@@ -208,7 +204,8 @@ var Sage = (function () {
       return new _bluebird2.default(function (resolve, reject) {
         connection.release(function (err) {
           if (err) {
-            sage.log(err);
+            _logger2.default.error('Problem releasing connection', err);
+            reject(err);
           } else {
             resolve();
           }
@@ -258,9 +255,7 @@ var Sage = (function () {
 
       var self = this;
       if (self._pool) {
-        return new _bluebird2.default(function (resolve, reject) {
-          resolve();
-        });
+        return _bluebird2.default.resolve();
       }
       // You passed in some optoins. We save them so that if you call connect() without connectOptions
       // it will use them again
@@ -290,18 +285,18 @@ var Sage = (function () {
       return new _bluebird2.default(function (resolve, reject) {
         _oracledb2.default.createPool(auth, function (err, pool) {
           if (err) {
-            console.log(err);
-            reject(err);
+            _logger2.default.error(err);
+            return reject(err);
           }
           self._pool = pool;
-          resolve();
+          return resolve();
         });
       });
     }
   }, {
     key: 'connection',
     get: function get() {
-      console.trace("sage connection is deprecated since pools");
+      _logger2.default.warn("Sage connection is deprecated since pools");
       throw 'errr';
       return false;
       var self = this;
