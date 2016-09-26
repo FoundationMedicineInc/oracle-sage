@@ -12,6 +12,10 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _logger = require('../logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (self, name, schema, sage) {
@@ -25,13 +29,14 @@ module.exports = function (self, name, schema, sage) {
     if (this._associations.length) {
       return new _bluebird2.default(function (resolve, reject) {
         _this._populate().then(function () {
-          resolve();
+          return resolve();
+        }).catch(function (err) {
+          _logger2.default.error(err);
+          return reject(err);
         });
       });
     } else {
-      return new _bluebird2.default(function (resolve, reject) {
-        resolve();
-      });
+      return _bluebird2.default.resolve();
     }
   };
 
@@ -43,12 +48,12 @@ module.exports = function (self, name, schema, sage) {
       _this2.populateOne(association).then(function () {
         if (_this2._associations.length) {
           _this2._populate().then(function () {
-            resolve();
-          });
+            return resolve();
+          }).catch(reject);
         } else {
-          resolve();
+          return resolve();
         }
-      });
+      }).catch(reject);
     });
   };
 
@@ -62,40 +67,43 @@ module.exports = function (self, name, schema, sage) {
     var associationSchema = model.schema;
 
     var sql = null;
-    switch (value.joinType) {
-      case "hasOne":
-        sql = sage.knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine)).toString();
-        break;
-      case "hasMany":
-        sql = sage.knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine)).toString();
-        break;
-      case "hasAndBelongsToMany":
-        sql = sage.knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).innerJoin(function () {
-          this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
-        }, value.joinsWith + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
-        break;
-      case "hasManyThrough":
-        var throughModel = sage.models[value.joinTable];
-        var throughFields = [];
-        // We do not want to get the join keys twice
-        _lodash2.default.each(throughModel.schema.definition, function (definition, key) {
-          if (key != value.foreignKeys.mine && key != value.foreignKeys.theirs) {
-            if (definition.type != 'association') {
-              throughFields.push('t1.' + key);
+
+    (function () {
+      switch (value.joinType) {
+        case "hasOne":
+          sql = sage.knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine)).toString();
+          break;
+        case "hasMany":
+          sql = sage.knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).where(value.foreignKeys.theirs, self.get(value.foreignKeys.mine)).toString();
+          break;
+        case "hasAndBelongsToMany":
+          sql = sage.knex(value.joinsWith).select(associationModel._selectAllStringStatic().split(',')).innerJoin(function () {
+            this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
+          }, value.joinsWith + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
+          break;
+        case "hasManyThrough":
+          var throughModel = sage.models[value.joinTable];
+          var throughFields = [];
+          // We do not want to get the join keys twice
+          _lodash2.default.each(throughModel.schema.definition, function (definition, key) {
+            if (key != value.foreignKeys.mine && key != value.foreignKeys.theirs) {
+              if (definition.type != 'association') {
+                throughFields.push('t1.' + key);
+              }
             }
-          }
-        });
-        var associationModelSelect = associationModel._selectAllStringStatic().split(',');
-        var selectFields = throughFields.concat(associationModelSelect);
+          });
+          var associationModelSelect = associationModel._selectAllStringStatic().split(',');
+          var selectFields = throughFields.concat(associationModelSelect);
 
-        sql = sage.knex(value.joinsWith).select(selectFields).innerJoin(function () {
-          this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
-        }, value.joinsWith + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
+          sql = sage.knex(value.joinsWith).select(selectFields).innerJoin(function () {
+            this.select('*').from(value.joinTable).where(value.foreignKeys.mine, self.get(self._schema.primaryKey)).as('t1');
+          }, value.joinsWith + '.' + associationSchema.primaryKey, 't1.' + value.foreignKeys.theirs).toString();
 
-        break;
-      default:
-        throw 'unrecognized association';
-    }
+          break;
+        default:
+          throw 'unrecognized association';
+      }
+    })();
 
     return new _bluebird2.default(function (resolve, reject) {
       var self = _this3;
@@ -103,17 +111,16 @@ module.exports = function (self, name, schema, sage) {
       _async2.default.series([function (next) {
         sage.getConnection().then(function (c) {
           connection = c;
-          next();
+          return next();
         }).catch(function (err) {
-          sage.log(err);
+          return next(err);
         });
       },
       // Perform operation
       function (next) {
         connection.query(sql, [], { maxRows: 99999 }, function (err, results) {
           if (err) {
-            sage.log(err);
-            return next();
+            return next(err);
           } else {
             (function () {
               var models = [];
@@ -130,6 +137,8 @@ module.exports = function (self, name, schema, sage) {
                     model.populate().then(function () {
                       models.push(model);
                       populateResults();
+                    }).catch(function (err) {
+                      return next(err);
                     });
                   })();
                 } else {
@@ -145,10 +154,14 @@ module.exports = function (self, name, schema, sage) {
             })();
           }
         });
-      }], function () {
+      }], function (err) {
+        if (err) {
+          _logger2.default.error(err);
+          return reject(err);
+        }
         sage.afterExecute(connection).then(function () {
-          resolve();
-        });
+          return resolve();
+        }).catch(reject);
       });
     });
   };

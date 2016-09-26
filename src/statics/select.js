@@ -1,6 +1,7 @@
-import Promise from 'bluebird'
-import _ from 'lodash'
-import async from 'async'
+import Promise from 'bluebird';
+import _ from 'lodash';
+import async from 'async';
+import logger from '../logger';
 
 var knex = require('knex')({ client: 'oracle' })
 
@@ -32,31 +33,38 @@ class SelectQuery {
           sage.getConnection({transaction: options.transaction}).then(function(c) {
             connection = c;
             next();
-          });
+          }).catch(next);
         },
         // Perform operation
         function(next) {
           var sql = self.knex.toString()
-            
+
           // Fix: [Error: ORA-01756: quoted string not properly terminated]
           sql = sql.replace(/\\'/g, "''")
 
-          sage.log(sql);
+          logger.debug(sql);
+
           connection.query(sql, (err, results) => {
-            if(err) {
-                sage.log(err);
-            } else {
+            if(!err) {
               _.each(results, (result) => {
                 models.push(new self.model(result))
-              })
-              next();
+              });
             }
+            next(err);
           });
         }
-      ], function() {
+      ], function(err) {
+        if(err) {
+          logger.error(err);
+        }
         sage.afterExecute(connection).then(function() {
-          resolve(models);
-        });            
+          if(err) {
+            return reject(err);
+          }
+
+          return resolve(models);
+        }).catch(reject);
+
       });
     });
   }

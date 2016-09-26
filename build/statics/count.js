@@ -12,9 +12,14 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
+var _logger = require('../logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (modelClass, name, schema, sage) {
+
   modelClass.count = function () {
     var values = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
     var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -32,33 +37,39 @@ module.exports = function (modelClass, name, schema, sage) {
 
     return new _bluebird2.default(function (resolve, reject) {
       var connection;
+
       _async2.default.series([
       // Establish Connection
       function (next) {
         sage.getConnection({ transaction: options.transaction }).then(function (c) {
           connection = c;
-          next();
-        });
+          return next();
+        }).catch(next);
       },
       // Perform operation
       function (next) {
-        sage.log(sql, result.values);
+        _logger2.default.debug(sql, result.values);
+
         connection.execute(sql, result.values, function (err, result) {
-          if (err) {
-            sage.log(err);
-          } else {
+          if (!err) {
             try {
               count = result.rows[0][0];
             } catch (e) {
-              sage.log(e);
+              next(e);
             }
-            next();
           }
+          next(err);
         });
-      }], function () {
+      }], function (err) {
+        if (err) {
+          _logger2.default.error(err);
+        }
         sage.afterExecute(connection).then(function () {
-          resolve(count);
-        });
+          if (err) {
+            return reject(err);
+          }
+          return resolve(count);
+        }).catch(reject);
       });
     });
   };

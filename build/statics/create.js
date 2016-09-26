@@ -12,6 +12,10 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
+var _logger = require('../logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (modelClass, name, schema, sage) {
@@ -23,8 +27,8 @@ module.exports = function (modelClass, name, schema, sage) {
 
     return new _bluebird2.default(function (resolve, reject) {
       if (!m.valid) {
-        sage.log(m.errors);
-        reject(m.errors);
+        _logger2.default.warn(m.errors);
+        return reject(m.errors);
       } else {
         var connection;
 
@@ -68,21 +72,26 @@ module.exports = function (modelClass, name, schema, sage) {
             sage.getConnection({ transaction: options.transaction }).then(function (c) {
               connection = c;
               next();
-            });
+            }).catch(next);
           },
           // Perform operation
           function (next) {
-            sage.log(sql, values);
+            _logger2.default.debug(sql, values);
+
             connection.execute(sql, values, function (err, result) {
-              if (err) {
-                sage.log(err);
-              }
-              next();
+              return next(err);
             });
-          }], function () {
+          }], function (err) {
+            if (err) {
+              _logger2.default.error(err);
+            }
+
             sage.afterExecuteCommitable(connection).then(function () {
-              resolve();
-            });
+              if (err) {
+                return reject(err);
+              }
+              return resolve();
+            }).catch(reject);
           });
         })();
       }

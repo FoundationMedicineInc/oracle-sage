@@ -1,6 +1,7 @@
-import Promise from 'bluebird'
-import sageUtil from '../../build/sage_util'
-import async from 'async'
+import Promise from 'bluebird';
+import sageUtil from '../../build/sage_util';
+import async from 'async';
+import logger from '../logger';
 
 module.exports = function(modelClass, name, schema, sage) {
   modelClass.findOne = function(values = {}, options = {}) {
@@ -15,6 +16,7 @@ module.exports = function(modelClass, name, schema, sage) {
       ) where rnum >= 0`
 
     var finalResult;
+
     return new Promise(function(resolve, reject) {
       var connection;
       async.series([
@@ -22,30 +24,34 @@ module.exports = function(modelClass, name, schema, sage) {
         function(next) {
           sage.getConnection({ transaction: options.transaction }).then(function(c) {
             connection = c;
-            next();
-          });
+            return next();
+          }).catch(next);
         },
         function(next) {
           connection.query(sql, result.values, function(err, result) {
-            if(err) {
-              sage.log(err);
-            } else {
+            if(!err)
               let row = null
-              if(result.length) { 
+              if(result.length) {
                 // For some reason a value called RNUM is returned as well
                 delete result[0]["RNUM"];
                 row = new self(result[0], name, schema);
               }
               finalResult = row;
             }
-            next();
+            next(err);
           });
         }
-      ], function() {
+      ], function(err) {
+        if(err) {
+          logger.error(err);
+        }
         sage.afterExecute(connection).then(function() {
-          resolve(finalResult);
-        });                
+          if(err) {
+            return reject(err);
+          }
+          return resolve(finalResult);
+        }).catch(reject);
       });
     })
-  }       
+  }
 }

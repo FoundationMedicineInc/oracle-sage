@@ -1,6 +1,7 @@
 import Promise from 'bluebird'
 import sageUtil from '../../build/sage_util'
 import async from 'async'
+import logger from '../logger'
 
 module.exports = function(modelClass, name, schema, sage) {
   modelClass.create = function(props = {}, options = {}) {
@@ -8,8 +9,8 @@ module.exports = function(modelClass, name, schema, sage) {
 
     return new Promise(function(resolve, reject) {
       if(!m.valid) {
-        sage.log(m.errors)
-        reject(m.errors)
+        logger.warn(m.errors)
+        return reject(m.errors)
       } else {
 
         // This is a special case where we want to use nexetval instead of a trigger
@@ -51,20 +52,28 @@ module.exports = function(modelClass, name, schema, sage) {
             sage.getConnection({transaction: options.transaction}).then(function(c) {
               connection = c;
               next();
-            });
+            }).catch(next);
           },
           // Perform operation
           function(next) {
-            sage.log(sql, values);
+            logger.debug(sql, values);
+
             connection.execute(sql, values, function(err, result) {
-              if(err) { sage.log(err) }
-              next();
+              return next(err);
             });
           }
-        ], function() {
+        ], function(err) {
+          if(err) {
+            logger.error(err);
+          }
+
           sage.afterExecuteCommitable(connection).then(function() {
-            resolve();
-          });
+            if(err) {
+              return reject(err);
+            }
+            return resolve();
+          }).catch(reject);
+
         });
       }
     })

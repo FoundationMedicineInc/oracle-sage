@@ -1,6 +1,7 @@
-import Promise from 'bluebird'
-import async from 'async'
-import _ from 'lodash'
+import Promise from 'bluebird';
+import async from 'async';
+import _ from 'lodash';
+import logger from '../logger'
 
 module.exports = function(self, name, schema, sage) {
   self.populate = function() {
@@ -11,13 +12,14 @@ module.exports = function(self, name, schema, sage) {
     if(this._associations.length) {
       return new Promise((resolve, reject) => {
         this._populate().then(function() {
-          resolve()
-        })
+          return resolve()
+        }).catch(function(err) {
+          logger.error(err);
+          return reject(err);
+        });
       })
     } else {
-      return new Promise(function(resolve, reject) {
-        resolve()
-      })
+      return Promise.resolve();
     }
   }
 
@@ -27,12 +29,12 @@ module.exports = function(self, name, schema, sage) {
       this.populateOne(association).then(()=> {
         if(this._associations.length) {
           this._populate().then(function() {
-            resolve()
-          })
+            return resolve()
+          }).catch(reject);
         } else {
-          resolve()
+          return resolve();
         }
-      })
+      }).catch(reject);
     })
   }
 
@@ -88,7 +90,7 @@ module.exports = function(self, name, schema, sage) {
           where(value.foreignKeys.mine, self.get(self._schema.primaryKey))
           .as('t1')
         }, `${value.joinsWith}.${associationSchema.primaryKey}`, `t1.${value.foreignKeys.theirs}`)
-        .toString()
+        .toString();
 
         break
       default:
@@ -102,15 +104,16 @@ module.exports = function(self, name, schema, sage) {
         function(next) {
           sage.getConnection().then(function(c) {
             connection = c;
-            next();
-          }).catch(function(err) { sage.log(err) });
+            return next();
+          }).catch(function(err) {
+            return next(err);
+          });
         },
         // Perform operation
         function(next) {
           connection.query(sql, [], { maxRows: 99999 }, (err, results) => {
             if(err) {
-              sage.log(err)
-              return next();
+              return next(err);
             } else {
               let models = []
               // _.each(results, (result) => {
@@ -119,30 +122,36 @@ module.exports = function(self, name, schema, sage) {
 
               // Deep populate the results
               let populateResults = function() {
-                let result = results.shift()
+                let result = results.shift();
                 if(result) {
                   let model = new associationModel(result)
                   model.populate().then(function() {
-                    models.push(model)
-                    populateResults()
-                  })
+                    models.push(model);
+                    populateResults();
+                  }).catch(function(err) {
+                    return next(err);
+                  });
                 } else {
                   if(association.value.joinType === "hasOne") {
-                    self._directSet(association.key, models[0])
+                    self._directSet(association.key, models[0]);
                   } else {
-                    self._directSet(association.key, models)
+                    self._directSet(association.key, models);
                   }
                   return next();
                 }
               }
-              populateResults()
+              populateResults();
             }
           })
         }
-      ], function() {
+      ], function(err) {
+        if(err) {
+          logger.error(err);
+          return reject(err);
+        }
         sage.afterExecute(connection).then(function() {
-          resolve();
-        });
+          return resolve();
+        }).catch(reject);
       });
     });
 

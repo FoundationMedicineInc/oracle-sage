@@ -1,8 +1,10 @@
-import Promise from 'bluebird'
-import sageUtil from '../../build/sage_util'
-import async from 'async'
+import Promise from 'bluebird';
+import sageUtil from '../../build/sage_util';
+import async from 'async';
+import logger from '../logger';
 
 module.exports = function(modelClass, name, schema, sage) {
+
   modelClass.count = function(values = {}, options = {}) {
     let self = this
     let result = sageUtil.getSelectANDSQL(values)
@@ -17,35 +19,42 @@ module.exports = function(modelClass, name, schema, sage) {
 
     return new Promise(function(resolve, reject) {
       var connection;
+
       async.series([
         // Establish Connection
         function(next) {
           sage.getConnection({transaction: options.transaction}).then(function(c) {
             connection = c;
-            next();
-          });
+            return next();
+          }).catch(next);
         },
         // Perform operation
         function(next) {
-          sage.log(sql, result.values);
+          logger.debug(sql, result.values);
+
           connection.execute(sql, result.values, function(err, result) {
-            if(err) {
-              sage.log(err);
-            } else {
+            if(!err) {
               try {
                 count = result.rows[0][0]
               } catch(e) {
-                sage.log(e)
+                next(e);
               }
-              next();
             }
-          });            
+            next(err);
+          });
         }
-      ], function() {
+      ], function(err) {
+        if(err) {
+          logger.error(err);
+        }
         sage.afterExecute(connection).then(function() {
-          resolve(count);
-        });
+          if(err) {
+            return reject(err);
+          }
+          return resolve(count);
+        }).catch(reject);
       });
+
     });
-  }  
+  }
 }
