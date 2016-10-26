@@ -29,7 +29,7 @@ module.exports = function(modelClass, name, schema, sage) {
         },
         function(next) {
           connection.query(sql, result.values, function(err, result) {
-            if(!err)
+            if(!err) {
               let row = null
               if(result.length) {
                 // For some reason a value called RNUM is returned as well

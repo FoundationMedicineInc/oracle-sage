@@ -22,7 +22,7 @@ module.exports = function (self, name, schema, sage) {
   self.destroy = function () {
     var _this = this;
 
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     var self = this;
 

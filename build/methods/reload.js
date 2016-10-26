@@ -18,7 +18,7 @@ module.exports = function (self, name, schema, sage) {
   self.reload = function () {
     var _this = this;
 
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     var self = this;
     return new _bluebird2.default(function (resolve, reject) {

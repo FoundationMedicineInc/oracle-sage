@@ -12,8 +12,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Schema = (function () {
   function Schema() {
-    var definition = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-    var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var definition = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck(this, Schema);
 

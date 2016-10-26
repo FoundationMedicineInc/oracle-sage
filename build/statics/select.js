@@ -39,7 +39,7 @@ var SelectQuery = (function () {
     this.knex.select(columns);
 
     this.knex.exec = function () {
-      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
       return _this.exec(options);
     };
@@ -50,7 +50,7 @@ var SelectQuery = (function () {
   _createClass(SelectQuery, [{
     key: 'exec',
     value: function exec() {
-      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
       var models = [];
       var self = this;
@@ -59,7 +59,7 @@ var SelectQuery = (function () {
         _async2.default.series([
         // Establish Connection
         function (next) {
-          sage.getConnection({ transaction: options.transaction }).then(function (c) {
+          self.sage.getConnection({ transaction: options.transaction }).then(function (c) {
             connection = c;
             next();
           }).catch(next);
@@ -85,7 +85,7 @@ var SelectQuery = (function () {
           if (err) {
             _logger2.default.error(err);
           }
-          sage.afterExecute(connection).then(function () {
+          self.sage.afterExecute(connection).then(function () {
             if (err) {
               return reject(err);
             }

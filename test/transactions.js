@@ -8,7 +8,7 @@ var User = require('./setup/models/user');
 var Profile = require('./setup/models/profile');
 var Post = require('./setup/models/post');
 
-sage = TestHelpers.sage;
+var sage = TestHelpers.sage;
 sage.logger.transports.console.level = 'debug';
 
 var user;

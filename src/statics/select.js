@@ -30,7 +30,7 @@ class SelectQuery {
       async.series([
         // Establish Connection
         function(next) {
-          sage.getConnection({transaction: options.transaction}).then(function(c) {
+          self.sage.getConnection({transaction: options.transaction}).then(function(c) {
             connection = c;
             next();
           }).catch(next);
@@ -57,7 +57,7 @@ class SelectQuery {
         if(err) {
           logger.error(err);
         }
-        sage.afterExecute(connection).then(function() {
+        self.sage.afterExecute(connection).then(function() {
           if(err) {
             return reject(err);
           }

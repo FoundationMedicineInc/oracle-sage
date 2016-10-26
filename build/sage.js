@@ -44,7 +44,7 @@ var knex = require('knex')({ client: 'oracle' });
 
 var Sage = (function () {
   function Sage() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     _classCallCheck(this, Sage);
 
@@ -73,7 +73,7 @@ var Sage = (function () {
   }, {
     key: 'getConnection',
     value: function getConnection() {
-      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
       var self = this;
       return new _bluebird2.default(function (resolve, reject) {
@@ -251,7 +251,7 @@ var Sage = (function () {
   }, {
     key: 'connect',
     value: function connect(uri) {
-      var connectOptions = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+      var connectOptions = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       var self = this;
       if (self._pool) {
