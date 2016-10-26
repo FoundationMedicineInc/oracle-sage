@@ -29,7 +29,7 @@ class SelectQuery {
       async.series([
         // Establish Connection
         function(next) {
-          sage.getConnection({transaction: options.transaction}).then(function(c) {
+          self.sage.getConnection({transaction: options.transaction}).then(function(c) {
             connection = c;
             next();
           });
@@ -37,14 +37,14 @@ class SelectQuery {
         // Perform operation
         function(next) {
           var sql = self.knex.toString()
-            
+
           // Fix: [Error: ORA-01756: quoted string not properly terminated]
           sql = sql.replace(/\\'/g, "''")
 
-          sage.log(sql);
+          self.sage.log(sql);
           connection.query(sql, (err, results) => {
             if(err) {
-                sage.log(err);
+                self.sage.log(err);
             } else {
               _.each(results, (result) => {
                 models.push(new self.model(result))
@@ -54,9 +54,9 @@ class SelectQuery {
           });
         }
       ], function() {
-        sage.afterExecute(connection).then(function() {
+        self.sage.afterExecute(connection).then(function() {
           resolve(models);
-        });            
+        });
       });
     });
   }

@@ -8,7 +8,7 @@ var User = require('./setup/models/user');
 var Profile = require('./setup/models/profile');
 var Post = require('./setup/models/post');
 
-sage = TestHelpers.sage;
+var sage = TestHelpers.sage;
 sage.debug = true;
 
 var user;
@@ -26,7 +26,7 @@ describe('transactions',function() {
     }).catch(function(err) {
       console.log(err);
     });
-  });  
+  });
 
   it("should not read if not commited", function(done) {
     sage.transaction().then(function(t) {
@@ -105,7 +105,7 @@ describe('transactions',function() {
         return Profile.create({ USER_ID: user.id, BIO: "I code." }, { transaction: t });
       }).then(function() {
         return Post.create({ USER_ID: user.id, POST_BODY: "My transaction post" }, { transaction: t });
-      }).then(function() {      
+      }).then(function() {
         return Post.create({ USER_ID: user.id, POST_BODY: "My second post" }, { transaction: t });
       }).then(function() {
         return t.commit();
@@ -114,11 +114,11 @@ describe('transactions',function() {
       }).then(function() {
         var json = user.toJSON();
         expect(json.posts.length).to.equal(2);
-        done();        
+        done();
       }).catch(function(err) { console.log(err) });
     });
   });
-  
+
   describe("count", function() {
     var user;
     before(function(done) {
@@ -131,8 +131,8 @@ describe('transactions',function() {
       User.count().then(function(count) {
         expect(count > 0).to.be.ok;
         done();
-      });      
-    });  
+      });
+    });
     it("should count in transaction", function(done) {
       sage.transaction().then(function(t) {
         User.count(null, { transaction: t }).then(function(count) {
@@ -142,7 +142,7 @@ describe('transactions',function() {
           });
         });
       });
-    });      
+    });
   });
 
 
@@ -152,7 +152,7 @@ describe('transactions',function() {
         expect(userModel).to.be.ok;
         done();
       });
-    });      
+    });
     it("should find by id in transaction", function(done) {
       sage.transaction().then(function(t) {
         // Just use ID 3 here because a previous test created this user
@@ -160,10 +160,10 @@ describe('transactions',function() {
           expect(userModel).to.be.ok;
           t.rollback().then(function() {
             done();
-          });          
+          });
         });
       });
-    });      
+    });
   });
 
   describe("select", function() {
@@ -172,7 +172,7 @@ describe('transactions',function() {
         expect(models.length).to.be.above(2);
         done();
       });
-    });      
+    });
     it("should select in transaction", function(done) {
       sage.transaction().then(function(t) {
         // Just use ID 3 here because a previous test created this user
@@ -183,7 +183,7 @@ describe('transactions',function() {
           });
         });
       });
-    });      
+    });
     it("should select in transaction", function(done) {
       sage.transaction().then(function(t) {
         User.create({ "USERNAME": "selectUser" }, { transaction: t }).then(function() {
@@ -192,11 +192,11 @@ describe('transactions',function() {
           expect(results.length).to.equal(1);
           t.rollback().then(function() {
             done();
-          });          
+          });
         });
       });
-    });      
-  });  
+    });
+  });
 
   describe("reload", function() {
     var user;
@@ -270,7 +270,7 @@ describe('transactions',function() {
           done();
         })
       });
-    })    
+    })
 
     describe('destroy', function() {
       var user;
@@ -308,12 +308,12 @@ describe('transactions',function() {
         }).catch(function(err) {
           console.log(err);
         });
-      });      
+      });
 
     });
 
   })
-  
+
   // // Create and set user
   // before(function(done) {
   //   User.create({ USERNAME: "mrchess" }).then(function(err) {
@@ -351,7 +351,7 @@ describe('transactions',function() {
   //   }).then(function() {
   //     done();
   //   });
-  // })  
+  // })
 
   // it('should populate', function(done) {
   //   user.populate().then(function() {
