@@ -1,5 +1,6 @@
 import Promise from 'bluebird';
 import oracledb from 'oracledb';
+import logger from './logger';
 
 // https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-3214-stmtcachesize
 // Statement caching can be disabled by setting the size to 0.
@@ -27,11 +28,14 @@ class Sage {
     this.knex = knex;
 
     this.oracledb = oracledb;
+
+    this.logger = logger;
   }
 
   log(o) {
+    logger.warn('This is deprecated.');
     if(this.debug) {
-      console.log(o);
+      logger.log(o);
     }
   }
 
@@ -46,9 +50,8 @@ class Sage {
 
       self._pool.getConnection(function(err, connection) {
         if(err) {
-          sage.log(err);
-          sage.log("Out of connections!");
-          return reject();
+          logger.error('Out of connections!', err);
+          return reject(err);
         }
         return resolve(connection);
       });
@@ -60,10 +63,16 @@ class Sage {
   commit(connection) {
     return new Promise(function(resolve, reject) {
       connection.commit(function(err, result) {
-        if(err) { sage.log(err); }
+        if(err) {
+          logger.error('Could not commit', err);
+          // Do not return yet. Release connection first.
+        }
         sage.releaseConnection(connection).then(function() {
-          resolve();
-        });
+          if(err) {
+            return reject(err);
+          }
+          return resolve();
+        }).catch(reject);
       });
     });
   }
@@ -72,25 +81,21 @@ class Sage {
   // after the operation is performed. If this connection is part of a transaction
   // it will not close the connection.
   afterExecuteCommitable(connection) {
-    return new Promise(function(resolve, reject) {
-      if(connection.isSageTransaction) {
-        return resolve();
-      } else {
-        sage.commit(connection).then(function() { resolve(); })
-      }
-    });
+    if(connection.isSageTransaction) {
+      return Promise.resolve();
+    } else {
+      return sage.commit(connection);
+    }
   }
 
   // Used by statics and methods to figure out what to do with a connection
   // after the operation is performed
   afterExecute(connection) {
-    return new Promise(function(resolve, reject) {
-      if(connection.isSageTransaction) {
-        return resolve();
-      } else {
-        sage.releaseConnection(connection).then(function() { resolve(); })
-      }
-    });
+    if(connection.isSageTransaction) {
+      return Promise.resolve();
+    } else {
+      return sage.releaseConnection(connection);
+    }
   }
   /**
    Create a sage transaction to perform several operations before commit.
@@ -131,33 +136,27 @@ class Sage {
           var transaction = {
             connection: connection,
             commit: function() {
-              sage.commit(this.connection).then(function() {
-                resolve();
-              });
+              sage.commit(this.connection).then(resolve).catch(reject);
             },
             rollback: function(transaction) {
-              sage.releaseConnection(this.connection).then(function() {
-                resolve();
-              });
+              sage.releaseConnection(this.connection).then(resolve).catch(reject);
             }
           }
           fn(transaction);
         });
       });
     } else {
-      return new Promise(function(resolve, reject) {
-        self.getConnection().then(function(connection) {
-          var transaction = {
-            connection: connection,
-            commit: function() {
-              return sage.commit(this.connection);
-            },
-            rollback: function(transaction) {
-              return sage.releaseConnection(this.connection);
-            }
+      return self.getConnection().then(function(connection) {
+        var transaction = {
+          connection: connection,
+          commit: function() {
+            return sage.commit(this.connection);
+          },
+          rollback: function(transaction) {
+            return sage.releaseConnection(this.connection);
           }
-          resolve(transaction);
-        });
+        }
+        return transaction;
       });
     }
   }
@@ -166,7 +165,8 @@ class Sage {
     return new Promise(function(resolve, reject) {
       connection.release(function(err) {
         if(err) {
-          sage.log(err);
+          logger.error('Problem releasing connection', err);
+          reject(err);
         } else {
           resolve();
         }
@@ -175,7 +175,7 @@ class Sage {
   }
 
   get connection() {
-    console.trace("sage connection is deprecated since pools");
+    logger.warn("Sage connection is deprecated since pools");
     throw ('errr')
     return false
     var self = this;
@@ -218,7 +218,7 @@ class Sage {
   connect(uri, connectOptions = {}) {
     let self = this;
     if(self._pool) {
-      return new Promise(function(resolve, reject) { resolve(); })
+      return Promise.resolve();
     }
     // You passed in some optoins. We save them so that if you call connect() without connectOptions
     // it will use them again
@@ -248,11 +248,11 @@ class Sage {
     return new Promise(function(resolve, reject) {
       oracledb.createPool(auth, function(err, pool) {
         if(err) {
-          console.log(err);
-          reject(err);
+          logger.error(err);
+          return reject(err);
         }
         self._pool = pool;
-        resolve();
+        return resolve();
       })
     });
   }

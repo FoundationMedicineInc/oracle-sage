@@ -9,7 +9,7 @@ var Profile = require('./setup/models/profile');
 var Post = require('./setup/models/post');
 
 var sage = TestHelpers.sage;
-sage.debug = true;
+sage.logger.transports.console.level = 'debug';
 
 var user;
 describe('transactions',function() {

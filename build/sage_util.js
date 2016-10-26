@@ -9,7 +9,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var util = {};
 
 util.getSelectANDSQL = function () {
-  var fields = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var fields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
   var params = [];
   var values = {};
@@ -25,7 +25,7 @@ util.getSelectANDSQL = function () {
 };
 
 util.getUpdateSQL = function () {
-  var fields = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var fields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
   var params = [];
   var values = {};
@@ -102,7 +102,7 @@ util.fixDateBug = function (schema, values) {
 
 // Helper for getInsertSQL
 util.schemaToString = function (schema) {
-  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   var prefix = options.prefix || "";
   var result = "";
