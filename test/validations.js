@@ -126,4 +126,47 @@ describe('validators', function() {
     })
   })
 
+  describe("enum" , function() {
+    it('validates error', function() {
+      schema = new sage.Schema({
+        id: "number",
+        gender: {
+          type: "varchar",
+          enum: {
+            values: ['M', 'F']
+          }
+        }
+      })
+
+      var User = sage.model("User", schema)
+      var user = new User({
+        gender: 'X'
+      })
+
+      assert.equal(user.valid, false)
+      assert.equal(user.errors[0], 'key: gender, value: X, is not in enum')
+      user.set('gender', 'M')
+      assert.equal(user.valid, true)
+    })
+  })
+
+  describe("timestamp" , function() {
+    it('does not throw moment error', function() {
+      schema = new sage.Schema({
+        id: "number",
+        created_at: {
+          type: "timestamp",
+          format: "YY-MMM-DD HH:mm:ss.SS"
+        }
+      })
+
+      var User = sage.model("User", schema)
+      var user = new User({
+        created_at: "Jan 10 1980"
+      })
+
+      console.log(user.normalized)
+
+    })
+  })
 })

@@ -5,6 +5,7 @@ import sageSelectQuery from '../build/statics/select'
 import _ from 'lodash'
 import objectAssign from 'object-assign'
 import async from 'async'
+import logger from './logger'
 
 let model = function(name, schema, sage) {
   var _methods = {};
@@ -93,7 +94,8 @@ let model = function(name, schema, sage) {
             if(date) {
               value = moment(date, format).format(format)
               if(value === "Invalid date") {
-                value = moment(date).format(format)
+                logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`)
+                value = moment((new Date(date))).format(format)
               }
             }
             break
@@ -103,7 +105,8 @@ let model = function(name, schema, sage) {
             if(date) {
               value = moment(date, format).format(format)
               if(value === "Invalid date") {
-                value = moment(date).format(format)
+                logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`)
+                value = moment((new Date(date))).format(format)
               }
             }
             break
@@ -265,7 +268,7 @@ let model = function(name, schema, sage) {
               validator: function(value) {
                 return typeof(value) === "number"
               },
-              message: `${key} is not a number`
+              message: `key: ${key}, value: ${value}, is not a number`
             })
 
             if(schemaProps.min) {
@@ -273,7 +276,7 @@ let model = function(name, schema, sage) {
                 validator: function(value) {
                   return (value >= schemaProps.min)
                 },
-                message: `${key} must be at least ${schemaProps.min}`
+                message: `key: ${key}, value: ${value}, must be at least ${schemaProps.min}`
               })
             }
 
@@ -282,7 +285,7 @@ let model = function(name, schema, sage) {
                 validator: function(value) {
                   return (value <= schemaProps.max)
                 },
-                message: `${key} must be at most ${schemaProps.max}`
+                message: `key: ${key}, value: ${value}, must be at most ${schemaProps.max}`
               })
             }
             break
@@ -291,20 +294,20 @@ let model = function(name, schema, sage) {
               validator: function(value) {
                 return typeof(value) === "string"
               },
-              message: `${key} is not a valid clob`
+              message: `key: ${key}, value: ${value}, is not a valid clob`
             })
             validators.push({
               validator: function(value) {
                 return value.length < 1000000
               },
-              message: `${key} must be shorter than 1,000,000 characters`
+              message: `key: ${key}, value: ${value}, must be shorter than 1,000,000 characters`
             })
             if(schemaProps.minlength) {
               validators.push({
                 validator: function(value) {
                   return (value.length > schemaProps.minlength)
                 },
-                message: `${key} must be longer than ${schemaProps.minlength} characters`
+                message: `key: ${key}, value: ${value}, must be longer than ${schemaProps.minlength} characters`
               })
             }
 
@@ -313,7 +316,7 @@ let model = function(name, schema, sage) {
                 validator: function(value) {
                   return (value.length < schemaProps.maxlength)
                 },
-                message: `${key} must be shorter than ${schemaProps.maxlength} characters`
+                message: `key: ${key}, value: ${value}, must be shorter than ${schemaProps.maxlength} characters`
               })
             }
             break
@@ -322,14 +325,14 @@ let model = function(name, schema, sage) {
               validator: function(value) {
                 return typeof(value) === "string"
               },
-              message: `${key} is not a char`
+              message: `key: ${key}, value: ${value}, is not a char`
             })
             if(schemaProps.enum) {
               validators.push({
                 validator: function(value) {
                   return _.indexOf(schemaProps.enum.values, value) > -1
                 },
-                message: `${key} is not in enum`
+                message: `key: ${key}, value: ${value}, is not in enum`
               })
             }
             break
@@ -338,7 +341,7 @@ let model = function(name, schema, sage) {
               validator: function(value) {
                 return moment(value).isValid()
               },
-              message: `${key} is not a date`
+              message: `key: ${key}, value: ${value}, is not a date`
             })
             break
           case "varchar":
@@ -346,7 +349,7 @@ let model = function(name, schema, sage) {
               validator: function(value) {
                 return typeof(value) === "string"
               },
-              message: `${key} is not a varchar`
+              message: `key: ${key}, value: ${value}, is not a varchar`
             })
 
             if(schemaProps.enum) {
@@ -354,7 +357,7 @@ let model = function(name, schema, sage) {
                 validator: function(value) {
                   return _.indexOf(schemaProps.enum.values, value) > -1
                 },
-                message: `${key} is not in enum`
+                message: `key: ${key}, value: ${value}, is not in enum`
               })
             }
 
@@ -363,7 +366,7 @@ let model = function(name, schema, sage) {
                 validator: function(value) {
                   return (value.length > schemaProps.minlength)
                 },
-                message: `${key} must be longer than ${schemaProps.minlength} characters`
+                message: `key: ${key}, value: ${value}, must be longer than ${schemaProps.minlength} characters`
               })
             }
 
@@ -372,12 +375,12 @@ let model = function(name, schema, sage) {
                 validator: function(value) {
                   return (value.length < schemaProps.maxlength)
                 },
-                message: `${key} must be shorter than ${schemaProps.maxlength} characters`
+                message: `key: ${key}, value: ${value}, must be shorter than ${schemaProps.maxlength} characters`
               })
             }
             break
           default:
-            this.errors.push(`${key} has undefined error, ${schemaProps.type}`)
+            this.errors.push(`key: ${key}, value: ${value}, has undefined error, ${schemaProps.type}`)
         }
 
         // Custom Validator Checks

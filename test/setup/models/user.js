@@ -10,7 +10,7 @@ var UserSchema = new Schema({
     type: "timestamp",
     readonly: true
   },
-  USERNAME: { 
+  USERNAME: {
     type: "varchar"
   },
   POSTS: {
@@ -32,9 +32,9 @@ var UserSchema = new Schema({
       theirs: "USER_ID"
     },
     model: "SAGE_TEST.PROFILES"
-  }    
+  }
 }, {
   primaryKey: "USER_ID"
-});   
+});
 
-module.exports = sage.model("SAGE_TEST.USERS", UserSchema);  
+module.exports = sage.model("SAGE_TEST.USERS", UserSchema);
