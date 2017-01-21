@@ -30,6 +30,10 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
+var _logger = require('./logger');
+
+var _logger2 = _interopRequireDefault(_logger);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
@@ -211,7 +215,8 @@ var model = function model(name, schema, sage) {
               if (date) {
                 value = (0, _moment2.default)(date, format).format(format);
                 if (value === "Invalid date") {
-                  value = (0, _moment2.default)(date).format(format);
+                  _logger2.default.warn('Could not decipher value: ' + date + ', using Date() value ' + new Date(date));
+                  value = (0, _moment2.default)(new Date(date)).format(format);
                 }
               }
               break;
@@ -221,7 +226,8 @@ var model = function model(name, schema, sage) {
               if (date) {
                 value = (0, _moment2.default)(date, format).format(format);
                 if (value === "Invalid date") {
-                  value = (0, _moment2.default)(date).format(format);
+                  _logger2.default.warn('Could not decipher value: ' + date + ', using Date() value ' + new Date(date));
+                  value = (0, _moment2.default)(new Date(date)).format(format);
                 }
               }
               break;
@@ -302,7 +308,7 @@ var model = function model(name, schema, sage) {
                 validator: function validator(value) {
                   return typeof value === "number";
                 },
-                message: key + ' is not a number'
+                message: 'key: ' + key + ', value: ' + value + ', is not a number'
               });
 
               if (schemaProps.min) {
@@ -310,7 +316,7 @@ var model = function model(name, schema, sage) {
                   validator: function validator(value) {
                     return value >= schemaProps.min;
                   },
-                  message: key + ' must be at least ' + schemaProps.min
+                  message: 'key: ' + key + ', value: ' + value + ', must be at least ' + schemaProps.min
                 });
               }
 
@@ -319,7 +325,7 @@ var model = function model(name, schema, sage) {
                   validator: function validator(value) {
                     return value <= schemaProps.max;
                   },
-                  message: key + ' must be at most ' + schemaProps.max
+                  message: 'key: ' + key + ', value: ' + value + ', must be at most ' + schemaProps.max
                 });
               }
               break;
@@ -328,20 +334,20 @@ var model = function model(name, schema, sage) {
                 validator: function validator(value) {
                   return typeof value === "string";
                 },
-                message: key + ' is not a valid clob'
+                message: 'key: ' + key + ', value: ' + value + ', is not a valid clob'
               });
               validators.push({
                 validator: function validator(value) {
                   return value.length < 1000000;
                 },
-                message: key + ' must be shorter than 1,000,000 characters'
+                message: 'key: ' + key + ', value: ' + value + ', must be shorter than 1,000,000 characters'
               });
               if (schemaProps.minlength) {
                 validators.push({
                   validator: function validator(value) {
                     return value.length > schemaProps.minlength;
                   },
-                  message: key + ' must be longer than ' + schemaProps.minlength + ' characters'
+                  message: 'key: ' + key + ', value: ' + value + ', must be longer than ' + schemaProps.minlength + ' characters'
                 });
               }
 
@@ -350,7 +356,7 @@ var model = function model(name, schema, sage) {
                   validator: function validator(value) {
                     return value.length < schemaProps.maxlength;
                   },
-                  message: key + ' must be shorter than ' + schemaProps.maxlength + ' characters'
+                  message: 'key: ' + key + ', value: ' + value + ', must be shorter than ' + schemaProps.maxlength + ' characters'
                 });
               }
               break;
@@ -359,14 +365,14 @@ var model = function model(name, schema, sage) {
                 validator: function validator(value) {
                   return typeof value === "string";
                 },
-                message: key + ' is not a char'
+                message: 'key: ' + key + ', value: ' + value + ', is not a char'
               });
               if (schemaProps.enum) {
                 validators.push({
                   validator: function validator(value) {
                     return _lodash2.default.indexOf(schemaProps.enum.values, value) > -1;
                   },
-                  message: key + ' is not in enum'
+                  message: 'key: ' + key + ', value: ' + value + ', is not in enum'
                 });
               }
               break;
@@ -375,7 +381,7 @@ var model = function model(name, schema, sage) {
                 validator: function validator(value) {
                   return (0, _moment2.default)(value).isValid();
                 },
-                message: key + ' is not a date'
+                message: 'key: ' + key + ', value: ' + value + ', is not a date'
               });
               break;
             case "varchar":
@@ -383,7 +389,7 @@ var model = function model(name, schema, sage) {
                 validator: function validator(value) {
                   return typeof value === "string";
                 },
-                message: key + ' is not a varchar'
+                message: 'key: ' + key + ', value: ' + value + ', is not a varchar'
               });
 
               if (schemaProps.enum) {
@@ -391,7 +397,7 @@ var model = function model(name, schema, sage) {
                   validator: function validator(value) {
                     return _lodash2.default.indexOf(schemaProps.enum.values, value) > -1;
                   },
-                  message: key + ' is not in enum'
+                  message: 'key: ' + key + ', value: ' + value + ', is not in enum'
                 });
               }
 
@@ -400,7 +406,7 @@ var model = function model(name, schema, sage) {
                   validator: function validator(value) {
                     return value.length > schemaProps.minlength;
                   },
-                  message: key + ' must be longer than ' + schemaProps.minlength + ' characters'
+                  message: 'key: ' + key + ', value: ' + value + ', must be longer than ' + schemaProps.minlength + ' characters'
                 });
               }
 
@@ -409,12 +415,12 @@ var model = function model(name, schema, sage) {
                   validator: function validator(value) {
                     return value.length < schemaProps.maxlength;
                   },
-                  message: key + ' must be shorter than ' + schemaProps.maxlength + ' characters'
+                  message: 'key: ' + key + ', value: ' + value + ', must be shorter than ' + schemaProps.maxlength + ' characters'
                 });
               }
               break;
             default:
-              _this.errors.push(key + ' has undefined error, ' + schemaProps.type);
+              _this.errors.push('key: ' + key + ', value: ' + value + ', has undefined error, ' + schemaProps.type);
           }
 
           // Custom Validator Checks
