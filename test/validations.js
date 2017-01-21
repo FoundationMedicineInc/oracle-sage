@@ -164,9 +164,29 @@ describe('validators', function() {
       var user = new User({
         created_at: "Jan 10 1980"
       })
+    })
+  })
 
-      console.log(user.normalized)
+  describe("create" , function() {
+    it('should throw error if not valid', function(done) {
+      schema = new sage.Schema({
+        id: "number",
+        name: {
+          type: "varchar",
+          minlength: 1,
+          maxlength: 5
+        }
+      });
 
+      var User = sage.model("User", schema)
+
+      User.create({ name: '' }).then(function() {
+        done('Failed. Should not create');
+      })
+      .catch(function(err) {
+        assert.ok(err.message)
+        done()
+      })
     })
   })
 })
