@@ -339,7 +339,10 @@ let model = function(name, schema, sage) {
           case "date":
             validators.push({
               validator: function(value) {
-                return moment(value).isValid()
+                // If moment fails, fallback to Date()
+                var isMoment = moment(value, schemaProps.format).isValid()
+                var isDate = (new Date(value)).toString() !== 'Invalid Date'
+                return isMoment || isDate
               },
               message: `key: ${key}, value: ${value}, is not a date`
             })

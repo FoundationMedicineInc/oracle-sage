@@ -3,7 +3,7 @@ var sage = require('../build/sage');
 
 var schema;
 
-describe('validators', function() {
+describe.only('validators', function() {
   describe('varchar', function() {
     before(function() {
       schema = new sage.Schema({
@@ -164,6 +164,41 @@ describe('validators', function() {
       var user = new User({
         created_at: "Jan 10 1980"
       })
+    })
+  })
+
+  describe("date" , function() {
+    it('does not throw moment error', function() {
+      schema = new sage.Schema({
+        id: "number",
+        created_at: {
+          type: "date",
+          format: "YY-MMM-DD HH:mm:ss.SS"
+        }
+      })
+
+      var User = sage.model("User", schema)
+      var user = new User({
+        created_at: "1/1/1"
+      })
+
+      assert.equal(user.valid, true)
+    })
+    it('fails if bad date', function() {
+      schema = new sage.Schema({
+        id: "number",
+        created_at: {
+          type: "date",
+          format: "YY-MMM-DD HH:mm:ss.SS"
+        }
+      })
+
+      var User = sage.model("User", schema)
+      var user = new User({
+        created_at: "X"
+      })
+
+      assert.equal(user.valid, false)
     })
   })
 
