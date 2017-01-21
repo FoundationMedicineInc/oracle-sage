@@ -72,6 +72,10 @@ module.exports = function (modelClass, name, schema, sage) {
       return connection.execute(sql, values);
     }).then(function () {
       return sage.afterExecuteCommitable(connection);
+    }).catch(function (err) {
+      return sage.afterExecuteCommitable(connection).then(function () {
+        throw err;
+      });
     });
   };
 };

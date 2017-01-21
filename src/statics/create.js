@@ -58,5 +58,11 @@ module.exports = function(modelClass, name, schema, sage) {
       .then( () => {
         return sage.afterExecuteCommitable(connection);
       })
+      .catch( (err) => {
+        return sage.afterExecuteCommitable(connection)
+          .then( () => {
+            throw(err)
+          })
+      })
   }
 }
