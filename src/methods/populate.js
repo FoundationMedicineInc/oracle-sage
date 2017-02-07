@@ -1,7 +1,6 @@
 import Promise from 'bluebird';
 import async from 'async';
 import _ from 'lodash';
-import logger from '../logger'
 
 module.exports = function(self, name, schema, sage) {
   self.populate = function() {
@@ -14,7 +13,7 @@ module.exports = function(self, name, schema, sage) {
         this._populate().then(function() {
           return resolve()
         }).catch(function(err) {
-          logger.error(err);
+          sage.logger.error(err);
           return reject(err);
         });
       })
@@ -97,6 +96,8 @@ module.exports = function(self, name, schema, sage) {
         throw('unrecognized association')
     }
 
+    sage.logger.debug(sql);
+
     return new Promise((resolve, reject) => {
       var self = this
       var connection;
@@ -146,7 +147,7 @@ module.exports = function(self, name, schema, sage) {
         }
       ], function(err) {
         if(err) {
-          logger.error(err);
+          sage.logger.error(err);
           return reject(err);
         }
         sage.afterExecute(connection).then(function() {

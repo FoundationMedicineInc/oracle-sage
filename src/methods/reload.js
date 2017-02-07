@@ -1,13 +1,12 @@
 import Promise from 'bluebird';
 import sageUtil from '../../build/sage_util';
-import logger from '../logger';
 
 module.exports = function(self, name, schema, sage) {
   self.reload = function(options = {}) {
     var self = this;
     return new Promise((resolve, reject) => {
       if(!this.get(this._schema.primaryKey)) {
-        logger.warn("No primary key. I don't know who to reload.")
+        sage.logger.warn("No primary key. I don't know who to reload.")
         return reject()
       }
 

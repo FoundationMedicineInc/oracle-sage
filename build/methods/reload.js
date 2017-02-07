@@ -8,10 +8,6 @@ var _sage_util = require('../../build/sage_util');
 
 var _sage_util2 = _interopRequireDefault(_sage_util);
 
-var _logger = require('../logger');
-
-var _logger2 = _interopRequireDefault(_logger);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (self, name, schema, sage) {
@@ -23,7 +19,7 @@ module.exports = function (self, name, schema, sage) {
     var self = this;
     return new _bluebird2.default(function (resolve, reject) {
       if (!_this.get(_this._schema.primaryKey)) {
-        _logger2.default.warn("No primary key. I don't know who to reload.");
+        sage.logger.warn("No primary key. I don't know who to reload.");
         return reject();
       }
 

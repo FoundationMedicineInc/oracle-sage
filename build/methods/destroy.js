@@ -12,10 +12,6 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
-var _logger = require('../logger');
-
-var _logger2 = _interopRequireDefault(_logger);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (self, name, schema, sage) {
@@ -29,7 +25,7 @@ module.exports = function (self, name, schema, sage) {
     return new _bluebird2.default(function (resolve, reject) {
       var pk = _this.get(_this._schema.primaryKey);
       if (!pk) {
-        _logger2.default.warn('Missing primary key on destroy. Who do I destroy?');
+        sage.logger.warn('Missing primary key on destroy. Who do I destroy?');
         return reject('Missing primary key.');
       }
 
@@ -49,17 +45,17 @@ module.exports = function (self, name, schema, sage) {
       },
       // Perform operation
       function (next) {
-        _logger2.default.debug(sql);
+        sage.logger.debug(sql);
 
         connection.execute(sql, function (err, results) {
           if (err) {
-            _logger2.default.error('Could not destroy.');
+            sage.logger.error('Could not destroy.');
           }
           next(err);
         });
       }], function (err) {
         if (err) {
-          _logger2.default.error(err);
+          sage.logger.error(err);
         }
 
         sage.afterExecuteCommitable(connection).then(function () {

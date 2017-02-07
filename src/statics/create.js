@@ -1,14 +1,13 @@
 import Promise from 'bluebird'
 import sageUtil from '../../build/sage_util'
 import async from 'async'
-import logger from '../logger'
 
 module.exports = function(modelClass, name, schema, sage) {
   modelClass.create = function(props = {}, options = {}) {
     let m = new this(props, name, schema)
 
     if(!m.valid) {
-      logger.warn(m.errors)
+      sage.logger.warn(m.errors)
       const errors = m.errors.join(',')
       return Promise.reject(new Error(`Cannot create model. Errors: ${errors}`))
     }
@@ -52,7 +51,7 @@ module.exports = function(modelClass, name, schema, sage) {
         connection = c
       })
       .then( () => {
-        logger.debug(sql, values);
+        sage.logger.debug(sql, values);
         return connection.execute(sql, values);
       })
       .then( () => {

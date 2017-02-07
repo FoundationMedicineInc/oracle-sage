@@ -12,10 +12,6 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
-var _logger = require('../logger');
-
-var _logger2 = _interopRequireDefault(_logger);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (self, name, schema, sage) {
@@ -28,11 +24,11 @@ module.exports = function (self, name, schema, sage) {
 
     return new _bluebird2.default(function (resolve, reject) {
       if (!_this.get(_this._schema.primaryKey)) {
-        _logger2.default.warn("No primary key. I don't know who to save.");
+        sage.logger.warn("No primary key. I don't know who to save.");
         return reject();
       }
       if (!_this.valid) {
-        _logger2.default.warn("Invalid properties on model");
+        sage.logger.warn("Invalid properties on model");
         return reject();
       }
 
@@ -60,7 +56,7 @@ module.exports = function (self, name, schema, sage) {
       },
       // Perform operation
       function (next) {
-        _logger2.default.debug(sql, result.values);
+        sage.logger.debug(sql, result.values);
 
         connection.execute(sql, result.values, function (err, result) {
           if (!err) {
@@ -70,7 +66,7 @@ module.exports = function (self, name, schema, sage) {
         });
       }], function (err) {
         if (err) {
-          _logger2.default.error(err);
+          sage.logger.error(err);
         };
         sage.afterExecuteCommitable(connection).then(function () {
           if (err) {
