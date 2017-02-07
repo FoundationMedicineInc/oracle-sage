@@ -34,9 +34,7 @@ class Sage {
 
   log(o) {
     logger.warn('This is deprecated.');
-    if(this.debug) {
-      logger.log(o);
-    }
+    logger.debug(o);
   }
 
   getConnection(options = {}) {

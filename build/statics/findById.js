@@ -12,10 +12,6 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
-var _logger = require('../logger');
-
-var _logger2 = _interopRequireDefault(_logger);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (modelClass, name, schema, sage) {
@@ -43,7 +39,7 @@ module.exports = function (modelClass, name, schema, sage) {
           return next();
         }).catch(next);
       }, function (next) {
-        _logger2.default.debug(sql, data);
+        sage.logger.debug(sql, data);
 
         connection.query(sql, data, function (err, result) {
           if (!err) {
@@ -57,7 +53,7 @@ module.exports = function (modelClass, name, schema, sage) {
         });
       }], function (err) {
         if (err) {
-          _logger2.default.error(err);
+          sage.logger.error(err);
         }
         sage.afterExecute(connection).then(function () {
           if (err) {

@@ -1,7 +1,6 @@
 import Promise from 'bluebird'
 import sageUtil from '../../build/sage_util'
 import async from 'async'
-import logger from '../logger'
 
 module.exports = function(self, name, schema, sage) {
   self.destroy = function(options = {}) {
@@ -10,7 +9,7 @@ module.exports = function(self, name, schema, sage) {
     return new Promise((resolve, reject) => {
       let pk = this.get(this._schema.primaryKey);
       if(!pk) {
-        logger.warn('Missing primary key on destroy. Who do I destroy?');
+        sage.logger.warn('Missing primary key on destroy. Who do I destroy?');
         return reject('Missing primary key.');
       }
 
@@ -34,18 +33,18 @@ module.exports = function(self, name, schema, sage) {
         },
         // Perform operation
         function(next) {
-          logger.debug(sql);
+          sage.logger.debug(sql);
 
           connection.execute(sql, (err, results) => {
             if(err) {
-              logger.error('Could not destroy.');
+              sage.logger.error('Could not destroy.');
             }
             next(err);
           })
         }
       ], function(err) {
         if(err) {
-          logger.error(err);
+          sage.logger.error(err);
         }
 
         sage.afterExecuteCommitable(connection).then(function() {

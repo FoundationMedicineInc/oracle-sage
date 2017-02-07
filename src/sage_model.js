@@ -5,7 +5,6 @@ import sageSelectQuery from '../build/statics/select'
 import _ from 'lodash'
 import objectAssign from 'object-assign'
 import async from 'async'
-import logger from './logger'
 
 let model = function(name, schema, sage) {
   var _methods = {};
@@ -94,7 +93,7 @@ let model = function(name, schema, sage) {
             if(date) {
               value = moment(date, format).format(format)
               if(value === "Invalid date") {
-                logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`)
+                sage.logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`)
                 value = moment((new Date(date))).format(format)
               }
             }
@@ -105,7 +104,7 @@ let model = function(name, schema, sage) {
             if(date) {
               value = moment(date, format).format(format)
               if(value === "Invalid date") {
-                logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`)
+                sage.logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`)
                 value = moment((new Date(date))).format(format)
               }
             }

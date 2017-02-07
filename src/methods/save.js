@@ -1,7 +1,6 @@
 import Promise from 'bluebird';
 import sageUtil from '../../build/sage_util';
 import async from 'async';
-import logger from '../logger';
 
 module.exports = function(self, name, schema, sage) {
   self.save = function(options = {}) {
@@ -9,11 +8,11 @@ module.exports = function(self, name, schema, sage) {
 
     return new Promise((resolve, reject) => {
       if(!this.get(this._schema.primaryKey)) {
-        logger.warn("No primary key. I don't know who to save.")
+        sage.logger.warn("No primary key. I don't know who to save.")
         return reject()
       }
       if(!this.valid) {
-        logger.warn("Invalid properties on model");
+        sage.logger.warn("Invalid properties on model");
         return reject();
       }
 
@@ -41,7 +40,7 @@ module.exports = function(self, name, schema, sage) {
         },
         // Perform operation
         function(next) {
-          logger.debug(sql, result.values);
+          sage.logger.debug(sql, result.values);
 
           connection.execute(sql, result.values, function(err, result) {
             if(!err) {
@@ -52,7 +51,7 @@ module.exports = function(self, name, schema, sage) {
         }
       ], function(err) {
         if(err) {
-          logger.error(err);
+          sage.logger.error(err);
         };
         sage.afterExecuteCommitable(connection).then(function() {
           if(err) {

@@ -30,10 +30,6 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
-var _logger = require('./logger');
-
-var _logger2 = _interopRequireDefault(_logger);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
@@ -215,7 +211,7 @@ var model = function model(name, schema, sage) {
               if (date) {
                 value = (0, _moment2.default)(date, format).format(format);
                 if (value === "Invalid date") {
-                  _logger2.default.warn('Could not decipher value: ' + date + ', using Date() value ' + new Date(date));
+                  sage.logger.warn('Could not decipher value: ' + date + ', using Date() value ' + new Date(date));
                   value = (0, _moment2.default)(new Date(date)).format(format);
                 }
               }
@@ -226,7 +222,7 @@ var model = function model(name, schema, sage) {
               if (date) {
                 value = (0, _moment2.default)(date, format).format(format);
                 if (value === "Invalid date") {
-                  _logger2.default.warn('Could not decipher value: ' + date + ', using Date() value ' + new Date(date));
+                  sage.logger.warn('Could not decipher value: ' + date + ', using Date() value ' + new Date(date));
                   value = (0, _moment2.default)(new Date(date)).format(format);
                 }
               }
