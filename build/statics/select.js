@@ -14,10 +14,6 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
-var _logger = require('../logger');
-
-var _logger2 = _interopRequireDefault(_logger);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -71,7 +67,7 @@ var SelectQuery = (function () {
           // Fix: [Error: ORA-01756: quoted string not properly terminated]
           sql = sql.replace(/\\'/g, "''");
 
-          _logger2.default.debug(sql);
+          self.sage.logger.debug(sql);
 
           connection.query(sql, function (err, results) {
             if (!err) {
@@ -83,7 +79,7 @@ var SelectQuery = (function () {
           });
         }], function (err) {
           if (err) {
-            _logger2.default.error(err);
+            self.sage.logger.error(err);
           }
           self.sage.afterExecute(connection).then(function () {
             if (err) {

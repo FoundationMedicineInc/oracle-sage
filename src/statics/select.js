@@ -1,7 +1,6 @@
 import Promise from 'bluebird';
 import _ from 'lodash';
 import async from 'async';
-import logger from '../logger';
 
 var knex = require('knex')({ client: 'oracle' })
 
@@ -42,7 +41,7 @@ class SelectQuery {
           // Fix: [Error: ORA-01756: quoted string not properly terminated]
           sql = sql.replace(/\\'/g, "''")
 
-          logger.debug(sql);
+          self.sage.logger.debug(sql);
 
           connection.query(sql, (err, results) => {
             if(!err) {
@@ -55,7 +54,7 @@ class SelectQuery {
         }
       ], function(err) {
         if(err) {
-          logger.error(err);
+          self.sage.logger.error(err);
         }
         self.sage.afterExecute(connection).then(function() {
           if(err) {

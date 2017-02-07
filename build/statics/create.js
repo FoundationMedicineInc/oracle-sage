@@ -12,10 +12,6 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
-var _logger = require('../logger');
-
-var _logger2 = _interopRequireDefault(_logger);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (modelClass, name, schema, sage) {
@@ -26,7 +22,7 @@ module.exports = function (modelClass, name, schema, sage) {
     var m = new this(props, name, schema);
 
     if (!m.valid) {
-      _logger2.default.warn(m.errors);
+      sage.logger.warn(m.errors);
       var errors = m.errors.join(',');
       return _bluebird2.default.reject(new Error('Cannot create model. Errors: ' + errors));
     }
@@ -68,7 +64,7 @@ module.exports = function (modelClass, name, schema, sage) {
     return sage.getConnection({ transaction: options.transaction }).then(function (c) {
       connection = c;
     }).then(function () {
-      _logger2.default.debug(sql, values);
+      sage.logger.debug(sql, values);
       return connection.execute(sql, values);
     }).then(function () {
       return sage.afterExecuteCommitable(connection);

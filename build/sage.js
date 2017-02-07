@@ -66,9 +66,7 @@ var Sage = (function () {
     key: 'log',
     value: function log(o) {
       _logger2.default.warn('This is deprecated.');
-      if (this.debug) {
-        _logger2.default.log(o);
-      }
+      _logger2.default.debug(o);
     }
   }, {
     key: 'getConnection',

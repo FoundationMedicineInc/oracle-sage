@@ -12,10 +12,6 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _logger = require('../logger');
-
-var _logger2 = _interopRequireDefault(_logger);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (self, name, schema, sage) {
@@ -31,7 +27,7 @@ module.exports = function (self, name, schema, sage) {
         _this._populate().then(function () {
           return resolve();
         }).catch(function (err) {
-          _logger2.default.error(err);
+          sage.logger.error(err);
           return reject(err);
         });
       });
@@ -105,6 +101,8 @@ module.exports = function (self, name, schema, sage) {
       }
     })();
 
+    sage.logger.debug(sql);
+
     return new _bluebird2.default(function (resolve, reject) {
       var self = _this3;
       var connection;
@@ -156,7 +154,7 @@ module.exports = function (self, name, schema, sage) {
         });
       }], function (err) {
         if (err) {
-          _logger2.default.error(err);
+          sage.logger.error(err);
           return reject(err);
         }
         sage.afterExecute(connection).then(function () {

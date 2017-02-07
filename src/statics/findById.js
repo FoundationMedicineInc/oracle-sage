@@ -1,7 +1,6 @@
 import Promise from 'bluebird';
 import sageUtil from '../../build/sage_util';
 import async from 'async';
-import logger from '../logger';
 
 module.exports = function(modelClass, name, schema, sage) {
 
@@ -32,7 +31,7 @@ module.exports = function(modelClass, name, schema, sage) {
           }).catch(next);
         },
         function(next) {
-          logger.debug(sql, data);
+          sage.logger.debug(sql, data);
 
           connection.query(sql, data, function(err, result) {
             if(!err) {
@@ -45,7 +44,7 @@ module.exports = function(modelClass, name, schema, sage) {
         }
       ], function(err) {
         if(err) {
-          logger.error(err);
+          sage.logger.error(err);
         }
         sage.afterExecute(connection).then(function() {
           if(err) {
