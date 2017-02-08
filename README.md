@@ -83,14 +83,15 @@ For more verbose outputs you can configure `sage.logger`, which is an instance o
 sage.logger.transports.console.level = 'debug';
 ```
 
-Note you can also just set `sage.logger` directly after initializing:
+Note you can also just drop in your own logger via `sage.logger` directly:
 
 ```javascript
-const myLogger = require('winston');
+var sage = require('sage')';
+var myLogger = require('winston');
 sage.logger = myLogger;
 ```
 
-This is useful if you have a custom logger configuration, for example one that posts to AWS Cloudwatch.
+We recommend the Winston logger. This is useful if you have a custom logger configuration, for example one that posts to AWS Cloudwatch. It doesn't necessarily have to be winston, but `sage` uses `logger.info` `logger.warn` `logger.error` `logger.debug`. So as long as your logger can handle those functions, you are all set.
 
 ## Connect
 
