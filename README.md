@@ -86,7 +86,7 @@ sage.logger.transports.console.level = 'debug';
 Note you can also just drop in your own logger via `sage.logger` directly:
 
 ```javascript
-var sage = require('sage')';
+var sage = require('sage');
 var myLogger = require('winston');
 sage.logger = myLogger;
 ```
