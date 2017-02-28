@@ -77,11 +77,21 @@ var sage = require('oracle-sage');
 
 ## Debugging
 
-For more verbose outputs you can configure `sage.logger`, which is an instance of this popular Winston logger. By default the level is set to 0.
+For more verbose outputs you can configure `sage.logger`, which is an instance of this popular Winston logger. By default the level is set to 0. If you set the level to `debug` you will get SQL outputs and such.
 
 ```javascript
 sage.logger.transports.console.level = 'debug';
 ```
+
+Note you can also just drop in your own logger via `sage.logger` directly:
+
+```javascript
+var sage = require('sage');
+var myLogger = require('winston');
+sage.logger = myLogger;
+```
+
+We recommend the Winston logger. This is useful if you have a custom logger configuration, for example one that posts to AWS Cloudwatch. It doesn't necessarily have to be winston, but `sage` uses `logger.info` `logger.warn` `logger.error` `logger.debug`. So as long as your logger can handle those functions, you are all set.
 
 ## Connect
 
