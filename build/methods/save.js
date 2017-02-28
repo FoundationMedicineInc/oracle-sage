@@ -1,5 +1,9 @@
 'use strict';
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _bluebird = require('bluebird');
 
 var _bluebird2 = _interopRequireDefault(_bluebird);
@@ -37,6 +41,13 @@ module.exports = function (self, name, schema, sage) {
 
       var result = _sage_util2.default.getUpdateSQL(_this.dirtyProps);
       result.values = _sage_util2.default.fixDateBug(_this.schema, result.values);
+
+      // update blob fields. TODO
+      _lodash2.default.each(_this.normalized, function (value, key) {
+        if (value.constructor.name === 'Buffer') {
+          result.values[key] = _this.normalized[key];
+        }
+      });
 
       var sql = 'UPDATE ' + name + ' SET ' + result.sql + ' WHERE ' + pk + '=:' + pk;
 

@@ -1,13 +1,13 @@
 {
   "name": "oracle-sage",
   "description": "Promise driven object modeling for OracleDB",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "main": "./build/sage.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha --timeout 30000",
+    "test": "node_modules/mocha/bin/mocha --recursive --timeout 30000",
     "watch": "babel src -d build -w"
   },
   "license": "MIT",
@@ -25,7 +25,7 @@
     "object-assign": "^4.1.0",
     "oracledb": "1.11.0",
     "promise": "^7.1.1",
-    "simple-oracledb": "1.1.21",
+    "simple-oracledb": "^1.1.59",
     "winston": "^2.2.0"
   },
   "devDependencies": {

@@ -14,6 +14,10 @@ var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
 
+var _sage_util = require('../../build/sage_util');
+
+var _sage_util2 = _interopRequireDefault(_sage_util);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -69,14 +73,16 @@ var SelectQuery = (function () {
 
           self.sage.logger.debug(sql);
 
-          connection.query(sql, function (err, results) {
-            if (!err) {
-              _lodash2.default.each(results, function (result) {
-                models.push(new self.model(result));
-              });
-            }
-            next(err);
-          });
+          // TODO I think this will cap at returning 100 rows despite setting a limit
+          // in the SELECT statement.
+          connection.execute(sql).then(function (result) {
+            return _sage_util2.default.resultToJSON(result);
+          }).then(function (results) {
+            _lodash2.default.each(results, function (result) {
+              models.push(new self.model(result));
+            });
+            next();
+          }).catch(next);
         }], function (err) {
           if (err) {
             self.sage.logger.error(err);

@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import Promise from 'bluebird';
 import sageUtil from '../../build/sage_util';
 import async from 'async';
@@ -21,6 +22,13 @@ module.exports = function(self, name, schema, sage) {
 
       let result = sageUtil.getUpdateSQL(this.dirtyProps);
       result.values = sageUtil.fixDateBug(this.schema, result.values);
+
+      // update blob fields. TODO 
+      _.each(this.normalized, (value, key) => {
+        if (value.constructor.name === 'Buffer') {
+          result.values[key] = this.normalized[key];
+        }
+      })
 
       let sql = `UPDATE ${name} SET ${result.sql} WHERE ${pk}=:${pk}`;
 

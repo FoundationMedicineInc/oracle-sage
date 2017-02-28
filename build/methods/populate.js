@@ -12,6 +12,10 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _sage_util = require('../../build/sage_util');
+
+var _sage_util2 = _interopRequireDefault(_sage_util);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (self, name, schema, sage) {
@@ -116,42 +120,35 @@ module.exports = function (self, name, schema, sage) {
       },
       // Perform operation
       function (next) {
-        connection.query(sql, [], { maxRows: 99999 }, function (err, results) {
-          if (err) {
-            return next(err);
-          } else {
-            (function () {
-              var models = [];
-              // _.each(results, (result) => {
-              //   models.push(new associationModel(result))
-              // })
+        connection.execute(sql, [], { maxRows: 99999 }).then(function (result) {
+          return _sage_util2.default.resultToJSON(result);
+        }).then(function (results) {
+          var models = [];
 
-              // Deep populate the results
-              var populateResults = function populateResults() {
-                var result = results.shift();
-                if (result) {
-                  (function () {
-                    var model = new associationModel(result);
-                    model.populate().then(function () {
-                      models.push(model);
-                      populateResults();
-                    }).catch(function (err) {
-                      return next(err);
-                    });
-                  })();
-                } else {
-                  if (association.value.joinType === "hasOne") {
-                    self._directSet(association.key, models[0]);
-                  } else {
-                    self._directSet(association.key, models);
-                  }
-                  return next();
-                }
-              };
-              populateResults();
-            })();
-          }
-        });
+          // Deep populate the results
+          var populateResults = function populateResults() {
+            var result = results.shift();
+            if (result) {
+              (function () {
+                var model = new associationModel(result);
+                model.populate().then(function () {
+                  models.push(model);
+                  populateResults();
+                }).catch(function (err) {
+                  return next(err);
+                });
+              })();
+            } else {
+              if (association.value.joinType === "hasOne") {
+                self._directSet(association.key, models[0]);
+              } else {
+                self._directSet(association.key, models);
+              }
+              return next();
+            }
+          };
+          populateResults();
+        }).catch(next);
       }], function (err) {
         if (err) {
           sage.logger.error(err);

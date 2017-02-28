@@ -1,0 +1,59 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="63F2E16A-3E94-7D28-B9B7-ECE787ADDEED" name="SAGE_TEST.COMMENTS">
+<createdBy>himrc</createdBy>
+<createdTime>2017-02-28 02:08:03 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<ordsAlias>table_5</ordsAlias>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="COMMENT_ID" id="C870F86E-361E-B46C-7CCF-A8660C18A8E7">
+<createdBy>himrc</createdBy>
+<createdTime>2017-02-28 02:08:43 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LogDes-4BABEC65-108B-2A3C-F7C4-84AC47D292B0@LOGDT10040</logicalDatatype>
+<dataTypeSize>100 CHAR</dataTypeSize>
+<ownDataTypeParameters>100 CHAR,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="BODY" id="2E3C2417-7CAA-C20D-F864-EFA9A527FC42">
+<createdBy>himrc</createdBy>
+<createdTime>2017-02-28 02:08:53 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT029</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="LIKE_COUNT" id="920B08B7-0891-DB63-A3A8-18103B2FC492">
+<createdBy>himrc</createdBy>
+<createdTime>2017-02-28 03:59:48 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LogDes-4BABEC65-108B-2A3C-F7C4-84AC47D292B0@LOGDT10040</logicalDatatype>
+<dataTypeSize>100 CHAR</dataTypeSize>
+<ownDataTypeParameters>100 CHAR,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="4A25B16F-D243-7C51-E907-642A4CD24466" name="COMMENTS_PK">
+<createdBy>himrc</createdBy>
+<createdTime>2017-02-28 02:09:06 UTC</createdTime>
+<ownerDesignName>diagram</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="C870F86E-361E-B46C-7CCF-A8660C18A8E7"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

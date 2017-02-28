@@ -41,7 +41,6 @@ module.exports = function(modelClass, name, schema, sage) {
 
     // Get the values
     let values = m.normalized;
-
     values = sageUtil.fixDateBug(m.schema, values);
 
     var connection;

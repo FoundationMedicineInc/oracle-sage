@@ -3,7 +3,7 @@ var sage = require('../build/sage');
 
 var schema;
 
-describe.only('validators', function() {
+describe('validators', function() {
   describe('varchar', function() {
     before(function() {
       schema = new sage.Schema({

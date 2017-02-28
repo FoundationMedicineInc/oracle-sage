@@ -1,6 +1,7 @@
 import Promise from 'bluebird';
 import async from 'async';
 import _ from 'lodash';
+import sageUtil from '../../build/sage_util';
 
 module.exports = function(self, name, schema, sage) {
   self.populate = function() {
@@ -112,14 +113,10 @@ module.exports = function(self, name, schema, sage) {
         },
         // Perform operation
         function(next) {
-          connection.query(sql, [], { maxRows: 99999 }, (err, results) => {
-            if(err) {
-              return next(err);
-            } else {
+          connection.execute(sql, [], { maxRows: 99999 })
+            .then((result) => sageUtil.resultToJSON(result))
+            .then((results) => {
               let models = []
-              // _.each(results, (result) => {
-              //   models.push(new associationModel(result))
-              // })
 
               // Deep populate the results
               let populateResults = function() {
@@ -142,8 +139,8 @@ module.exports = function(self, name, schema, sage) {
                 }
               }
               populateResults();
-            }
-          })
+            })
+            .catch(next)
         }
       ], function(err) {
         if(err) {

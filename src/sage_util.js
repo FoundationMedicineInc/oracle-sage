@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Promise from 'bluebird';
 
 let util = {};
 
@@ -111,6 +112,53 @@ util.getInsertSQL = function(table, schema) {
   keys = this.amendDateFields(schema, keys);
   keys = this.amendTimestampFields(schema, keys);
   return `INSERT INTO ${table} (${fields}) VALUES (${keys})`;
+}
+
+/**
+ * Take a `result` from a Oracle execute and convert it to JSON. Handles cases
+ * with CLOBs and BLOBs and the Node oracledb Lob class.
+ * @param  {Object} result Oracle result object
+ * @return {Array.<Object>}
+ */
+util.resultToJSON = function(result) {
+  const records = [];
+  return Promise.each(result.rows, (row) => {
+    const record = {};
+
+    return Promise.each(row, (value, index) => {
+      var field = result.metaData[index].name;
+      switch (value.constructor.name) {
+        case 'Buffer':
+          record[field] = value.toString('hex');
+          break;
+        case 'Lob':
+          // For lob types. Wrap into a promise to read the stream
+          return new Promise((resolve) => {
+            const chunks = [];
+            value.on('data', (chunk) => {
+              chunks.push(chunk.toString())
+            });
+            value.on('end', () => {
+              record[field] = chunks.join('');
+              resolve();
+            })
+          })
+        default:
+          // When using where rownum, a RNUM field is also returned for some reason.
+          // See `findOne`.
+          if (field !== 'RNUM') {
+            record[field] = value;
+          }
+          break;
+      }
+    })
+    .then(() => {
+      records.push(record);
+    })
+  })
+  .then(() => {
+    return records;
+  })
 }
 
 module.exports = util;

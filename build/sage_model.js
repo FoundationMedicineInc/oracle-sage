@@ -191,6 +191,12 @@ var model = function model(name, schema, sage) {
       get: function get() {
         return this._dirtyProps;
       }
+
+      /**
+       * Returns an object of key/value pairs that are "Oracle safe".
+       * @return {Object}
+       */
+
     }, {
       key: 'normalized',
       get: function get() {
@@ -236,6 +242,12 @@ var model = function model(name, schema, sage) {
                 value = parseInt(this.get(key));
               }
               break;
+
+            // Blobs must be converted to a buffer before inserting into Oracle
+            case "blob":
+              value = new Buffer(this.get(key));
+              break;
+
             default:
               value = this.get(key);
           }
@@ -299,6 +311,11 @@ var model = function model(name, schema, sage) {
           switch (schemaProps.type) {
             case "timestamp":
               break;
+            case "raw":
+              break;
+            case "blob":
+              break;
+
             case "number":
               validators.push({
                 validator: function validator(value) {
