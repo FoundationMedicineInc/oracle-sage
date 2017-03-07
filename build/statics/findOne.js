@@ -41,21 +41,18 @@ module.exports = function (modelClass, name, schema, sage) {
           return next();
         }).catch(next);
       }, function (next) {
-        connection.query(sql, result.values, function (err, result) {
-          if (!err) {
-            var row = null;
-            if (result.length) {
-              // For some reason a value called RNUM is returned as well
-              delete result[0]["RNUM"];
-              row = new self(result[0], name, schema);
-            }
-            finalResult = row;
+        sage.logger.debug(sql, values);
+        connection.execute(sql, values).then(function (result) {
+          return _sage_util2.default.resultToJSON(result);
+        }).then(function (results) {
+          if (results.length) {
+            finalResult = new self(results[0], name, schema);
           }
-          next(err);
-        });
+          next();
+        }).catch(next);
       }], function (err) {
         if (err) {
-          _logger2.default.error(err);
+          sage.logger.error(err);
         }
         sage.afterExecute(connection).then(function () {
           if (err) {

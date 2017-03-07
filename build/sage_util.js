@@ -1,8 +1,12 @@
-"use strict";
+'use strict';
 
-var _lodash = require("lodash");
+var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
+
+var _bluebird = require('bluebird');
+
+var _bluebird2 = _interopRequireDefault(_bluebird);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -14,7 +18,7 @@ util.getSelectANDSQL = function () {
   var params = [];
   var values = {};
   _lodash2.default.each(fields, function (value, key) {
-    params.push(key + "=:" + key);
+    params.push(key + '=:' + key);
     values[key] = value;
   });
   var sql = params.join(" AND ");
@@ -30,7 +34,7 @@ util.getUpdateSQL = function () {
   var params = [];
   var values = {};
   _lodash2.default.each(fields, function (value, key) {
-    params.push(key + "=:" + key);
+    params.push(key + '=:' + key);
     values[key] = value;
   });
   var sql = params.join(",");
@@ -123,7 +127,52 @@ util.getInsertSQL = function (table, schema) {
   var keys = this.schemaToString(schema, { prefix: ":" });
   keys = this.amendDateFields(schema, keys);
   keys = this.amendTimestampFields(schema, keys);
-  return "INSERT INTO " + table + " (" + fields + ") VALUES (" + keys + ")";
+  return 'INSERT INTO ' + table + ' (' + fields + ') VALUES (' + keys + ')';
+};
+
+/**
+ * Take a `result` from a Oracle execute and convert it to JSON. Handles cases
+ * with CLOBs and BLOBs and the Node oracledb Lob class.
+ * @param  {Object} result Oracle result object
+ * @return {Array.<Object>}
+ */
+util.resultToJSON = function (result) {
+  var records = [];
+  return _bluebird2.default.each(result.rows, function (row) {
+    var record = {};
+
+    return _bluebird2.default.each(row, function (value, index) {
+      var field = result.metaData[index].name;
+      switch (value.constructor.name) {
+        case 'Buffer':
+          record[field] = value.toString('hex');
+          break;
+        case 'Lob':
+          // For lob types. Wrap into a promise to read the stream
+          return new _bluebird2.default(function (resolve) {
+            var chunks = [];
+            value.on('data', function (chunk) {
+              chunks.push(chunk.toString());
+            });
+            value.on('end', function () {
+              record[field] = chunks.join('');
+              resolve();
+            });
+          });
+        default:
+          // When using where rownum, a RNUM field is also returned for some reason.
+          // See `findOne`.
+          if (field !== 'RNUM') {
+            record[field] = value;
+          }
+          break;
+      }
+    }).then(function () {
+      records.push(record);
+    });
+  }).then(function () {
+    return records;
+  });
 };
 
 module.exports = util;

@@ -13,6 +13,7 @@ import _ from 'lodash';
 
 import sageModel from '../build/sage_model';
 import sageSchema from '../build/sage_schema';
+import sageUtil from '../build/sage_util';
 
 var knex = require('knex')({ client: 'oracle' })
 
@@ -25,7 +26,9 @@ class Sage {
     this.models = {}; // all the models that have currently been instantiated
 
     this.debug = options.debug;
+
     this.knex = knex;
+    this.util = sageUtil;
 
     this.oracledb = oracledb;
 
@@ -212,6 +215,40 @@ class Sage {
   //     })
   //   }
   // }
+  execute(sql, bindParams = [], options = {}) {
+    const self = this;
+    logger.debug(sql);
+    options = _.extend({
+      maxRows: 100,
+      outFormat: self.oracledb.OBJECT
+    }, options);
+
+    let connection;
+    let results;
+    return self.getConnection()
+      .then( (c) => connection = c )
+      .then( () => connection.execute(sql, bindParams, options) )
+      .then( (r) => {
+        // Lowercase all the object keys
+        // This was just done to make the data more 'JS' friendly since
+        // the database column names are all uppercase.
+        results = _.map(r.rows, (row) => {
+          // Return the row with lowercased keys
+          return _.transform(row, (result, val, key) => {
+            result[key.toLowerCase()] = val;
+          })
+        });
+
+        return self.releaseConnection(connection);
+      })
+      .then( () => results ) // Return the results
+      .catch( (err) => {
+        logger.warn(err);
+        return self.releaseConnection(connection)
+          .then( () => { throw(err) })
+          .catch( (err) => { throw(err) })
+      });
+  }
 
   connect(uri, connectOptions = {}) {
     let self = this;

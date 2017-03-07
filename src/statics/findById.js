@@ -32,15 +32,15 @@ module.exports = function(modelClass, name, schema, sage) {
         },
         function(next) {
           sage.logger.debug(sql, data);
-
-          connection.query(sql, data, function(err, result) {
-            if(!err) {
-              let row = null
-              if(result.length) { row = new self(result[0], name, schema) }
-              resultModel = row;
-            }
-            next(err);
-          });
+          connection.execute(sql, data)
+            .then((result) => sageUtil.resultToJSON(result))
+            .then((results) => {
+              if (results.length) {
+                resultModel = new self(results[0], name, schema)
+              }
+              next();
+            })
+            .catch(next);
         }
       ], function(err) {
         if(err) {

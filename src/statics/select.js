@@ -1,6 +1,7 @@
 import Promise from 'bluebird';
 import _ from 'lodash';
 import async from 'async';
+import sageUtil from '../../build/sage_util';
 
 var knex = require('knex')({ client: 'oracle' })
 
@@ -43,14 +44,17 @@ class SelectQuery {
 
           self.sage.logger.debug(sql);
 
-          connection.query(sql, (err, results) => {
-            if(!err) {
+          // TODO I think this will cap at returning 100 rows despite setting a limit
+          // in the SELECT statement.
+          connection.execute(sql)
+            .then((result) => sageUtil.resultToJSON(result))
+            .then((results) => {
               _.each(results, (result) => {
                 models.push(new self.model(result))
-              });
-            }
-            next(err);
-          });
+              })
+              next();
+            })
+            .catch(next);
         }
       ], function(err) {
         if(err) {
