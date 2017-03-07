@@ -267,7 +267,8 @@ Finds model based on `value` against the schema primary key
 
 ##### findOne({})
 
-Accepts `{}` which transforms into **AND** conditions. Returns the first item, and the SELECT is ORDERED BY the schema primary key.
+Accepts `{}` which transforms into **AND** conditions. Returns the first item, and the 
+is ORDERED BY the schema primary key.
 
 Returns `null` if nothing is found. Otherwise returns a result represented in the model.
 
@@ -291,7 +292,12 @@ User.count().then(function(count) { ... })
 
 A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the full API usage.
 
+**Note that right now sage only supports the ARRAY format for knex select if you specify multiple columns. String is OK for single column.**
+
 ```javascript
+const singleColumnExample = 'USERNAME';
+const multipleColumnExample = ['USERNAME', 'PASSWORD']; 
+
 User
   .select() // same as select('*')
   .where('USERNAME', 'example')
