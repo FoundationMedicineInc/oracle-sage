@@ -54,6 +54,7 @@
 - [Raw Connection](#raw-connection)
       - [Connection](#connection)
       - [Knex](#knex)
+- [Utilities](#utilities)
 - [Other Examples](#other-examples)
 - [Contributing](#contributing)
 - [License](#license)
@@ -135,11 +136,13 @@ var userSchema = sage.Schema({
 
 Supports types:
 
+- raw
 - number
 - char
 - date
 - varchar
 - clob
+- blob
 
 Special features:
 
@@ -648,24 +651,19 @@ Assembly.findById(1).then(function(assemblyModel) {
 
 ##### Connection
 
-You can directly access a `node-oracledb` connection from the pool at:
+You can directly access a `node-oracledb` [connection.execute()](https://github.com/oracle/node-oracledb/blob/master/doc/api.md#execute) from the pool at:
 
 ```javascript
-sage.getConnection().then(function(connection) {
-  connection.execute(query, function(err, result) {
-    // Do something
-
-    // Remember to release the connection
-    sage.releaseConnection(connection).then(function() {
-      // I am done!
-    });
-
+sage.execute(sql, bindParams, options)
+  .then(resultsAsOracleResultObject => {
+    console.log('Do something.')
   });
-});
 ```
 
 This is a direct exposure of:
 https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-42-connection-methods
+
+Don't worry to release the connection, as the sage `execute` wrapper handles that for you.
 
 
 ##### Knex
@@ -677,12 +675,31 @@ Knex is strictly used for query building. You can use it with the raw connection
 
 ```javascript
 var query = sage.knex.select().from('user').toString();
-sage.getConnection().then(function(connection) {
-  connection.execute(query, function() { ... })
+sage.execute(query).then(function(response) {
+  console.log(response)
 });
 ```
 
+Don't worry to release the connection, as the sage `execute` wrapper handles that for you.
+
 See [Knex](http://knexjs.org/) for the full API usage.
+
+## Utilities
+
+There is a useful utility called `sage.util.resultToJSON(result)`.
+
+You can pass in a `result` from a `sage.execute()` and it will transform the native oracle results into a JSON array that you can pass down to your model. eg.
+
+```javascript
+const someSQL = 'SELECT * FROM USER';
+sage.execute(someSQL)
+  .then(result => sage.util.resultToJSON(result))
+  .then(resultsAsJson => {
+    const users = _.map(resultsAsJson, (user) => {
+      return new User(user);
+    });
+  });
+```
 
 ## Other Examples
 

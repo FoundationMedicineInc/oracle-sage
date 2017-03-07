@@ -30,6 +30,10 @@ var _sage_schema = require('../build/sage_schema');
 
 var _sage_schema2 = _interopRequireDefault(_sage_schema);
 
+var _sage_util = require('../build/sage_util');
+
+var _sage_util2 = _interopRequireDefault(_sage_util);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -55,7 +59,9 @@ var Sage = (function () {
     this.models = {}; // all the models that have currently been instantiated
 
     this.debug = options.debug;
+
     this.knex = knex;
+    this.util = _sage_util2.default;
 
     this.oracledb = _oracledb2.default;
 
@@ -246,6 +252,49 @@ var Sage = (function () {
     //   }
     // }
 
+  }, {
+    key: 'execute',
+    value: function execute(sql) {
+      var bindParams = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      var self = this;
+      _logger2.default.debug(sql);
+      options = _lodash2.default.extend({
+        maxRows: 100,
+        outFormat: self.oracledb.OBJECT
+      }, options);
+
+      var connection = undefined;
+      var results = undefined;
+      return self.getConnection().then(function (c) {
+        return connection = c;
+      }).then(function () {
+        return connection.execute(sql, bindParams, options);
+      }).then(function (r) {
+        // Lowercase all the object keys
+        // This was just done to make the data more 'JS' friendly since
+        // the database column names are all uppercase.
+        results = _lodash2.default.map(r.rows, function (row) {
+          // Return the row with lowercased keys
+          return _lodash2.default.transform(row, function (result, val, key) {
+            result[key.toLowerCase()] = val;
+          });
+        });
+
+        return self.releaseConnection(connection);
+      }).then(function () {
+        return results;
+      }) // Return the results
+      .catch(function (err) {
+        _logger2.default.warn(err);
+        return self.releaseConnection(connection).then(function () {
+          throw err;
+        }).catch(function (err) {
+          throw err;
+        });
+      });
+    }
   }, {
     key: 'connect',
     value: function connect(uri) {
