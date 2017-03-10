@@ -5,7 +5,7 @@ const expect = require('chai').expect;
 
 const Comment = require('../setup/models/comment');
 
-describe.only('raw and blob types',function() {
+describe('raw and blob types',function() {
   // Reset Db
   before(function(done) {
     TestHelpers.initdb().then(function() {
