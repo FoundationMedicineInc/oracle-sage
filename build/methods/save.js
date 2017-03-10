@@ -42,9 +42,9 @@ module.exports = function (self, name, schema, sage) {
       var result = _sage_util2.default.getUpdateSQL(_this.dirtyProps);
       result.values = _sage_util2.default.fixDateBug(_this.schema, result.values);
 
-      // update blob fields. TODO
-      _lodash2.default.each(_this.normalized, function (value, key) {
-        if (value.constructor.name === 'Buffer') {
+      // Convert blob fields into buffers before saving
+      _lodash2.default.each(_lodash2.default.keys(result.values), function (key) {
+        if (_this.normalized[key].constructor.name === 'Buffer') {
           result.values[key] = _this.normalized[key];
         }
       });

@@ -5,7 +5,7 @@ const expect = require('chai').expect;
 
 const Comment = require('../setup/models/comment');
 
-describe('raw and blob types',function() {
+describe.only('raw and blob types',function() {
   // Reset Db
   before(function(done) {
     TestHelpers.initdb().then(function() {
@@ -34,7 +34,7 @@ describe('raw and blob types',function() {
     });
   });
 
-  it('should update', function(done) {
+  it('should update with select', function(done) {
     Comment.select().exec()
       .then((comments) => {
         const comment = comments[0];
@@ -42,7 +42,24 @@ describe('raw and blob types',function() {
         comment.set('BODY', 'Enhanced body');
         return comment.save();
       })
-      .then(() => {
+      .then(() => Comment.findById("012345"))
+      .then((comment) => {
+        expect(comment.get('LIKE_COUNT')).to.equal('01');
+        expect(comment.get('BODY')).to.equal('Enhanced body');
+        done();
+      })
+  });
+
+  it('should update without setting the blob body', function(done) {
+    Comment.findById("012345")
+      .then((comment) => {
+        comment.set('LIKE_COUNT', '2');
+        return comment.save();
+      })
+      .then(() => Comment.findById("012345"))
+      .then((comment) => {
+        expect(comment.get('LIKE_COUNT')).to.equal('02');
+        expect(comment.get('BODY')).to.equal('Enhanced body');
         done();
       })
   });
