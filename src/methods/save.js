@@ -23,12 +23,12 @@ module.exports = function(self, name, schema, sage) {
       let result = sageUtil.getUpdateSQL(this.dirtyProps);
       result.values = sageUtil.fixDateBug(this.schema, result.values);
 
-      // update blob fields. TODO 
-      _.each(this.normalized, (value, key) => {
-        if (value.constructor.name === 'Buffer') {
+      // Convert blob fields into buffers before saving
+      _.each(_.keys(result.values), (key) => {
+        if (this.normalized[key].constructor.name === 'Buffer') {
           result.values[key] = this.normalized[key];
         }
-      })
+      });
 
       let sql = `UPDATE ${name} SET ${result.sql} WHERE ${pk}=:${pk}`;
 
