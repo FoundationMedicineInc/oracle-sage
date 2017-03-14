@@ -400,7 +400,6 @@ You can create transactions either invoking as a Promise, or by passing down
 a function.
 
 ### Function Style
-**RECOMMENDED**
 
 Returns a Promise. In this style, `commit` and `rollback` resolves the promise. It is suggested to always use this style as you are forced to apply a `commit()` or `rollback()` in order to resolve the promise.
 
@@ -426,6 +425,8 @@ sage.transaction(function(t) {
 
 The Promise style is available in the event you need a slightly different syntax. In this style `commit` and `rollback` will return promises. Be careful using this syntax because you may forget to call `commit` or `rollback`, which will leave a connection open.
 
+The sage transaction concept is identical to the **Unmanaged transaction (then-callback)** from [Sequelizejs Transactions](http://docs.sequelizejs.com/en/latest/docs/transactions/).
+
 ##### commit()
 
 Commits the transaction. Returns a promise.
@@ -437,9 +438,9 @@ Rollback the transaction. Returns a promise.
 ```javascript
 sage.transaction().then(function(t) {
   User.create({ username: "demo" }, { transaction: t }).then(function() {
+    return t.commit();
+  }).catch(function() {
     return t.rollback();
-  }).then(function() {
-    // done!!
   })
 });
 ```
