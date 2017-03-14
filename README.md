@@ -392,7 +392,9 @@ user.set({'USERNAME': 12345, GENDER: 'xyz');
 user.valid // false
 user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
 ```
-## Transactions
+## 
+
+
 
 Create a sage transaction to perform several operations before commit.
 
@@ -425,7 +427,7 @@ sage.transaction(function(t) {
 
 The Promise style is available in the event you need a slightly different syntax. In this style `commit` and `rollback` will return promises. Be careful using this syntax because you may forget to call `commit` or `rollback`, which will leave a connection open.
 
-The sage transaction concept is identical to the **Unmanaged transaction (then-callback)** from [Sequelizejs Transactions](http://docs.sequelizejs.com/en/latest/docs/transactions/).
+The sage transaction concept is identical to the [SequelizeJS Unmanaged transaction](http://docs.sequelizejs.com/en/latest/docs/transactions/#unmanaged-transaction-then-callback).
 
 ##### commit()
 
