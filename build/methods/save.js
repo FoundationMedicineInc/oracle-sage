@@ -44,7 +44,7 @@ module.exports = function (self, name, schema, sage) {
 
       // Convert blob fields into buffers before saving
       _lodash2.default.each(_lodash2.default.keys(result.values), function (key) {
-        if (_this.normalized[key].constructor.name === 'Buffer') {
+        if (_this.normalized[key] && _this.normalized[key].constructor.name === 'Buffer') {
           result.values[key] = _this.normalized[key];
         }
       });
