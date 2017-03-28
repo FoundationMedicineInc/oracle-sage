@@ -63,4 +63,29 @@ describe('raw and blob types',function() {
         done();
       })
   });
+
+  // https://github.com/FoundationMedicineInc/oracle-sage/issues/20
+  describe('null values', function() {
+    it('should create without a blob', function() {
+      return Comment.create({
+        COMMENT_ID: "45678",
+        LIKE_COUNT: "0"
+      });
+    });
+
+    it('should select with a null blob value', function(done) {
+      Comment.findById("045678")
+        .then((comment) => {
+          comment.set('LIKE_COUNT', '1');
+          comment.set('BODY', 'Enhanced body');
+          return comment.save();
+        })
+        .then(() => Comment.findById("045678"))
+        .then((comment) => {
+          expect(comment.get('LIKE_COUNT')).to.equal('01');
+          expect(comment.get('BODY')).to.equal('Enhanced body');
+          done();
+        })
+    });
+  });
 });
