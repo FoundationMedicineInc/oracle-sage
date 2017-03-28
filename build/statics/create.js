@@ -58,15 +58,44 @@ module.exports = function (modelClass, name, schema, sage) {
     var values = m.normalized;
     values = _sage_util2.default.fixDateBug(m.schema, values);
 
-    var connection;
+    // If a primary key is defined. Return it after create.
+    // Using __ because oracledb does not like prefix `_` eg. `__pk`
+    if (pk) {
+      sql = sql + ' RETURNING ' + pk + ' INTO :pk__';
+      values['pk__'] = {
+        dir: sage.oracledb.BIND_OUT
+      };
+    }
+
+    var connection = undefined;
+    var createdModel = undefined;
+    var createResult = undefined;
 
     return sage.getConnection({ transaction: options.transaction }).then(function (c) {
       connection = c;
     }).then(function () {
       sage.logger.debug(sql, values);
       return connection.execute(sql, values);
-    }).then(function () {
+    })
+    // Store the result of the create operation (it may have a PK value)
+    .then(function (result) {
+      return createResult = result;
+    })
+    // Close the connection
+    .then(function () {
       return sage.afterExecuteCommitable(connection);
+    })
+    // Set the model if a pk is defined
+    .then(function () {
+      if (pk) {
+        var id = createResult.outBinds['pk__'];
+        if (id && id[0]) {
+          // Format is { pk__: [ 'someValue' ] }
+          return modelClass.findById(id[0]);
+        }
+      }
+      // If no model is set let's just return the status of the operation
+      return createResult;
     }).catch(function (err) {
       return sage.afterExecuteCommitable(connection).then(function () {
         throw err;

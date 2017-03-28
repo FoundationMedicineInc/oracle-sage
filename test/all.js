@@ -1,7 +1,7 @@
 var assert = require('assert');
 var sage = require('../build/sage');
 
-var schema; 
+var schema;
 
 describe('schemas', function() {
   it('should accept of schemas without type', function() {
@@ -15,7 +15,7 @@ describe('schemas', function() {
       id: { type: "varchar" }
     });
     assert.equal(schema.definition.id.type, "varchar");
-  });    
+  });
 });
 
 describe('schemas', function() {
@@ -28,6 +28,7 @@ describe('schemas', function() {
     assert.equal(Temp.schema.getDefinition('abc'), undefined)
   })
 })
+
 describe('models', function() {
   before(function() {
     schema = new sage.Schema({
@@ -39,7 +40,7 @@ describe('models', function() {
         type: "timestamp",
         readonly: true
       },
-      name: { 
+      name: {
         type: "varchar",
         validator: function(v) {
           return(v === "bob");
@@ -57,7 +58,7 @@ describe('models', function() {
       is_single: 'char'
     }, {
       primaryKey: "id"
-    });    
+    });
   })
 
   it('should have access to the schema as a static', function() {
@@ -93,7 +94,7 @@ describe('models', function() {
     assert.equal(user.hello(), "userHello");
     assert.equal(guest.hello(), "guestHello");
 
-  })  
+  })
 
   it('should add statics', function() {
     var User = sage.model("User", schema)
@@ -102,7 +103,7 @@ describe('models', function() {
       }
     })
     assert(User.hello)
-  })  
+  })
 
 
   it('get an primary key id', function() {
@@ -120,7 +121,7 @@ describe('models', function() {
     assert.equal(user.valid, false);
     user.set('name', 'bob');
     assert.equal(user.valid, true);
-  });    
+  });
 
   it('should validate enum', function() {
     var User = sage.model("User", schema);
@@ -131,7 +132,7 @@ describe('models', function() {
     assert.equal(user.valid, false);
     user.set('gender', 'M');
     assert.equal(user.valid, true);
-  });   
+  });
 
   it('should validate char', function() {
     var User = sage.model("User", schema);
@@ -143,7 +144,7 @@ describe('models', function() {
     assert.equal(user.valid, false);
     user.set('is_single', 'Y');
     assert.equal(user.valid, true);
-  });   
+  });
 
   it('should validate char', function() {
     var User = sage.model("User", schema);
@@ -152,7 +153,7 @@ describe('models', function() {
       gender: ""
     });
     assert.equal(user.valid, false);
-  });      
+  });
 
 
   it("should normalize", function() {
@@ -180,6 +181,6 @@ describe('models', function() {
     var user = new User({name: "alice"});
     user.unset('name');
     assert.equal(user.get('name'), null);
-  });  
-  
+  });
+
 })

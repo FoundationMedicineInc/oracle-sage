@@ -125,7 +125,9 @@ let model = function(name, schema, sage) {
 
           // Blobs must be converted to a buffer before inserting into Oracle
           case "blob":
-            value = new Buffer(this.get(key));
+            if (this.get(key) !== undefined && this.get(key) !== null) {
+              value = new Buffer(this.get(key));
+            }
             break;
 
           default:

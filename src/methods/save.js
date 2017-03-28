@@ -25,7 +25,7 @@ module.exports = function(self, name, schema, sage) {
 
       // Convert blob fields into buffers before saving
       _.each(_.keys(result.values), (key) => {
-        if (this.normalized[key].constructor.name === 'Buffer') {
+        if (this.normalized[key] && this.normalized[key].constructor.name === 'Buffer') {
           result.values[key] = this.normalized[key];
         }
       });

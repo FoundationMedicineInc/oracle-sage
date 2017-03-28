@@ -9,7 +9,7 @@ var Profile = require('../setup/models/profile');
 var Post = require('../setup/models/post');
 
 var user;
-describe('transactions',function() {
+describe('save transactions',function() {
   // Reset Db
   before(function(done) {
     TestHelpers.initdb().then(function() {
@@ -23,7 +23,7 @@ describe('transactions',function() {
     }).catch(function(err) {
       console.log(err);
     });
-  });  
+  });
   // Create and set user
   before(function(done) {
     User.create({ USERNAME: "mrchess" }).then(function(err) {

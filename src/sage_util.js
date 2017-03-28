@@ -127,6 +127,8 @@ util.resultToJSON = function(result) {
 
     return Promise.each(row, (value, index) => {
       var field = result.metaData[index].name;
+      if (!value) return;
+      
       switch (value.constructor.name) {
         case 'Buffer':
           record[field] = value.toString('hex');
