@@ -73,7 +73,7 @@ module.exports = function(modelClass, name, schema, sage) {
         if (pk) {
           const id = createResult.outBinds['pk__'];
           if (id && id[0]) { // Format is { pk__: [ 'someValue' ] }
-            return modelClass.findById(id[0]);
+            return modelClass.findById(id[0], {transaction: options.transaction});
           }
         }
         // If no model is set let's just return the status of the operation
