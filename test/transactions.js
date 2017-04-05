@@ -314,52 +314,54 @@ describe('transactions',function() {
 
   })
 
-  // // Create and set user
-  // before(function(done) {
-  //   User.create({ USERNAME: "mrchess" }).then(function(err) {
-  //     User.findOne({ USERNAME: "mrchess" }).then(function(userModel) {
-  //       user = userModel;
-  //       console.log('found user', user.id)
-  //       done();
-  //     });
-  //   }).catch(function(err) { console.log('err', err) });
-  // });
+  describe('a user with posts', () => {
+    // Create and set user
+    before(function(done) {
+      User.create({ USERNAME: "mrchess" }).then(function(err) {
+        User.findOne({ USERNAME: "mrchess" }).then(function(userModel) {
+          user = userModel;
+          console.log('found user', user.id)
+          done();
+        });
+      }).catch(function(err) { console.log('err', err) });
+    });
 
-  // // Create a profile for user - hasOne
-  // before(function(done) {
-  //   Profile.create({
-  //     USER_ID: user.id,
-  //     BIO: "I write software."
-  //   }).then(function() {
-  //     done();
-  //   });
-  // });
+    // Create a profile for user - hasOne
+    before(function(done) {
+      Profile.create({
+        USER_ID: user.id,
+        BIO: "I write software."
+      }).then(function() {
+        done();
+      });
+    });
 
-  // // Create a few posts for the user - hasMany
-  // before(function(done) {
-  //   Post.create({
-  //     USER_ID: user.id,
-  //     POST_BODY: "My first post."
-  //   }).then(function() {
-  //     done();
-  //   });
-  // })
-  // before(function(done) {
-  //   Post.create({
-  //     USER_ID: user.id,
-  //     POST_BODY: "My second post."
-  //   }).then(function() {
-  //     done();
-  //   });
-  // })
+    // Create a few posts for the user - hasMany
+    before(function(done) {
+      Post.create({
+        USER_ID: user.id,
+        POST_BODY: "My first post."
+      }).then(function() {
+        done();
+      });
+    })
+    before(function(done) {
+      Post.create({
+        USER_ID: user.id,
+        POST_BODY: "My second post."
+      }).then(function() {
+        done();
+      });
+    })
 
-  // it('should populate', function(done) {
-  //   user.populate().then(function() {
-  //     // console.log(user)
-  //     var json = user.toJSON();
-  //     // console.log(json)
-  //     expect(json.posts.length).to.equal(2);
-  //     done();
-  //   });
-  // });
+    it('should populate', function(done) {
+      user.populate().then(function() {
+        // console.log(user)
+        var json = user.toJSON();
+        // console.log(json)
+        expect(json.posts.length).to.equal(2);
+        done();
+      });
+    });
+  })
 });
