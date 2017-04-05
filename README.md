@@ -403,7 +403,7 @@ a function.
 
 ### Function Style
 
-Returns a Promise. In this style, `commit` and `rollback` resolves the promise. It is suggested to always use this style as you are forced to apply a `commit()` or `rollback()` in order to resolve the promise.
+Returns a Promise. In this style, `commit` and `rollback` resolves the promise. When you use this style as you are forced to apply a `commit()` or `rollback()` in order to resolve the promise.
 
 ##### commit()
 
@@ -417,6 +417,8 @@ Rollback the transaction and resolves the transaction promise.
 sage.transaction(function(t) {
   User.create({ username: "demo" }, { transaction: t }).then(function() {
     t.commit(); // Resolves the promise
+  }).catch(function(err) {
+    t.rollback();
   });
 }).then(function() {
   // transaction done!
@@ -438,12 +440,22 @@ Commits the transaction. Returns a promise.
 Rollback the transaction. Returns a promise.
 
 ```javascript
-return sage.transaction().then(function(t) {
-  return User.create({ username: "demo" }, { transaction: t }).then(function() {
-    return t.commit();
-  }).catch(function() {
-    return t.rollback();
-  })
+return sage.transaction()
+  .then((t) => {
+    return User.create({ username: "demo" }, { transaction: t })
+      .then(() => User.select('*').exec({ transaction: t })) // Example using select
+      .then((results) => User.findById('1', { transaction: t}))
+      .then((user) => {
+        user.set('username', 'Bob')
+        return user.save({ transaction: t});
+      })
+      .then(() => t.commit())
+      .catch((err) => {
+        return t.rollback()
+          .then(() => {
+            throw(err);
+          });
+      });
 });
 ```
 
