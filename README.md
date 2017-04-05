@@ -15,27 +15,27 @@
 - [Defining Schemas](#defining-schemas)
 - [Schema Validations](#schema-validations)
 - [Other Schema Options](#other-schema-options)
-      - [readonly](#readonly)
-      - [sequenceName](#sequencename)
+    - [readonly](#readonly)
+    - [sequenceName](#sequencename)
 - [Initialize](#initialize)
 - [Creation](#creation)
 - [Updating](#updating)
 - [Querying](#querying)
-      - [findById(value)](#findbyidvalue)
-      - [findOne({})](#findone)
-      - [count({})](#count)
-      - [select()](#select)
+    - [findById(value)](#findbyidvalue)
+    - [findOne({})](#findone)
+    - [count({})](#count)
+    - [select()](#select)
 - [Model Methods](#model-methods)
-      - [get](#get)
-      - [set](#set)
-      - [unset](#unset)
-      - [toJSON/setFromJSON](#tojsonsetfromjson)
-      - [destroy](#destroy)
-      - [reload](#reload)
+    - [get](#get)
+    - [set](#set)
+    - [unset](#unset)
+    - [toJSON/setFromJSON](#tojsonsetfromjson)
+    - [destroy](#destroy)
+    - [reload](#reload)
 - [Model Properties](#model-properties)
-      - [id](#id)
-      - [valid](#valid)
-      - [errors](#errors)
+    - [id](#id)
+    - [valid](#valid)
+    - [errors](#errors)
 - [Transactions](#transactions)
   - [Function Style](#function-style)
       - [commit()](#commit)
@@ -267,7 +267,7 @@ Finds model based on `value` against the schema primary key
 
 ##### findOne({})
 
-Accepts `{}` which transforms into **AND** conditions. Returns the first item, and the 
+Accepts `{}` which transforms into **AND** conditions. Returns the first item, and the
 is ORDERED BY the schema primary key.
 
 Returns `null` if nothing is found. Otherwise returns a result represented in the model.
@@ -296,7 +296,7 @@ A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the
 
 ```javascript
 const singleColumnExample = 'USERNAME';
-const multipleColumnExample = ['USERNAME', 'PASSWORD']; 
+const multipleColumnExample = ['USERNAME', 'PASSWORD'];
 
 User
   .select() // same as select('*')
@@ -392,9 +392,9 @@ user.set({'USERNAME': 12345, GENDER: 'xyz');
 user.valid // false
 user.errors // ['USERNAME fails validator', 'GENDER is not in enum']
 ```
-## 
+##
 
-
+# Transactions
 
 Create a sage transaction to perform several operations before commit.
 
