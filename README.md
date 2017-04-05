@@ -438,8 +438,8 @@ Commits the transaction. Returns a promise.
 Rollback the transaction. Returns a promise.
 
 ```javascript
-sage.transaction().then(function(t) {
-  User.create({ username: "demo" }, { transaction: t }).then(function() {
+return sage.transaction().then(function(t) {
+  return User.create({ username: "demo" }, { transaction: t }).then(function() {
     return t.commit();
   }).catch(function() {
     return t.rollback();
