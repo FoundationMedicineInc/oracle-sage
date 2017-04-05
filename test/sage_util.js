@@ -42,4 +42,25 @@ describe('utilities', function() {
     assert.equal(sql.indexOf("SECRET"), -1)
   })
 
+  it("should handle results with 0 and null values", function() {
+    // Sample result from node-oracledb
+    const result = {
+      "rows": [[1,0,null,1]],
+      "metaData": [
+        { "name": "USER_ID" },
+        { "name": "BIO" },
+        { "name": "AGE" },
+        { "name": "RNUM" },
+      ]
+    }
+
+    return sageUtil.resultToJSON(result)
+      .then((results) => {
+        const result = results[0];
+        assert.equal(result.USER_ID, 1);
+        assert.equal(result.BIO, 0);
+        assert.equal(result.AGE, null);
+      })
+  })
+
 })

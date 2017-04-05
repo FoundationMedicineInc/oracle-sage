@@ -127,9 +127,17 @@ util.resultToJSON = function(result) {
 
     return Promise.each(row, (value, index) => {
       var field = result.metaData[index].name;
-      if (!value) return;
-      
-      switch (value.constructor.name) {
+
+      let constructorName;
+      // We get the constructor so we can handle specific types in specific ways
+      // particulary streams and hex values.
+      try {
+        constructorName = value.constructor.name;
+      } catch(e) { // Fails on null or undefined since neither of these have constructors
+        constructorName = null;
+      }
+
+      switch (constructorName) {
         case 'Buffer':
           record[field] = value.toString('hex');
           break;
