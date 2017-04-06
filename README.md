@@ -225,11 +225,22 @@ var User = sage.model(userTable, userSchema);
 User.create({ USERNAME: "example" });
 ```
 
+```javascript
+// EXPERIMENTAL. May not work well with complex column like BLOB
+User.create([
+  { USERNAME: "create" },  
+  { USERNAME: "many" },  
+  { USERNAME: "at once" }  
+]);
+```
+
 Notes:
 
-In the schema you can set a field to be `readonly`. This will disable it from being written to on creation.
+- In the schema you can set a field to be `readonly`. This will disable it from being written to on creation.
 
-There is a special case for autoincrement where you might not be able to use triggers to toggle autoincrement fields (eg. if you use Hibernate). The circumvent this, add a `sequenceName` property.
+- Passing an array creates in a single `INSERT ALL` statement
+
+- There is a special case for autoincrement where you might not be able to use triggers to toggle autoincrement fields (eg. if you use Hibernate). The circumvent this, add a `sequenceName` property.
 
 eg.
 
