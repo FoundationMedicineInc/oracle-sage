@@ -104,6 +104,11 @@ module.exports = function (modelClass, name, schema, sage) {
       });
 
       sql = sql.replace('INSERT INTO', 'INTO');
+
+      if (options.hasDbmsErrlog) {
+        sql = sql + ' LOG ERRORS REJECT LIMIT UNLIMITED';
+      }
+
       insertSqls.push(sql);
     });
 
@@ -191,6 +196,16 @@ module.exports = function (modelClass, name, schema, sage) {
     });
   }
 
+  /**
+   * @param  {Object} [props={}]   [description]
+   * @param  {Object} [options={}]
+   * @param  {Object} options.transaction Sage transaction
+   *
+   * @param  {boolean} options.hasDbmsErrLog Set to true if you set up a dbms err log
+   *                                         and want to skip errors when you batch
+   *                                         create. See this for more info:
+   *                                         http://stackoverflow.com/questions/13420461/oracle-insert-all-ignore-duplicates
+   */
   modelClass.create = function () {
     var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
