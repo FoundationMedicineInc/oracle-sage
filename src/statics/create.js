@@ -79,7 +79,7 @@ module.exports = function(modelClass, name, schema, sage) {
         let replaceValue = values[key] || null
 
         if (typeof replaceValue === 'string') {
-          replaceValue = `'${replaceValue}'`
+          replaceValue = `'${sageUtil.mysql_real_escape_string(replaceValue)}'`
         }
 
         sql = sql.replace(`:${key}`, replaceValue)

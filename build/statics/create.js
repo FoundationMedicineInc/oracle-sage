@@ -97,7 +97,7 @@ module.exports = function (modelClass, name, schema, sage) {
         var replaceValue = values[key] || null;
 
         if (typeof replaceValue === 'string') {
-          replaceValue = '\'' + replaceValue + '\'';
+          replaceValue = '\'' + _sage_util2.default.mysql_real_escape_string(replaceValue) + '\'';
         }
 
         sql = sql.replace(':' + key, replaceValue);
