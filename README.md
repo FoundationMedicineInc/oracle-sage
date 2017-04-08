@@ -225,11 +225,24 @@ var User = sage.model(userTable, userSchema);
 User.create({ USERNAME: "example" });
 ```
 
+```javascript
+// EXPERIMENTAL. May not work well with complex column like BLOB
+User.create([
+  { USERNAME: "create" },  
+  { USERNAME: "many" },  
+  { USERNAME: "at once" }  
+], { hasDbmsErrlog: true }); // This options object is optional
+```
+
 Notes:
 
-In the schema you can set a field to be `readonly`. This will disable it from being written to on creation.
+- In the schema you can set a field to be `readonly`. This will disable it from being written to on creation.
 
-There is a special case for autoincrement where you might not be able to use triggers to toggle autoincrement fields (eg. if you use Hibernate). The circumvent this, add a `sequenceName` property.
+- Passing an array creates in a single `INSERT ALL ... SELECT * FROM DUAL` statement
+  - There is a flag `hasDbmsErrlog` that if set true, will not fail the query if a constraint/error is hit.
+  - This flag assumes you have an error table for your table, see [this stackoverflow issue](http://stackoverflow.com/questions/13420461/oracle-insert-all-ignore-duplicates)
+
+- There is a special case for autoincrement where you might not be able to use triggers to toggle autoincrement fields (eg. if you use Hibernate). The circumvent this, add a `sequenceName` property.
 
 eg.
 
