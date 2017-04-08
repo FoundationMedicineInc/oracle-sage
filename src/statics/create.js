@@ -182,7 +182,7 @@ module.exports = function(modelClass, name, schema, sage) {
    * @param  {Object} [options={}]
    * @param  {Object} options.transaction Sage transaction
    *
-   * @param  {boolean} options.hasDbmsErrLog Set to true if you set up a dbms err log
+   * @param  {boolean} options.hasDbmsErrlog Set to true if you set up a dbms err log
    *                                         and want to skip errors when you batch
    *                                         create. See this for more info:
    *                                         http://stackoverflow.com/questions/13420461/oracle-insert-all-ignore-duplicates

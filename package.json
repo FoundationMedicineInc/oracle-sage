@@ -1,7 +1,7 @@
 {
   "name": "oracle-sage",
   "description": "Promise driven object modeling for OracleDB",
-  "version": "0.3.8",
+  "version": "0.4.0",
   "main": "./build/sage.js",
   "directories": {
     "test": "test"
@@ -23,7 +23,7 @@
     "lodash": "^4.15.0",
     "moment": "^2.15.1",
     "object-assign": "^4.1.0",
-    "oracledb": "1.11.0",
+    "oracledb": "1.13.0",
     "promise": "^7.1.1",
     "simple-oracledb": "^1.1.59",
     "winston": "^2.2.0"
