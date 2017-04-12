@@ -25,51 +25,35 @@ class SelectQuery {
   exec(options = {}) {
     var models = [];
     var self = this;
-    return new Promise(function(resolve, reject) {
-      var connection;
-      async.series([
-        // Establish Connection
-        function(next) {
-          self.sage.getConnection({transaction: options.transaction}).then(function(c) {
-            connection = c;
-            next();
-          }).catch(next);
-        },
-        // Perform operation
-        function(next) {
-          var sql = self.knex.toString()
 
-          // Fix: [Error: ORA-01756: quoted string not properly terminated]
-          sql = sql.replace(/\\'/g, "''")
+    let connection;
 
-          self.sage.logger.debug(sql);
+    return self.sage.getConnection({transaction: options.transaction})
+      .then(c => (connection = c))
+      .then(() => {
+        let sql = self.knex.toString();
+        // Fix: [Error: ORA-01756: quoted string not properly terminated]
+        sql = sql.replace(/\\'/g, "''")
 
-          // TODO I think this will cap at returning 100 rows despite setting a limit
-          // in the SELECT statement.
-          connection.execute(sql)
-            .then((result) => sageUtil.resultToJSON(result))
-            .then((results) => {
-              _.each(results, (result) => {
-                models.push(new self.model(result))
-              })
-              next();
-            })
-            .catch(next);
-        }
-      ], function(err) {
+        self.sage.logger.debug(sql);
+        return connection.execute(sql);
+      })
+      .then((result) => sageUtil.resultToJSON(result))
+      .then((results) => {
+        _.each(results, (result) => {
+          models.push(new self.model(result))
+        });
+        return models;
+      })
+      .catch((err) => {
         if(err) {
           self.sage.logger.error(err);
         }
-        self.sage.afterExecute(connection).then(function() {
-          if(err) {
-            return reject(err);
-          }
-
-          return resolve(models);
-        }).catch(reject);
-
+        throw(err);
+      })
+      .finally(() => {
+        return self.sage.afterExecute(connection)
       });
-    });
   }
 }
 

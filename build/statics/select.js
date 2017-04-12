@@ -54,47 +54,32 @@ var SelectQuery = (function () {
 
       var models = [];
       var self = this;
-      return new _bluebird2.default(function (resolve, reject) {
-        var connection;
-        _async2.default.series([
-        // Establish Connection
-        function (next) {
-          self.sage.getConnection({ transaction: options.transaction }).then(function (c) {
-            connection = c;
-            next();
-          }).catch(next);
-        },
-        // Perform operation
-        function (next) {
-          var sql = self.knex.toString();
 
-          // Fix: [Error: ORA-01756: quoted string not properly terminated]
-          sql = sql.replace(/\\'/g, "''");
+      var connection = undefined;
 
-          self.sage.logger.debug(sql);
+      return self.sage.getConnection({ transaction: options.transaction }).then(function (c) {
+        return connection = c;
+      }).then(function () {
+        var sql = self.knex.toString();
+        // Fix: [Error: ORA-01756: quoted string not properly terminated]
+        sql = sql.replace(/\\'/g, "''");
 
-          // TODO I think this will cap at returning 100 rows despite setting a limit
-          // in the SELECT statement.
-          connection.execute(sql).then(function (result) {
-            return _sage_util2.default.resultToJSON(result);
-          }).then(function (results) {
-            _lodash2.default.each(results, function (result) {
-              models.push(new self.model(result));
-            });
-            next();
-          }).catch(next);
-        }], function (err) {
-          if (err) {
-            self.sage.logger.error(err);
-          }
-          self.sage.afterExecute(connection).then(function () {
-            if (err) {
-              return reject(err);
-            }
-
-            return resolve(models);
-          }).catch(reject);
+        self.sage.logger.debug(sql);
+        return connection.execute(sql);
+      }).then(function (result) {
+        return _sage_util2.default.resultToJSON(result);
+      }).then(function (results) {
+        _lodash2.default.each(results, function (result) {
+          models.push(new self.model(result));
         });
+        return models;
+      }).catch(function (err) {
+        if (err) {
+          self.sage.logger.error(err);
+        }
+        throw err;
+      }).finally(function () {
+        return self.sage.afterExecute(connection);
       });
     }
   }]);
