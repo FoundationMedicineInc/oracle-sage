@@ -28,6 +28,7 @@ describe('sage basic methods',function() {
   })
 });
 
+// https://github.com/FoundationMedicineInc/oracle-sage/issues/34
 describe('sage basic methods work with transactions',function() {
   // Reset Db
   before(function() {
