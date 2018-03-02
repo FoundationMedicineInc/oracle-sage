@@ -37,3 +37,6 @@ node_modules
 # local test file
 # rtest.js 
 # relation_test.js
+
+.idea/
+
