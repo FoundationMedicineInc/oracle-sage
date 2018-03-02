@@ -225,10 +225,10 @@ class Sage {
 
     let connection;
     let results;
-    return self.getConnection()
-      .then( (c) => connection = c )
-      .then( () => connection.execute(sql, bindParams, options) )
-      .then( (r) => {
+    return self.getConnection({ transaction: options.transaction })
+      .then((c) => connection = c)
+      .then(() => connection.execute(sql, bindParams, options))
+      .then((r) => {
         // Lowercase all the object keys
         // This was just done to make the data more 'JS' friendly since
         // the database column names are all uppercase.
@@ -239,10 +239,14 @@ class Sage {
           })
         });
 
-        return self.releaseConnection(connection);
+        if (!options.transaction) {
+          return sage.releaseConnection(connection);
+        }
+
+        return;
       })
-      .then( () => results ) // Return the results
-      .catch( (err) => {
+      .then(() => results) // Return the results
+      .catch((err) => {
         logger.warn(err);
         return self.releaseConnection(connection)
           .then( () => { throw(err) })
@@ -275,7 +279,7 @@ class Sage {
     let auth = {
       user: "system",
       password: "oracle",
-      connectString: uri || "127.0.0.1:1521/orcl",
+      connectString: uri || "127.0.0.1:1521/xe",
       poolMin: connectOptions.poolMin,
       poolMax: connectOptions.poolMax
     }

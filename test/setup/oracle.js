@@ -17,7 +17,7 @@ var OracleConnector = (function() {
       _credentials: { 
         user: "SAGE_TEST",
         password: "oracle",
-        connectString: "127.0.0.1:1521/orcl",
+        connectString: "localhost:1521/xe",
         userSchema: "SAGE_TEST"
       },
       connection: null

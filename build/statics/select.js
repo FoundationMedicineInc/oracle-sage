@@ -1,6 +1,6 @@
 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _bluebird = require('bluebird');
 
@@ -24,7 +24,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var knex = require('knex')({ client: 'oracle' });
 
-var SelectQuery = (function () {
+var SelectQuery = function () {
   function SelectQuery(sage, tableName, model, columns) {
     var _this = this;
 
@@ -55,7 +55,7 @@ var SelectQuery = (function () {
       var models = [];
       var self = this;
 
-      var connection = undefined;
+      var connection = void 0;
 
       return self.sage.getConnection({ transaction: options.transaction }).then(function (c) {
         return connection = c;
@@ -85,6 +85,6 @@ var SelectQuery = (function () {
   }]);
 
   return SelectQuery;
-})();
+}();
 
 module.exports = SelectQuery;

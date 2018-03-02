@@ -1,6 +1,8 @@
 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _bluebird = require('bluebird');
 
@@ -32,13 +34,11 @@ var _async2 = _interopRequireDefault(_async);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var model = function model(name, schema, sage) {
   var _methods = {};
-  var modelClass = (function () {
+  var modelClass = function () {
     function Model(props, initName, initSchema) {
       _classCallCheck(this, Model);
 
@@ -78,6 +78,7 @@ var model = function model(name, schema, sage) {
       }
     }, {
       key: 'get',
+
 
       // Return a property
       value: function get(key) {
@@ -140,13 +141,11 @@ var model = function model(name, schema, sage) {
               result[key] = undefined;
             }
           } else {
-            (function () {
-              var modelsJSON = [];
-              _lodash2.default.each(models, function (model) {
-                modelsJSON.push(model.toJSON());
-              });
-              result[key] = modelsJSON;
-            })();
+            var modelsJSON = [];
+            _lodash2.default.each(models, function (model) {
+              modelsJSON.push(model.toJSON());
+            });
+            result[key] = modelsJSON;
           }
         });
 
@@ -208,7 +207,7 @@ var model = function model(name, schema, sage) {
             continue;
           }
 
-          var value = undefined;
+          var value = void 0;
 
           switch (this.schema.definition[key].type) {
             case 'date':
@@ -463,9 +462,9 @@ var model = function model(name, schema, sage) {
         };
 
         for (var key in this.schema.definition) {
-          var _ret2 = _loop(key);
+          var _ret = _loop(key);
 
-          if (_ret2 === 'continue') continue;
+          if (_ret === 'continue') continue;
         }
         return isValid;
       }
@@ -506,7 +505,7 @@ var model = function model(name, schema, sage) {
     }]);
 
     return Model;
-  })();
+  }();
 
   // Store them in sage as they get created
   sage.models[name] = {

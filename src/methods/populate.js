@@ -4,14 +4,14 @@ import _ from 'lodash';
 import sageUtil from '../../build/sage_util';
 
 module.exports = function(self, name, schema, sage) {
-  self.populate = function() {
+  self.populate = function(options = {}) {
     if(!this._associations.length) {
       this._associations = this._schema.associations
     }
 
     if(this._associations.length) {
       return new Promise((resolve, reject) => {
-        this._populate().then(function() {
+        this._populate(options).then(function() {
           return resolve()
         }).catch(function(err) {
           sage.logger.error(err);
@@ -23,12 +23,12 @@ module.exports = function(self, name, schema, sage) {
     }
   }
 
-  self._populate = function() {
+  self._populate = function(options = {}) {
     return new Promise((resolve, reject) => {
       let association = this._associations.shift()
-      this.populateOne(association).then(()=> {
+      this.populateOne(association, options).then(()=> {
         if(this._associations.length) {
-          this._populate().then(function() {
+          this._populate(options).then(function() {
             return resolve()
           }).catch(reject);
         } else {
@@ -38,7 +38,7 @@ module.exports = function(self, name, schema, sage) {
     })
   }
 
-  self.populateOne = function(association) {
+  self.populateOne = function(association, options = {}) {
     let self = this
     let value = association.value
     let model = sage.models[value.model]
@@ -104,7 +104,7 @@ module.exports = function(self, name, schema, sage) {
       var connection;
       async.series([
         function(next) {
-          sage.getConnection().then(function(c) {
+          sage.getConnection({ transaction: options.transaction }).then(function(c) {
             connection = c;
             return next();
           }).catch(function(err) {
@@ -145,9 +145,12 @@ module.exports = function(self, name, schema, sage) {
       ], function(err) {
         if(err) {
           sage.logger.error(err);
-          return reject(err);
         }
         sage.afterExecute(connection).then(function() {
+          if(err) {
+            return reject(err);
+          }
+
           return resolve();
         }).catch(reject);
       });

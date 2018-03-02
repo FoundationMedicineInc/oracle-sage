@@ -27,3 +27,35 @@ describe('sage basic methods',function() {
       })
   })
 });
+
+describe('sage basic methods work with transactions',function() {
+  // Reset Db
+  before(function() {
+    return TestHelpers
+      .initdb()
+      .then(TestHelpers.connect)
+  });
+
+  it("should execute in the context of a transaction", function(done) {
+    sage = require('../build/sage');
+    const query = "SELECT * FROM users";
+    return sage.transaction().then(t =>
+      sage.execute(query, [], { transaction: t })
+        .then(response => {
+          expect(response.length).to.equal(0);
+        })
+        .then(() => User.create({ USERNAME: "jpollard" }, { transaction: t }))
+        .then(() => sage.execute(query, [], { transaction: t }))
+        .then(response => {
+          expect(response.length).to.equal(1);
+        })
+        .then(function() {
+          return t.commit().then(done);
+        })
+        .catch(function(err) {
+          console.log('err', err);
+          return t.rollback().then(done);
+        })
+    );
+  })
+});
