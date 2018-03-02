@@ -144,7 +144,7 @@ util.resultToJSON = function (result) {
     return _bluebird2.default.each(row, function (value, index) {
       var field = result.metaData[index].name;
 
-      var constructorName = undefined;
+      var constructorName = void 0;
       // We get the constructor so we can handle specific types in specific ways
       // particulary streams and hex values.
       try {

@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
@@ -17,8 +19,6 @@ var _async = require('async');
 var _async2 = _interopRequireDefault(_async);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
 module.exports = function (modelClass, name, schema, sage) {
 
@@ -117,8 +117,8 @@ module.exports = function (modelClass, name, schema, sage) {
     var allSqls = insertSqls.join(' ');
     var query = 'INSERT ALL ' + allSqls + ' SELECT * FROM dual';
 
-    var connection = undefined;
-    var result = undefined;
+    var connection = void 0;
+    var result = void 0;
 
     return sage.getConnection({ transaction: options.transaction }).then(function (c) {
       connection = c;
@@ -163,8 +163,8 @@ module.exports = function (modelClass, name, schema, sage) {
       };
     }
 
-    var connection = undefined;
-    var createResult = undefined;
+    var connection = void 0;
+    var createResult = void 0;
 
     return sage.getConnection({ transaction: options.transaction }).then(function (c) {
       connection = c;
@@ -203,7 +203,7 @@ module.exports = function (modelClass, name, schema, sage) {
    * @param  {Object} [options={}]
    * @param  {Object} options.transaction Sage transaction
    *
-   * @param  {boolean} options.hasDbmsErrLog Set to true if you set up a dbms err log
+   * @param  {boolean} options.hasDbmsErrlog Set to true if you set up a dbms err log
    *                                         and want to skip errors when you batch
    *                                         create. See this for more info:
    *                                         http://stackoverflow.com/questions/13420461/oracle-insert-all-ignore-duplicates

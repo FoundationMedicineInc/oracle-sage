@@ -9,7 +9,7 @@ oracledb.getConnection(
   {
     user          : "SAGE_TEST",
     password      : "oracle",
-    connectString : "localhost/orcl"
+    connectString : "localhost:1521/xe"
   },
   function(err, connection)
   {

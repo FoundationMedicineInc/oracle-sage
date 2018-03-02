@@ -45,6 +45,9 @@ module.exports = function(self, name, schema, sage) {
       ], function(err) {
         if(err) {
           sage.logger.error(err);
+          return sage.afterExecute(connection).then(() => {
+            reject(err)
+          });
         }
 
         sage.afterExecuteCommitable(connection).then(function() {
@@ -52,8 +55,6 @@ module.exports = function(self, name, schema, sage) {
         }).catch(reject);
 
       });
-
-
     })
   }
 }

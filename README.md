@@ -761,7 +761,7 @@ The tests suite assumes you have a local Oracle 11g database set up with the fol
 ```
 Hostname: localhost
 Port: 1521
-Service name: orcl
+Service name: xe
 Username: SAGE_TEST
 Password: oracle
 ```

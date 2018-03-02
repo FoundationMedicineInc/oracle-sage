@@ -6,7 +6,7 @@ var sage = require('../build/sage');
 module.exports = {
   sage: sage,
   initdb: function(options) {
-    options = options || {}
+    options = options || {};
 
     var oracle = require('./setup/oracle')
     return new Promise(function(resolve, reject) {
@@ -15,8 +15,8 @@ module.exports = {
       }).then(function() {
         if(options.verbose) {
           console.log('************');
-          console.log('Success.')
-          console.log('************')
+          console.log('Success.');
+          console.log('************');
         }
       }).then(function() {
         resolve();
@@ -25,7 +25,7 @@ module.exports = {
   },
   connect: function() {
     return new Promise(function(resolve, reject) {
-      sage.connect('127.0.0.1:1521/orcl', {
+      sage.connect('127.0.0.1:1521/xe', {
         user: 'SAGE_TEST',
         password: 'oracle'
       }).then(function() {
@@ -36,5 +36,4 @@ module.exports = {
       })
     })
   }
-
 };

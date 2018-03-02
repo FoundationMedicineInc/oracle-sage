@@ -1,6 +1,6 @@
 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _bluebird = require('bluebird');
 
@@ -46,7 +46,7 @@ _simpleOracledb2.default.extend(_oracledb2.default);
 
 var knex = require('knex')({ client: 'oracle' });
 
-var Sage = (function () {
+var Sage = function () {
   function Sage() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -220,9 +220,9 @@ var Sage = (function () {
     key: 'model',
     value: function model(name, schema) {
       if (!schema) {
-        var _model = this.models[name];
-        if (_model) {
-          return _model.model;
+        var model = this.models[name];
+        if (model) {
+          return model.model;
         } else {
           return null;
         }
@@ -265,9 +265,9 @@ var Sage = (function () {
         outFormat: self.oracledb.OBJECT
       }, options);
 
-      var connection = undefined;
-      var results = undefined;
-      return self.getConnection().then(function (c) {
+      var connection = void 0;
+      var results = void 0;
+      return self.getConnection({ transaction: options.transaction }).then(function (c) {
         return connection = c;
       }).then(function () {
         return connection.execute(sql, bindParams, options);
@@ -282,7 +282,11 @@ var Sage = (function () {
           });
         });
 
-        return self.releaseConnection(connection);
+        if (!options.transaction) {
+          return sage.releaseConnection(connection);
+        }
+
+        return;
       }).then(function () {
         return results;
       }) // Return the results
@@ -324,7 +328,7 @@ var Sage = (function () {
       var auth = {
         user: "system",
         password: "oracle",
-        connectString: uri || "127.0.0.1:1521/orcl",
+        connectString: uri || "127.0.0.1:1521/xe",
         poolMin: connectOptions.poolMin,
         poolMax: connectOptions.poolMax
       };
@@ -351,7 +355,7 @@ var Sage = (function () {
   }]);
 
   return Sage;
-})();
+}();
 
 var sage = new Sage();
 

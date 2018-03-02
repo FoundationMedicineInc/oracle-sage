@@ -78,7 +78,11 @@ module.exports = function (self, name, schema, sage) {
       }], function (err) {
         if (err) {
           sage.logger.error(err);
-        };
+          return sage.afterExecute(connection).then(function () {
+            reject(err);
+          });
+        }
+
         sage.afterExecuteCommitable(connection).then(function () {
           if (err) {
             return reject(err);
