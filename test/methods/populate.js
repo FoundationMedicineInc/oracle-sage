@@ -61,9 +61,14 @@ describe('when populate is called within a transaction',function() {
           .then(() => user.populate({ transaction: t }))
           .then(() => {
             expect(user.get("PROFILE").get("BIO")).to.equal("I write tests.");
-            done();
           })
-          .catch(function(err) { console.log(err) });
+          .then(() => {
+            t.commit().then(done);
+          })
+          .catch(err => {
+            t.rollback();
+            console.log(err)
+          });
       })
     });
 });

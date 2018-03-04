@@ -2,7 +2,6 @@ var TestHelpers = require('../test_helpers');
 var expect = require('chai').expect;
 var sage = require('../../build/sage');
 
-
 var User = require('../setup/models/user');
 var Profile = require('../setup/models/profile');
 var Post = require('../setup/models/post');
