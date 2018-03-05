@@ -123,7 +123,7 @@ module.exports = function(self, name, schema, sage) {
                 let result = results.shift();
                 if(result) {
                   let model = new associationModel(result)
-                  model.populate().then(function() {
+                  model.populate(options).then(function() {
                     models.push(model);
                     populateResults();
                   }).catch(function(err) {
