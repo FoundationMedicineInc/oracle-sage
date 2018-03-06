@@ -40,3 +40,6 @@ node_modules
 
 .idea/
 
+# don't include the build directory - this is only needed for publishing the node module
+build/
+

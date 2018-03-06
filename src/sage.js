@@ -6,9 +6,6 @@ import logger from './logger';
 // Statement caching can be disabled by setting the size to 0.
 oracledb.stmtCacheSize = 0;
 
-import SimpleOracleDB from 'simple-oracledb';
-SimpleOracleDB.extend(oracledb);
-
 import _ from 'lodash';
 
 import sageModel from '../build/sage_model';
@@ -248,6 +245,9 @@ class Sage {
       .then(() => results) // Return the results
       .catch((err) => {
         logger.warn(err);
+        if (options.transaction) {
+          throw(err);
+        }
         return self.releaseConnection(connection)
           .then( () => { throw(err) })
           .catch( (err) => { throw(err) })
