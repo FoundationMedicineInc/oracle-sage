@@ -1,7 +1,7 @@
 {
   "name": "oracle-sage",
   "description": "Promise driven object modeling for OracleDB",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "./build/sage.js",
   "directories": {
     "test": "test"
