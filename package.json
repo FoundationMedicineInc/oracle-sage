@@ -1,13 +1,14 @@
 {
   "name": "oracle-sage",
   "description": "Promise driven object modeling for OracleDB",
-  "version": "0.5.2",
+  "version": "1.0.0",
   "main": "./build/sage.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
     "test": "node_modules/mocha/bin/mocha --recursive --timeout 30000",
+    "prepublish": "nsp check && babel ./src --out-dir ./build",
     "watch": "babel src -d build -w"
   },
   "license": "MIT",
@@ -23,7 +24,7 @@
     "lodash": "^4.15.0",
     "moment": "^2.15.1",
     "object-assign": "^4.1.0",
-    "oracledb": "1.13.0",
+    "oracledb": "^2.1.2",
     "promise": "^7.1.1",
     "simple-oracledb": "^1.1.59",
     "winston": "^2.2.0"
@@ -32,7 +33,8 @@
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.18.0",
     "chai": "^3.5.0",
-    "mocha": "^2.3.4"
+    "mocha": "^2.3.4",
+    "nsp": "^3.2.1"
   },
   "bugs": {
     "url": "https://github.com/FoundationMedicineInc/oracle-sage/issues/new"
