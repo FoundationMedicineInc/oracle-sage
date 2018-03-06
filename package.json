@@ -26,7 +26,6 @@
     "object-assign": "^4.1.0",
     "oracledb": "^2.1.2",
     "promise": "^7.1.1",
-    "simple-oracledb": "^1.1.59",
     "winston": "^2.2.0"
   },
   "devDependencies": {
