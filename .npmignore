@@ -1,0 +1,10 @@
+.babelrc
+.eslintrc
+.gitignore
+.nvmrc
+test.js
+src/
+node_modules/
+test/
+example/
+.idea/
