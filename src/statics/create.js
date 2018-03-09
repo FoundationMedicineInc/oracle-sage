@@ -76,7 +76,7 @@ module.exports = function(modelClass, name, schema, sage) {
       const values = m.normalized
       let sql = template;
       _.each(_.keys(values), (key) => {
-        let replaceValue = values[key] || null
+        let replaceValue = values[key] === undefined ? null : values[key];
 
         if (typeof replaceValue === 'string') {
           // Escape single quotes
