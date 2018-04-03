@@ -2,7 +2,6 @@ import _ from 'lodash';
 
 class Schema {
   constructor(definition = {}, config = {}) {
-    const tempDefinition = {};
     for (const key in definition) {
       const value = definition[key];
       if (typeof value === 'string') {

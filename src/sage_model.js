@@ -1,10 +1,7 @@
-import Promise from 'bluebird';
 import moment from 'moment';
-import sageUtil from '../build/sage_util';
 import sageSelectQuery from '../build/statics/select';
 import _ from 'lodash';
 import objectAssign from 'object-assign';
-import async from 'async';
 
 const model = function(name, schema, sage) {
   let _methods = {};

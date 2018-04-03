@@ -9,61 +9,65 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Installation](#installation)
-- [Debugging](#debugging)
-- [Connect](#connect)
-- [Defining Schemas](#defining-schemas)
-- [Schema Validations](#schema-validations)
-- [Other Schema Options](#other-schema-options)
-    - [readonly](#readonly)
-    - [sequenceName](#sequencename)
-- [Initialize](#initialize)
-- [Creation](#creation)
-- [Updating](#updating)
-- [Querying](#querying)
-    - [findById(value)](#findbyidvalue)
-    - [findOne({})](#findone)
-    - [count({})](#count)
-    - [select()](#select)
-- [Model Methods](#model-methods)
-    - [get](#get)
-    - [set](#set)
-    - [unset](#unset)
-    - [toJSON/setFromJSON](#tojsonsetfromjson)
-    - [destroy](#destroy)
-    - [reload](#reload)
-- [Model Properties](#model-properties)
-    - [id](#id)
-    - [valid](#valid)
-    - [errors](#errors)
+  - [Installation](#installation)
+  - [Debugging](#debugging)
+  - [Connect](#connect)
+  - [Defining Schemas](#defining-schemas)
+  - [Schema Validations](#schema-validations)
+  - [Schema Transforms](#schema-transforms)
+  - [Other Schema Options](#other-schema-options)
+        - [readonly](#readonly)
+        - [sequenceName](#sequencename)
+  - [Initialize](#initialize)
+  - [Creation](#creation)
+  - [Updating](#updating)
+  - [Querying](#querying)
+        - [findById(value)](#findbyidvalue)
+        - [findOne({})](#findone)
+        - [count({})](#count)
+        - [select()](#select)
+  - [Model Methods](#model-methods)
+        - [get](#get)
+        - [set](#set)
+        - [unset](#unset)
+        - [toJSON/setFromJSON](#tojsonsetfromjson)
+        - [destroy](#destroy)
+        - [reload](#reload)
+  - [Model Properties](#model-properties)
+        - [id](#id)
+        - [valid](#valid)
+        - [errors](#errors)
+  - [](#)
 - [Transactions](#transactions)
-  - [Function Style](#function-style)
-      - [commit()](#commit)
-      - [rollback()](#rollback)
-  - [Promise Style](#promise-style)
-      - [commit()](#commit-1)
-      - [rollback()](#rollback-1)
-- [Extending Models](#extending-models)
-      - [statics({})](#statics)
-      - [methods({})](#methods)
-- [Associations and Population](#associations-and-population)
-  - [hasOne](#hasone)
-  - [hasMany](#hasmany)
-  - [hasManyThrough](#hasmanythrough)
-  - [hasAndBelongsToMany](#hasandbelongstomany)
-- [Raw Connection](#raw-connection)
-      - [Connection](#connection)
-      - [Knex](#knex)
-- [Utilities](#utilities)
-- [Other Examples](#other-examples)
-- [Contributing](#contributing)
-- [License](#license)
+    - [Function Style](#function-style)
+        - [commit()](#commit)
+        - [rollback()](#rollback)
+    - [Promise Style](#promise-style)
+        - [commit()](#commit-1)
+        - [rollback()](#rollback-1)
+  - [Extending Models](#extending-models)
+        - [statics({})](#statics)
+        - [methods({})](#methods)
+  - [Associations and Population](#associations-and-population)
+    - [hasOne](#hasone)
+    - [hasMany](#hasmany)
+    - [hasManyThrough](#hasmanythrough)
+    - [hasAndBelongsToMany](#hasandbelongstomany)
+  - [Raw Connection](#raw-connection)
+        - [Connection](#connection)
+        - [Knex](#knex)
+  - [Utilities](#utilities)
+  - [Other Examples](#other-examples)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Installation
 
 **NOTICE: oracle-sage uses the official node-oracledb module, which is complex to install. Be sure you have followed the official directions to install node-oracledb before installing Sage**
+
+**Oracle Sage supports Node 6+, you can publish a build to support earlier versions of Node by forking the project and modifying the node target in the .babelrc file**
 
 First, you must have `node-oracledb` installed. You can find the install instructions at their repository [here](https://github.com/oracle/node-oracledb#-installation).
 
@@ -148,6 +152,7 @@ Special features:
 
 - enum
 - validators
+- transforms
 
 Methods:
 
@@ -185,6 +190,45 @@ var userSchema = sage.Schema({
     }
   }
 })
+```
+
+## Schema Transforms
+
+To access the raw output from node-oracledb and apply your own transformations you can use a Schema `transform` function.
+Sage usually returns the raw output from oracle-sage except for fields that oracle-db returns as Buffers or Streams.
+Sage converts Buffers to uppercase hexadecimal strings and it converts Streams to utf8 strings.
+If you want more granular control over this conversion then you should use a `transform` function.
+`transform` functions should either return the transformed value or return a promise which resolves with the transformed value.
+
+```javascript
+const commentSchema = new sage.Schema(
+  {
+    COMMENT_ID: {
+      type: 'raw',
+      transform: buffer => buffer.toString('utf8')
+    },
+    LIKE_COUNT: {
+      type: 'raw',
+    },
+    BODY: {
+      type: 'blob',
+      transform: value => {
+        return new Promise(resolve => {
+          const chunks = [];
+          value.on('data', chunk => {
+            chunks.push(chunk.toString());
+          });
+          value.on('end', () => {
+            resolve(`${chunks.join('')} No you may not.`);
+          });
+        });
+      }
+    },
+  },
+  {
+    primaryKey: 'COMMENT_ID',
+  }
+);
 ```
 
 ## Other Schema Options
@@ -722,7 +766,7 @@ See [Knex](http://knexjs.org/) for the full API usage.
 
 There is a useful utility called `sage.util.resultToJSON(result)`.
 
-You can pass in a `result` from a `sage.execute()` and it will transform the native oracle results into a JSON array that you can pass down to your model. eg.
+You can pass in a `result` (and optional Schema if using transform functions) from a `sage.execute()` and it will transform the native oracle results into a JSON array that you can pass down to your model. eg.
 
 ```javascript
 const someSQL = 'SELECT * FROM USER';
