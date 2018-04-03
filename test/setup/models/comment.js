@@ -1,21 +1,22 @@
-var sage = require("../../../build/sage");
-var Schema = sage.Schema;
+const sage = require('../../../build/sage');
 
-var CommentSchema = new Schema(
+const Schema = sage.Schema;
+
+const CommentSchema = new Schema(
   {
     COMMENT_ID: {
-      type: "raw"
+      type: 'raw',
     },
     LIKE_COUNT: {
-      type: "raw"
+      type: 'raw',
     },
     BODY: {
-      type: "blob"
-    }
+      type: 'blob',
+    },
   },
   {
-    primaryKey: "COMMENT_ID"
-  }
+    primaryKey: 'COMMENT_ID',
+  },
 );
 
-module.exports = sage.model("SAGE_TEST.COMMENTS", CommentSchema);
+module.exports = sage.model('SAGE_TEST.COMMENTS', CommentSchema);

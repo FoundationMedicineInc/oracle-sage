@@ -1,16 +1,16 @@
-import _ from "lodash";
-import Promise from "bluebird";
-import sageUtil from "../../build/sage_util";
-import async from "async";
+import _ from 'lodash';
+import Promise from 'bluebird';
+import sageUtil from '../../build/sage_util';
+import async from 'async';
 
-module.exports = function(modelClass, name, schema, sage) {
+module.exports = function (modelClass, name, schema, sage) {
   function createArray(arrayOfProps) {}
 
   // Returns string of errors if invalid, null if valid
   function validateModel(model) {
     if (!model.valid) {
       sage.logger.warn(model.errors);
-      return model.errors.join(",");
+      return model.errors.join(',');
     }
     return null;
   }
@@ -67,23 +67,23 @@ module.exports = function(modelClass, name, schema, sage) {
 
     // Build up a list of `INTO ()` statements
     const insertSqls = [];
-    _.each(props, propsOne => {
+    _.each(props, (propsOne) => {
       const m = new self(propsOne, name, schema);
       const values = m.normalized;
       let sql = template;
-      _.each(_.keys(values), key => {
+      _.each(_.keys(values), (key) => {
         let replaceValue = values[key] === undefined ? null : values[key];
 
-        if (typeof replaceValue === "string") {
+        if (typeof replaceValue === 'string') {
           // Escape single quotes
-          replaceValue = replaceValue.replace(/'/g, `''`);
+          replaceValue = replaceValue.replace(/'/g, "''");
           replaceValue = `'${replaceValue}'`;
         }
 
         sql = sql.replace(`:${key}`, replaceValue);
       });
 
-      sql = sql.replace("INSERT INTO", "INTO");
+      sql = sql.replace('INSERT INTO', 'INTO');
 
       if (options.hasDbmsErrlog) {
         sql = `${sql} LOG ERRORS REJECT LIMIT UNLIMITED`;
@@ -92,7 +92,7 @@ module.exports = function(modelClass, name, schema, sage) {
       insertSqls.push(sql);
     });
 
-    const allSqls = insertSqls.join(" ");
+    const allSqls = insertSqls.join(' ');
     const query = `INSERT ALL ${allSqls} SELECT * FROM dual`;
 
     let connection;
@@ -100,7 +100,7 @@ module.exports = function(modelClass, name, schema, sage) {
 
     return sage
       .getConnection({ transaction: options.transaction })
-      .then(c => {
+      .then((c) => {
         connection = c;
       })
       .then(() => {
@@ -108,24 +108,19 @@ module.exports = function(modelClass, name, schema, sage) {
         return connection.execute(query);
       })
       .then(r => (result = r))
-      .then(() => {
-        return sage.afterExecuteCommitable(connection);
-      })
+      .then(() => sage.afterExecuteCommitable(connection))
       .then(() => result) // Return native node-oracledb result to user
-      .catch(err => {
-        return sage.afterExecute(connection).then(() => {
+      .catch(err =>
+        sage.afterExecute(connection).then(() => {
           throw err;
-        });
-      });
+        }));
   }
 
   function createOne(props = {}, options = {}, self) {
-    let m = new self(props, name, schema);
+    const m = new self(props, name, schema);
     const errors = validateModel(m);
     if (errors) {
-      return Promise.reject(
-        new Error(`Cannot create model. Errors: ${errors}`)
-      );
+      return Promise.reject(new Error(`Cannot create model. Errors: ${errors}`));
     }
 
     const pk = m.schema.primaryKey;
@@ -136,8 +131,8 @@ module.exports = function(modelClass, name, schema, sage) {
     // Using __ because oracledb does not like prefix `_` eg. `__pk`
     if (pk) {
       sql = `${sql} RETURNING ${pk} INTO :pk__`;
-      values["pk__"] = {
-        dir: sage.oracledb.BIND_OUT
+      values.pk__ = {
+        dir: sage.oracledb.BIND_OUT,
       };
     }
 
@@ -147,7 +142,7 @@ module.exports = function(modelClass, name, schema, sage) {
     return (
       sage
         .getConnection({ transaction: options.transaction })
-        .then(c => {
+        .then((c) => {
           connection = c;
         })
         .then(() => {
@@ -161,22 +156,21 @@ module.exports = function(modelClass, name, schema, sage) {
         // Set the model if a pk is defined
         .then(() => {
           if (pk) {
-            const id = createResult.outBinds["pk__"];
+            const id = createResult.outBinds.pk__;
             if (id && id[0]) {
               // Format is { pk__: [ 'someValue' ] }
               return modelClass.findById(id[0], {
-                transaction: options.transaction
+                transaction: options.transaction,
               });
             }
           }
           // If no model is set let's just return the status of the operation
           return createResult;
         })
-        .catch(err => {
-          return sage.afterExecute(connection).then(() => {
+        .catch(err =>
+          sage.afterExecute(connection).then(() => {
             throw err;
-          });
-        })
+          }))
     );
   }
 
@@ -190,12 +184,12 @@ module.exports = function(modelClass, name, schema, sage) {
    *                                         create. See this for more info:
    *                                         http://stackoverflow.com/questions/13420461/oracle-insert-all-ignore-duplicates
    */
-  modelClass.create = function(props = {}, options = {}) {
-    if (typeof props === "object" && props.length === undefined) {
+  modelClass.create = function (props = {}, options = {}) {
+    if (typeof props === 'object' && props.length === undefined) {
       return createOne(props, options, this);
-    } else if (typeof props === "object" && props.length > 0) {
+    } else if (typeof props === 'object' && props.length > 0) {
       return createArray(props, options, this);
     }
-    return Promise.reject("Invalid argument. Pass object or array > 0");
+    return Promise.reject('Invalid argument. Pass object or array > 0');
   };
 };

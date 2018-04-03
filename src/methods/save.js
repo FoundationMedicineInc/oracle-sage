@@ -1,11 +1,11 @@
-import _ from "lodash";
-import Promise from "bluebird";
-import sageUtil from "../../build/sage_util";
-import async from "async";
+import _ from 'lodash';
+import Promise from 'bluebird';
+import sageUtil from '../../build/sage_util';
+import async from 'async';
 
-module.exports = function(self, name, schema, sage) {
-  self.save = function(options = {}) {
-    var self = this;
+module.exports = function (self, name, schema, sage) {
+  self.save = function (options = {}) {
+    const self = this;
 
     return new Promise((resolve, reject) => {
       if (!this.get(this._schema.primaryKey)) {
@@ -13,21 +13,21 @@ module.exports = function(self, name, schema, sage) {
         return reject();
       }
       if (!this.valid) {
-        sage.logger.warn("Invalid properties on model");
+        sage.logger.warn('Invalid properties on model');
         return reject();
       }
 
       // save it to the database
-      let pk = schema.primaryKey;
+      const pk = schema.primaryKey;
 
-      let result = sageUtil.getUpdateSQL(this.dirtyProps);
+      const result = sageUtil.getUpdateSQL(this.dirtyProps);
       result.values = sageUtil.fixDateBug(this.schema, result.values);
 
       // Convert blob fields into buffers before saving
-      _.each(_.keys(result.values), key => {
+      _.each(_.keys(result.values), (key) => {
         if (
           this.normalized[key] &&
-          this.normalized[key].constructor.name === "Buffer"
+          this.normalized[key].constructor.name === 'Buffer'
         ) {
           result.values[key] = this.normalized[key];
         }
@@ -39,33 +39,33 @@ module.exports = function(self, name, schema, sage) {
       sql = sageUtil.amendTimestampFields(this.schema, sql);
       result.values[pk] = this.get(pk);
 
-      var connection;
+      let connection;
 
       async.series(
         [
           // Get connection
-          function(next) {
+          function (next) {
             sage
               .getConnection({ transaction: options.transaction })
-              .then(function(c) {
+              .then((c) => {
                 connection = c;
                 next();
               })
               .catch(next);
           },
           // Perform operation
-          function(next) {
+          function (next) {
             sage.logger.debug(sql, result.values);
 
-            connection.execute(sql, result.values, function(err, result) {
+            connection.execute(sql, result.values, (err, result) => {
               if (!err) {
                 self.mergeProps();
               }
               next(err);
             });
-          }
+          },
         ],
-        function(err) {
+        (err) => {
           if (err) {
             sage.logger.error(err);
             return sage.afterExecute(connection).then(() => {
@@ -75,14 +75,14 @@ module.exports = function(self, name, schema, sage) {
 
           sage
             .afterExecuteCommitable(connection)
-            .then(function() {
+            .then(() => {
               if (err) {
                 return reject(err);
               }
               return resolve();
             })
             .catch(reject);
-        }
+        },
       );
     });
   };

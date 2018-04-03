@@ -14,9 +14,9 @@ const buffer = Buffer.from([
   0x00,
   0x7f,
   0xeb,
-  0xd4
+  0xd4,
 ]);
-console.log(buffer.toString("utf8"));
+console.log(buffer.toString('utf8'));
 // todo: maybe we should select using the HEX function
 // todo: maybe also a template to allow you to control how a field is selected with a function e.g.:
 // fieldName => `HEX(${fieldName})`

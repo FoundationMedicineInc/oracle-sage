@@ -1,55 +1,55 @@
 /**
  * Used to help set up testing environments.
  */
-var oracledb = require("oracledb");
+const oracledb = require('oracledb');
+
 oracledb.stmtCacheSize = 0; // setting this to 0 seems to make import go faster
 
-var Promise = require("bluebird");
-var _ = require("lodash");
-var fs = require("fs");
+const Promise = require('bluebird');
+const _ = require('lodash');
+const fs = require('fs');
 
 var OracleConnector;
-var OracleConnector = (function() {
+var OracleConnector = (function () {
   function OracleConnector(config) {
     config = config || {};
     _.defaults(this, {
       _credentials: {
-        user: "SAGE_TEST",
-        password: "oracle",
-        connectString: "localhost:1521/xe",
-        userSchema: "SAGE_TEST"
+        user: 'SAGE_TEST',
+        password: 'oracle',
+        connectString: 'localhost:1521/xe',
+        userSchema: 'SAGE_TEST',
       },
-      connection: null
+      connection: null,
     });
   }
 
   // Returns a Promise that it will connect to the database
-  OracleConnector.prototype.connect = function(config) {
-    var self = this;
+  OracleConnector.prototype.connect = function (config) {
+    const self = this;
     if (self.connection) {
       // Connection already exists. Return it.
-      return new Promise(function(fulfill, reject) {
+      return new Promise(((fulfill, reject) => {
         fulfill(self.connection);
-      });
-    } else {
-      // No active connection. Make one.
-      return new Promise(function(fulfill, reject) {
-        oracledb.getConnection(self._credentials, function(err, connection) {
-          if (err) {
-            console.log(err);
-          }
-          self.connection = connection;
-          fulfill(connection);
-        });
-      });
+      }));
     }
+    // No active connection. Make one.
+    return new Promise(((fulfill, reject) => {
+      oracledb.getConnection(self._credentials, (err, connection) => {
+        if (err) {
+          console.log(err);
+        }
+        self.connection = connection;
+        fulfill(connection);
+      });
+    }));
   };
 
-  OracleConnector.prototype.disconnect = function() {
-    var self = this;
+  OracleConnector.prototype.disconnect = function () {
+    const self = this;
     if (self.connection) {
-      return new Promise(function(fulfill, reject) {
-        self.connection.release(function(err) {
+      return new Promise(((fulfill, reject) => {
+        self.connection.release((err) => {
           if (err) {
             console.error(err.message);
             reject(err);
@@ -58,26 +58,25 @@ var OracleConnector = (function() {
             fulfill(true);
           }
         });
-      });
-    } else {
-      return new Promise(function(fulfill, reject) {
-        fulfill(true);
-      });
+      }));
     }
+    return new Promise(((fulfill, reject) => {
+      fulfill(true);
+    }));
   };
 
   // Pass in an array of SQL statements, and it will execute them all
   // pass verbose if you want to see the output
-  OracleConnector.prototype.performStatements = function(statements, config) {
+  OracleConnector.prototype.performStatements = function (statements, config) {
     config = config || {};
-    var self = this;
-    return new Promise(function(fulfill, reject) {
-      var statement = statements.shift();
+    const self = this;
+    return new Promise(((fulfill, reject) => {
+      const statement = statements.shift();
       console.log(statement);
-      self.connection.execute(statement, [], { autoCommit: true }, function(
+      self.connection.execute(statement, [], { autoCommit: true }, (
         err,
-        result
-      ) {
+        result,
+      ) => {
         if (config.verbose === true) {
           console.log(statement);
         }
@@ -86,50 +85,50 @@ var OracleConnector = (function() {
         }
 
         if (statements.length) {
-          self.performStatements(statements, config).then(function() {
+          self.performStatements(statements, config).then(() => {
             fulfill();
           });
         } else {
           fulfill();
         }
       });
-    });
+    }));
   };
 
   /*
   Runs an entire SQL file against the given connection
   Pass in the path to sql
   */
-  OracleConnector.prototype.runSQL = function(config) {
+  OracleConnector.prototype.runSQL = function (config) {
     config = config || {};
 
     if (!config.path) {
-      throw "No SQL provided";
+      throw 'No SQL provided';
     }
-    var self = this;
+    const self = this;
 
-    return new Promise(function(fulfill, reject) {
-      var schema = fs.readFile(config.path, "utf8", function(err, data) {
+    return new Promise(((fulfill, reject) => {
+      const schema = fs.readFile(config.path, 'utf8', (err, data) => {
         if (err) {
           console.log(err);
         }
 
         // Now split it
-        var statements = data.split(";");
+        let statements = data.split(';');
 
         // Remove empty item on the end
-        if (_.last(statements).trim() === "") {
+        if (_.last(statements).trim() === '') {
           statements.pop();
         }
 
         // Fix triggers since they will be split up when you split on ;
         var temp = [];
-        var tempSQL = "";
-        _.each(statements, function(statement) {
-          if (statement.trim().indexOf("CREATE OR REPLACE TRIGGER") === 0) {
+        const tempSQL = '';
+        _.each(statements, (statement) => {
+          if (statement.trim().indexOf('CREATE OR REPLACE TRIGGER') === 0) {
             // this is a trigger
-            temp.push(statement + "; END;");
-          } else if (statement.trim().indexOf("END") === 0) {
+            temp.push(`${statement}; END;`);
+          } else if (statement.trim().indexOf('END') === 0) {
             // do nothing
           } else {
             temp.push(statement);
@@ -140,8 +139,8 @@ var OracleConnector = (function() {
         // If dropOnly is set, let's just perform the drops
         if (config.dropsOnly) {
           var temp = [];
-          _.each(statements, function(statement) {
-            if (statement.indexOf("DROP") === 0) {
+          _.each(statements, (statement) => {
+            if (statement.indexOf('DROP') === 0) {
               temp.push(statement);
             }
           });
@@ -151,15 +150,15 @@ var OracleConnector = (function() {
         // Execute each statement, recurisvely
         self
           .performStatements(statements, { verbose: config.verbose })
-          .then(function() {
+          .then(() => {
             fulfill();
           });
       });
-    });
+    }));
   };
 
   return OracleConnector;
-})();
+}());
 
 // Start up Oracle
 o = new OracleConnector();

@@ -1,14 +1,14 @@
-import Promise from "bluebird";
-import moment from "moment";
-import sageUtil from "../build/sage_util";
-import sageSelectQuery from "../build/statics/select";
-import _ from "lodash";
-import objectAssign from "object-assign";
-import async from "async";
+import Promise from 'bluebird';
+import moment from 'moment';
+import sageUtil from '../build/sage_util';
+import sageSelectQuery from '../build/statics/select';
+import _ from 'lodash';
+import objectAssign from 'object-assign';
+import async from 'async';
 
-let model = function(name, schema, sage) {
-  var _methods = {};
-  let modelClass = class Model {
+const model = function (name, schema, sage) {
+  let _methods = {};
+  const modelClass = class Model {
     constructor(props, initName, initSchema) {
       // Name and schema will inherit off function
       // Create uses the constructor as well so naming has to be different
@@ -27,10 +27,10 @@ let model = function(name, schema, sage) {
       // apply extensions
       objectAssign(this, _methods);
 
-      require("./methods/populate")(this, name, schema, sage);
-      require("./methods/save")(this, name, schema, sage);
-      require("./methods/destroy")(this, name, schema, sage);
-      require("./methods/reload")(this, name, schema, sage);
+      require('./methods/populate')(this, name, schema, sage);
+      require('./methods/save')(this, name, schema, sage);
+      require('./methods/destroy')(this, name, schema, sage);
+      require('./methods/reload')(this, name, schema, sage);
     }
 
     mergeProps() {
@@ -52,19 +52,19 @@ let model = function(name, schema, sage) {
     // Generates a string of all the fields defined in the schema to replace a * in a SELECT *
     // We do this because tables with SDO_GEOMETRY fields or custom fields cannot currently be understood by Sage
     static _selectAllStringStatic() {
-      let fields = [];
-      for (let key in schema.definition) {
-        if (schema.definition[key].type != "association") {
+      const fields = [];
+      for (const key in schema.definition) {
+        if (schema.definition[key].type != 'association') {
           fields.push(`${name}.${key}`);
         }
       }
-      return fields.join(",");
+      return fields.join(',');
     }
 
     static select(columns) {
       // Always pass in columns
       if (!columns) {
-        columns = this._selectAllStringStatic().split(",");
+        columns = this._selectAllStringStatic().split(',');
       }
       return new sageSelectQuery(sage, name, this, columns);
     }
@@ -80,8 +80,8 @@ let model = function(name, schema, sage) {
      * @return {Object}
      */
     get normalized() {
-      let result = {};
-      for (let key in this.schema.definition) {
+      const result = {};
+      for (const key in this.schema.definition) {
         // Do not normalize read only fields
         if (this.schema.definition[key].readonly) {
           continue;
@@ -90,38 +90,30 @@ let model = function(name, schema, sage) {
         let value;
 
         switch (this.schema.definition[key].type) {
-          case "date":
+          case 'date':
             var format = this.schema.definition[key].format;
             var date = this.get(key);
             if (date) {
               value = moment(date, format).format(format);
-              if (value === "Invalid date") {
-                sage.logger.warn(
-                  `Could not decipher value: ${date}, using Date() value ${new Date(
-                    date
-                  )}`
-                );
+              if (value === 'Invalid date') {
+                sage.logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`);
                 value = moment(new Date(date)).format(format);
               }
             }
             break;
-          case "timestamp":
+          case 'timestamp':
             var format = this.schema.definition[key].format;
             var date = this.get(key);
             if (date) {
               value = moment(date, format).format(format);
-              if (value === "Invalid date") {
-                sage.logger.warn(
-                  `Could not decipher value: ${date}, using Date() value ${new Date(
-                    date
-                  )}`
-                );
+              if (value === 'Invalid date') {
+                sage.logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`);
                 value = moment(new Date(date)).format(format);
               }
             }
             break;
 
-          case "number":
+          case 'number':
             // Need this IF statement because what if the person does not have a
             // read only primary key and is creating a new model? Usually they would pass
             // down NULL as the PK, and if we didn't have this it would parseInt(NULL)
@@ -131,7 +123,7 @@ let model = function(name, schema, sage) {
             break;
 
           // Blobs must be converted to a buffer before inserting into Oracle
-          case "blob":
+          case 'blob':
             if (this.get(key) !== undefined && this.get(key) !== null) {
               value = new Buffer(this.get(key));
             }
@@ -141,7 +133,7 @@ let model = function(name, schema, sage) {
             value = this.get(key);
         }
 
-        if (this.schema.definition[key].type != "association") {
+        if (this.schema.definition[key].type != 'association') {
           if (!this.schema.definition[key].readonly) {
             result[key] = value;
           }
@@ -173,8 +165,8 @@ let model = function(name, schema, sage) {
 
     // Set a property
     set(key, value) {
-      if (typeof key === "object") {
-        for (let k in key) {
+      if (typeof key === 'object') {
+        for (const k in key) {
           this._dirtyProps[k] = key[k];
         }
       } else {
@@ -194,25 +186,25 @@ let model = function(name, schema, sage) {
     // Special JSON that sends lowercase
     // and will recieve lowercase and convert to uppercase
     toJSON() {
-      var result = {};
-      for (let k in this._props) {
+      const result = {};
+      for (const k in this._props) {
         result[k.toLowerCase()] = this._props[k];
       }
 
       // translate population
-      _.each(this._schema.associations, function(association) {
-        let key = association.key.toLowerCase();
-        let models = result[key];
+      _.each(this._schema.associations, (association) => {
+        const key = association.key.toLowerCase();
+        const models = result[key];
 
-        if (association.value.joinType === "hasOne") {
+        if (association.value.joinType === 'hasOne') {
           if (models) {
             result[key] = models.toJSON();
           } else {
             result[key] = undefined;
           }
         } else {
-          let modelsJSON = [];
-          _.each(models, function(model) {
+          const modelsJSON = [];
+          _.each(models, (model) => {
             modelsJSON.push(model.toJSON());
           });
           result[key] = modelsJSON;
@@ -223,8 +215,8 @@ let model = function(name, schema, sage) {
     }
 
     setFromJSON(json) {
-      for (let k in json) {
-        let value = json[k];
+      for (const k in json) {
+        const value = json[k];
         this.set(k.toUpperCase(), value);
       }
     }
@@ -252,23 +244,23 @@ let model = function(name, schema, sage) {
     get valid() {
       this.clearErrors();
       let isValid = true;
-      for (let key in this.schema.definition) {
-        let schemaProps = this.schema.definition[key];
-        let value = this.get(key);
-        let validators = [];
+      for (const key in this.schema.definition) {
+        const schemaProps = this.schema.definition[key];
+        const value = this.get(key);
+        const validators = [];
 
         // Dont validate association
-        if (schemaProps.type === "association") {
+        if (schemaProps.type === 'association') {
           continue;
         }
 
         // Required check
         if (schemaProps.required) {
           validators.push({
-            validator: function(value) {
+            validator(value) {
               return value != null && value != undefined;
             },
-            message: `${key} is required`
+            message: `${key} is required`,
           });
         } else if (value === null || value === undefined) {
           // Don't check if the value is null
@@ -278,163 +270,161 @@ let model = function(name, schema, sage) {
         }
 
         switch (schemaProps.type) {
-          case "timestamp":
+          case 'timestamp':
             break;
-          case "raw":
+          case 'raw':
             break;
-          case "blob":
+          case 'blob':
             break;
 
-          case "number":
+          case 'number':
             validators.push({
-              validator: function(value) {
-                return typeof value === "number";
+              validator(value) {
+                return typeof value === 'number';
               },
-              message: `key: ${key}, value: ${value}, is not a number`
+              message: `key: ${key}, value: ${value}, is not a number`,
             });
 
             if (schemaProps.min) {
               validators.push({
-                validator: function(value) {
+                validator(value) {
                   return value >= schemaProps.min;
                 },
                 message: `key: ${key}, value: ${value}, must be at least ${
                   schemaProps.min
-                }`
+                }`,
               });
             }
 
             if (schemaProps.max) {
               validators.push({
-                validator: function(value) {
+                validator(value) {
                   return value <= schemaProps.max;
                 },
                 message: `key: ${key}, value: ${value}, must be at most ${
                   schemaProps.max
-                }`
+                }`,
               });
             }
             break;
-          case "clob":
+          case 'clob':
             validators.push({
-              validator: function(value) {
-                return typeof value === "string";
+              validator(value) {
+                return typeof value === 'string';
               },
-              message: `key: ${key}, value: ${value}, is not a valid clob`
+              message: `key: ${key}, value: ${value}, is not a valid clob`,
             });
             validators.push({
-              validator: function(value) {
+              validator(value) {
                 return value.length < 1000000;
               },
-              message: `key: ${key}, value: ${value}, must be shorter than 1,000,000 characters`
+              message: `key: ${key}, value: ${value}, must be shorter than 1,000,000 characters`,
             });
             if (schemaProps.minlength) {
               validators.push({
-                validator: function(value) {
+                validator(value) {
                   return value.length > schemaProps.minlength;
                 },
                 message: `key: ${key}, value: ${value}, must be longer than ${
                   schemaProps.minlength
-                } characters`
+                } characters`,
               });
             }
 
             if (schemaProps.maxlength) {
               validators.push({
-                validator: function(value) {
+                validator(value) {
                   return value.length < schemaProps.maxlength;
                 },
                 message: `key: ${key}, value: ${value}, must be shorter than ${
                   schemaProps.maxlength
-                } characters`
+                } characters`,
               });
             }
             break;
-          case "char":
+          case 'char':
             validators.push({
-              validator: function(value) {
-                return typeof value === "string";
+              validator(value) {
+                return typeof value === 'string';
               },
-              message: `key: ${key}, value: ${value}, is not a char`
+              message: `key: ${key}, value: ${value}, is not a char`,
             });
             if (schemaProps.enum) {
               validators.push({
-                validator: function(value) {
+                validator(value) {
                   return _.indexOf(schemaProps.enum.values, value) > -1;
                 },
-                message: `key: ${key}, value: ${value}, is not in enum`
+                message: `key: ${key}, value: ${value}, is not in enum`,
               });
             }
             break;
-          case "date":
+          case 'date':
             validators.push({
-              validator: function(value) {
+              validator(value) {
                 // If moment fails, fallback to Date()
-                var isMoment = moment(value, schemaProps.format).isValid();
-                var isDate = new Date(value).toString() !== "Invalid Date";
+                const isMoment = moment(value, schemaProps.format).isValid();
+                const isDate = new Date(value).toString() !== 'Invalid Date';
                 return isMoment || isDate;
               },
-              message: `key: ${key}, value: ${value}, is not a date`
+              message: `key: ${key}, value: ${value}, is not a date`,
             });
             break;
-          case "varchar":
+          case 'varchar':
             validators.push({
-              validator: function(value) {
-                return typeof value === "string";
+              validator(value) {
+                return typeof value === 'string';
               },
-              message: `key: ${key}, value: ${value}, is not a varchar`
+              message: `key: ${key}, value: ${value}, is not a varchar`,
             });
 
             if (schemaProps.enum) {
               validators.push({
-                validator: function(value) {
+                validator(value) {
                   return _.indexOf(schemaProps.enum.values, value) > -1;
                 },
-                message: `key: ${key}, value: ${value}, is not in enum`
+                message: `key: ${key}, value: ${value}, is not in enum`,
               });
             }
 
             if (schemaProps.minlength) {
               validators.push({
-                validator: function(value) {
+                validator(value) {
                   return value.length > schemaProps.minlength;
                 },
                 message: `key: ${key}, value: ${value}, must be longer than ${
                   schemaProps.minlength
-                } characters`
+                } characters`,
               });
             }
 
             if (schemaProps.maxlength) {
               validators.push({
-                validator: function(value) {
+                validator(value) {
                   return value.length < schemaProps.maxlength;
                 },
                 message: `key: ${key}, value: ${value}, must be shorter than ${
                   schemaProps.maxlength
-                } characters`
+                } characters`,
               });
             }
             break;
           default:
-            this.errors.push(
-              `key: ${key}, value: ${value}, has undefined error, ${
-                schemaProps.type
-              }`
-            );
+            this.errors.push(`key: ${key}, value: ${value}, has undefined error, ${
+              schemaProps.type
+            }`);
         }
 
         // Custom Validator Checks
         if (schemaProps.validator) {
           validators.push({
             validator: schemaProps.validator,
-            message: `${key} is not vaild`
+            message: `${key} is not vaild`,
           });
         }
 
         // Check all validators
-        _.each(validators, v => {
-          var valid = v.validator(value);
+        _.each(validators, (v) => {
+          const valid = v.validator(value);
           if (!valid) {
             this.errors.push(v.message);
           }
@@ -451,13 +441,13 @@ let model = function(name, schema, sage) {
   // Store them in sage as they get created
   sage.models[name] = {
     model: modelClass,
-    schema: schema
+    schema,
   };
 
-  require("./statics/count")(modelClass, name, schema, sage);
-  require("./statics/create")(modelClass, name, schema, sage);
-  require("./statics/findById")(modelClass, name, schema, sage);
-  require("./statics/findOne")(modelClass, name, schema, sage);
+  require('./statics/count')(modelClass, name, schema, sage);
+  require('./statics/create')(modelClass, name, schema, sage);
+  require('./statics/findById')(modelClass, name, schema, sage);
+  require('./statics/findOne')(modelClass, name, schema, sage);
   // require('./statics/query')(modelClass, name, schema, sage);
 
   // Allow access to schema from model

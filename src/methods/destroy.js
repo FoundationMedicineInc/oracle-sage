@@ -1,53 +1,53 @@
-import Promise from "bluebird";
-import sageUtil from "../../build/sage_util";
-import async from "async";
+import Promise from 'bluebird';
+import sageUtil from '../../build/sage_util';
+import async from 'async';
 
-module.exports = function(self, name, schema, sage) {
-  self.destroy = function(options = {}) {
-    var self = this;
+module.exports = function (self, name, schema, sage) {
+  self.destroy = function (options = {}) {
+    const self = this;
 
     return new Promise((resolve, reject) => {
-      let pk = this.get(this._schema.primaryKey);
+      const pk = this.get(this._schema.primaryKey);
       if (!pk) {
-        sage.logger.warn("Missing primary key on destroy. Who do I destroy?");
-        return reject("Missing primary key.");
+        sage.logger.warn('Missing primary key on destroy. Who do I destroy?');
+        return reject('Missing primary key.');
       }
 
-      let sql = sage
+      const sql = sage
         .knex(this._name)
         .where(this._schema.primaryKey, pk)
         .del()
         .toString();
 
-      var connection;
+      let connection;
 
       async.series(
         [
           // Get connection
-          function(next) {
+          function (next) {
             sage
               .getConnection({ transaction: options.transaction })
-              .then(function(c) {
+              .then((c) => {
                 connection = c;
                 next();
               })
-              .catch(function(err) {
+              .catch((err) => {
                 next(err);
               });
           },
           // Perform operation
-          function(next) {
+          function (next) {
             sage.logger.debug(sql);
 
             connection.execute(sql, (err, results) => {
               if (err) {
-                sage.logger.error("Could not destroy.");
+                sage.logger.error('Could not destroy.');
               }
               next(err);
             });
-          }
+          },
         ],
-        function(err) {
+        (err) => {
           if (err) {
             sage.logger.error(err);
             return sage.afterExecute(connection).then(() => {
@@ -57,11 +57,11 @@ module.exports = function(self, name, schema, sage) {
 
           sage
             .afterExecuteCommitable(connection)
-            .then(function() {
+            .then(() => {
               resolve();
             })
             .catch(reject);
-        }
+        },
       );
     });
   };

@@ -1,173 +1,153 @@
-var _ = require("lodash");
-var moment = require("moment");
-var TestHelpers = require("./test_helpers");
-var expect = require("chai").expect;
+const _ = require('lodash');
+const moment = require('moment');
+const TestHelpers = require('./test_helpers');
+const expect = require('chai').expect;
 
-var User = require("./setup/models/user");
-var Profile = require("./setup/models/profile");
-var Post = require("./setup/models/post");
+const User = require('./setup/models/user');
+const Profile = require('./setup/models/profile');
+const Post = require('./setup/models/post');
 
-var sage = TestHelpers.sage;
-sage.logger.transports.console.level = "debug";
+const sage = TestHelpers.sage;
+sage.logger.transports.console.level = 'debug';
 
-var user;
-describe("transactions", function() {
+let user;
+describe('transactions', () => {
   // Reset Db
-  before(function(done) {
-    TestHelpers.initdb().then(function() {
+  before((done) => {
+    TestHelpers.initdb().then(() => {
       done();
     });
   });
   // Connect to sage
-  before(function(done) {
+  before((done) => {
     TestHelpers.connect()
-      .then(function() {
+      .then(() => {
         done();
       })
-      .catch(function(err) {
+      .catch((err) => {
         console.log(err);
       });
   });
 
-  it("should not read if not commited", function(done) {
-    sage.transaction().then(function(t) {
-      var username = new Date().getTime().toString();
+  it('should not read if not commited', (done) => {
+    sage.transaction().then((t) => {
+      const username = new Date().getTime().toString();
       User.create({ USERNAME: username }, { transaction: t })
-        .then(function() {
+        .then(() =>
           // User not yet commit. Check on different connection
-          return User.findOne({ USERNAME: username });
-        })
-        .then(function(userModel) {
+          User.findOne({ USERNAME: username }))
+        .then((userModel) => {
           expect(userModel).to.not.be.ok;
           return t.rollback();
         })
-        .then(function() {
+        .then(() => {
           done();
         });
     });
   });
 
-  it("should read if on same connection", function(done) {
-    sage.transaction().then(function(t) {
-      var username = new Date().getTime().toString();
+  it('should read if on same connection', (done) => {
+    sage.transaction().then((t) => {
+      const username = new Date().getTime().toString();
       User.create({ USERNAME: username }, { transaction: t })
-        .then(function() {
+        .then(() =>
           // User not yet commit. Check on different connection
-          return User.findOne({ USERNAME: username }, { transaction: t });
-        })
-        .then(function(userModel) {
+          User.findOne({ USERNAME: username }, { transaction: t }))
+        .then((userModel) => {
           expect(userModel).to.be.ok;
           return t.rollback();
         })
-        .then(function() {
+        .then(() => {
           done();
         });
     });
   });
 
-  it("should commit using a promise transaction", function(done) {
-    sage.transaction().then(function(t) {
-      var username = new Date().getTime().toString() + _.random(0, 99999);
+  it('should commit using a promise transaction', (done) => {
+    sage.transaction().then((t) => {
+      const username = new Date().getTime().toString() + _.random(0, 99999);
       User.create({ USERNAME: username }, { transaction: t })
-        .then(function() {
-          return t.commit();
-        })
-        .then(function() {
-          return User.findOne({ USERNAME: username });
-        })
-        .then(function(userModel) {
+        .then(() => t.commit())
+        .then(() => User.findOne({ USERNAME: username }))
+        .then((userModel) => {
           expect(userModel).to.be.ok;
           done();
         });
     });
   });
 
-  it("should commit using a function transaction", function(done) {
-    var username = new Date().getTime().toString() + _.random(0, 99999);
+  it('should commit using a function transaction', (done) => {
+    const username = new Date().getTime().toString() + _.random(0, 99999);
     sage
-      .transaction(function(t) {
-        User.create({ USERNAME: username }, { transaction: t }).then(
-          function() {
-            t.commit();
-          }
-        );
+      .transaction((t) => {
+        User.create({ USERNAME: username }, { transaction: t }).then(() => {
+          t.commit();
+        });
       })
-      .then(function() {
-        return User.findOne({ USERNAME: username });
-      })
-      .then(function(userModel) {
+      .then(() => User.findOne({ USERNAME: username }))
+      .then((userModel) => {
         expect(userModel).to.be.ok;
         done();
       })
-      .catch(function(err) {
+      .catch((err) => {
         console.log(err);
       });
   });
 
-  it("should create a bunch in one connection", function(done) {
-    var username = new Date().getTime().toString() + _.random(0, 99999);
+  it('should create a bunch in one connection', (done) => {
+    const username = new Date().getTime().toString() + _.random(0, 99999);
 
-    var user;
-    sage.transaction().then(function(t) {
+    let user;
+    sage.transaction().then((t) => {
       User.create({ USERNAME: username }, { transaction: t })
-        .then(function() {
-          return User.findOne({ USERNAME: username }, { transaction: t });
-        })
-        .then(function(userModel) {
+        .then(() => User.findOne({ USERNAME: username }, { transaction: t }))
+        .then((userModel) => {
           user = userModel;
           return Profile.create(
-            { USER_ID: user.id, BIO: "I code." },
-            { transaction: t }
+            { USER_ID: user.id, BIO: 'I code.' },
+            { transaction: t },
           );
         })
-        .then(function() {
-          return Post.create(
-            { USER_ID: user.id, POST_BODY: "My transaction post" },
-            { transaction: t }
-          );
-        })
-        .then(function() {
-          return Post.create(
-            { USER_ID: user.id, POST_BODY: "My second post" },
-            { transaction: t }
-          );
-        })
-        .then(function() {
-          return t.commit();
-        })
-        .then(function() {
-          return user.populate();
-        })
-        .then(function() {
-          var json = user.toJSON();
+        .then(() => Post.create(
+          { USER_ID: user.id, POST_BODY: 'My transaction post' },
+          { transaction: t },
+        ))
+        .then(() => Post.create(
+          { USER_ID: user.id, POST_BODY: 'My second post' },
+          { transaction: t },
+        ))
+        .then(() => t.commit())
+        .then(() => user.populate())
+        .then(() => {
+          const json = user.toJSON();
           expect(json.posts.length).to.equal(2);
           done();
         })
-        .catch(function(err) {
+        .catch((err) => {
           console.log(err);
         });
     });
   });
 
-  describe("count", function() {
-    var user;
-    before(function(done) {
-      var username = new Date().getTime().toString() + _.random(0, 99999);
-      User.create({ USERNAME: username }).then(function() {
+  describe('count', () => {
+    let user;
+    before((done) => {
+      const username = new Date().getTime().toString() + _.random(0, 99999);
+      User.create({ USERNAME: username }).then(() => {
         done();
       });
     });
-    it("should count", function(done) {
-      User.count().then(function(count) {
+    it('should count', (done) => {
+      User.count().then((count) => {
         expect(count > 0).to.be.ok;
         done();
       });
     });
-    it("should count in transaction", function(done) {
-      sage.transaction().then(function(t) {
-        User.count(null, { transaction: t }).then(function(count) {
+    it('should count in transaction', (done) => {
+      sage.transaction().then((t) => {
+        User.count(null, { transaction: t }).then((count) => {
           expect(count > 0).to.be.ok;
-          t.rollback().then(function() {
+          t.rollback().then(() => {
             done();
           });
         });
@@ -175,19 +155,19 @@ describe("transactions", function() {
     });
   });
 
-  describe("findById", function() {
-    it("should find by id", function(done) {
-      User.findById(3).then(function(userModel) {
+  describe('findById', () => {
+    it('should find by id', (done) => {
+      User.findById(3).then((userModel) => {
         expect(userModel).to.be.ok;
         done();
       });
     });
-    it("should find by id in transaction", function(done) {
-      sage.transaction().then(function(t) {
+    it('should find by id in transaction', (done) => {
+      sage.transaction().then((t) => {
         // Just use ID 3 here because a previous test created this user
-        User.findById(3, { transaction: t }).then(function(userModel) {
+        User.findById(3, { transaction: t }).then((userModel) => {
           expect(userModel).to.be.ok;
-          t.rollback().then(function() {
+          t.rollback().then(() => {
             done();
           });
         });
@@ -195,39 +175,37 @@ describe("transactions", function() {
     });
   });
 
-  describe("select", function() {
-    it("should select", function(done) {
+  describe('select', () => {
+    it('should select', (done) => {
       User.select()
         .exec()
-        .then(function(models) {
+        .then((models) => {
           expect(models.length).to.be.above(2);
           done();
         });
     });
-    it("should select in transaction", function(done) {
-      sage.transaction().then(function(t) {
+    it('should select in transaction', (done) => {
+      sage.transaction().then((t) => {
         // Just use ID 3 here because a previous test created this user
         User.select()
           .exec({ transaction: t })
-          .then(function(models) {
+          .then((models) => {
             expect(models.length).to.be.above(2);
-            t.rollback().then(function() {
+            t.rollback().then(() => {
               done();
             });
           });
       });
     });
-    it("should select in transaction", function(done) {
-      sage.transaction().then(function(t) {
-        User.create({ USERNAME: "selectUser" }, { transaction: t })
-          .then(function() {
-            return User.select()
-              .where({ USERNAME: "selectUser" })
-              .exec({ transaction: t });
-          })
-          .then(function(results) {
+    it('should select in transaction', (done) => {
+      sage.transaction().then((t) => {
+        User.create({ USERNAME: 'selectUser' }, { transaction: t })
+          .then(() => User.select()
+            .where({ USERNAME: 'selectUser' })
+            .exec({ transaction: t }))
+          .then((results) => {
             expect(results.length).to.equal(1);
-            t.rollback().then(function() {
+            t.rollback().then(() => {
               done();
             });
           });
@@ -235,184 +213,179 @@ describe("transactions", function() {
     });
   });
 
-  describe("reload", function() {
-    var user;
-    before(function(done) {
-      var username = new Date().getTime().toString() + _.random(0, 99999);
-      User.create({ USERNAME: username }).then(function() {
-        User.findOne({ USERNAME: username }).then(function(userModel) {
+  describe('reload', () => {
+    let user;
+    before((done) => {
+      const username = new Date().getTime().toString() + _.random(0, 99999);
+      User.create({ USERNAME: username }).then(() => {
+        User.findOne({ USERNAME: username }).then((userModel) => {
           user = userModel;
           done();
         });
       });
     });
 
-    it("should reload", function(done) {
-      var outOfSyncUser;
-      User.findOne({ USERNAME: user.get("USERNAME") }).then(function(
-        userModel
-      ) {
+    it('should reload', (done) => {
+      let outOfSyncUser;
+      User.findOne({ USERNAME: user.get('USERNAME') }).then((userModel) => {
         outOfSyncUser = userModel;
         sage
-          .transaction(function(t) {
-            user.set("USERNAME", "gumby");
-            user.save({ transaciton: t }).then(function() {
-              expect(outOfSyncUser.get("USERNAME")).to.not.equal("gumby");
-              outOfSyncUser.reload({ transaciton: t }).then(function() {
-                expect(outOfSyncUser.get("USERNAME")).to.equal("gumby");
+          .transaction((t) => {
+            user.set('USERNAME', 'gumby');
+            user.save({ transaciton: t }).then(() => {
+              expect(outOfSyncUser.get('USERNAME')).to.not.equal('gumby');
+              outOfSyncUser.reload({ transaciton: t }).then(() => {
+                expect(outOfSyncUser.get('USERNAME')).to.equal('gumby');
                 t.rollback();
               });
             });
           })
-          .then(function() {
+          .then(() => {
             done();
           });
       });
     });
   });
 
-  describe("save", function() {
-    var user;
-    before(function(done) {
-      var username = new Date().getTime().toString() + _.random(0, 99999);
-      User.create({ USERNAME: username }).then(function() {
-        User.findOne({ USERNAME: username }).then(function(userModel) {
+  describe('save', () => {
+    let user;
+    before((done) => {
+      const username = new Date().getTime().toString() + _.random(0, 99999);
+      User.create({ USERNAME: username }).then(() => {
+        User.findOne({ USERNAME: username }).then((userModel) => {
           user = userModel;
           done();
         });
       });
     });
 
-    it("should save", function(done) {
-      user.set("USERNAME", "gumby");
-      user.save().then(function() {
+    it('should save', (done) => {
+      user.set('USERNAME', 'gumby');
+      user.save().then(() => {
         done();
       });
     });
 
-    it("should save in transactions", function(done) {
-      user.set("USERNAME", "transGumby");
+    it('should save in transactions', (done) => {
+      user.set('USERNAME', 'transGumby');
 
-      sage.transaction().then(function(t) {
+      sage.transaction().then((t) => {
         user
           .save({ transaction: t })
-          .then(function() {
+          .then(() =>
             // Outside of transaction so it should not show change
-            return User.findOne({ USERNAME: "transGumby" });
-          })
-          .then(function(userModel) {
+            User.findOne({ USERNAME: 'transGumby' }))
+          .then((userModel) => {
             expect(userModel).to.not.be.ok;
             // Look inside the transaction
-            return User.findOne({ USERNAME: "transGumby" }, { transaction: t });
+            return User.findOne({ USERNAME: 'transGumby' }, { transaction: t });
           })
-          .then(function(userModel) {
-            expect(userModel.get("USERNAME")).to.equal("transGumby");
+          .then((userModel) => {
+            expect(userModel.get('USERNAME')).to.equal('transGumby');
             return t.commit();
           })
-          .then(function() {
-            return User.findOne({ USERNAME: "transGumby" });
-          })
-          .then(function(userModel) {
-            expect(userModel.get("USERNAME")).to.equal("transGumby");
+          .then(() => User.findOne({ USERNAME: 'transGumby' }))
+          .then((userModel) => {
+            expect(userModel.get('USERNAME')).to.equal('transGumby');
             done();
           });
       });
     });
 
-    describe("destroy", function() {
-      var user;
-      var username = new Date().getTime().toString() + _.random(0, 99999);
-      before(function(done) {
-        User.create({ USERNAME: username }).then(function() {
-          User.findOne({ USERNAME: username }).then(function(userModel) {
+    describe('destroy', () => {
+      let user;
+      const username = new Date().getTime().toString() + _.random(0, 99999);
+      before((done) => {
+        User.create({ USERNAME: username }).then(() => {
+          User.findOne({ USERNAME: username }).then((userModel) => {
             user = userModel;
             done();
           });
         });
       });
 
-      it("should destroy in transaction", function(done) {
+      it('should destroy in transaction', (done) => {
         sage
-          .transaction(function(t) {
-            user.destroy({ transaction: t }).then(function() {
+          .transaction((t) => {
+            user.destroy({ transaction: t }).then(() => {
               t.rollback();
             });
           })
-          .then(function() {
-            User.findOne({ USERNAME: username }).then(function(userModel) {
+          .then(() => {
+            User.findOne({ USERNAME: username }).then((userModel) => {
               expect(userModel).to.be.ok;
               done();
             });
           })
-          .catch(function(err) {
+          .catch((err) => {
             console.log(err);
           });
       });
 
-      it("should destroy", function(done) {
+      it('should destroy', (done) => {
         user
           .destroy()
-          .then(function() {
-            User.findOne({ USERNAME: username }).then(function(userModel) {
+          .then(() => {
+            User.findOne({ USERNAME: username }).then((userModel) => {
               expect(userModel).to.not.be.ok;
               done();
             });
           })
-          .catch(function(err) {
+          .catch((err) => {
             console.log(err);
           });
       });
     });
   });
 
-  describe("a user with posts", () => {
+  describe('a user with posts', () => {
     // Create and set user
-    before(function(done) {
-      User.create({ USERNAME: "mrchess" })
-        .then(function(err) {
-          User.findOne({ USERNAME: "mrchess" }).then(function(userModel) {
+    before((done) => {
+      User.create({ USERNAME: 'mrchess' })
+        .then((err) => {
+          User.findOne({ USERNAME: 'mrchess' }).then((userModel) => {
             user = userModel;
-            console.log("found user", user.id);
+            console.log('found user', user.id);
             done();
           });
         })
-        .catch(function(err) {
-          console.log("err", err);
+        .catch((err) => {
+          console.log('err', err);
         });
     });
 
     // Create a profile for user - hasOne
-    before(function(done) {
+    before((done) => {
       Profile.create({
         USER_ID: user.id,
-        BIO: "I write software."
-      }).then(function() {
+        BIO: 'I write software.',
+      }).then(() => {
         done();
       });
     });
 
     // Create a few posts for the user - hasMany
-    before(function(done) {
+    before((done) => {
       Post.create({
         USER_ID: user.id,
-        POST_BODY: "My first post."
-      }).then(function() {
+        POST_BODY: 'My first post.',
+      }).then(() => {
         done();
       });
     });
-    before(function(done) {
+    before((done) => {
       Post.create({
         USER_ID: user.id,
-        POST_BODY: "My second post."
-      }).then(function() {
+        POST_BODY: 'My second post.',
+      }).then(() => {
         done();
       });
     });
 
-    it("should populate", function(done) {
-      user.populate().then(function() {
+    it('should populate', (done) => {
+      user.populate().then(() => {
         // console.log(user)
-        var json = user.toJSON();
+        const json = user.toJSON();
         // console.log(json)
         expect(json.posts.length).to.equal(2);
         done();

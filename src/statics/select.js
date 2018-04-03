@@ -1,9 +1,9 @@
-import Promise from "bluebird";
-import _ from "lodash";
-import async from "async";
-import sageUtil from "../../build/sage_util";
+import Promise from 'bluebird';
+import _ from 'lodash';
+import async from 'async';
+import sageUtil from '../../build/sage_util';
 
-var knex = require("knex")({ client: "oracle" });
+const knex = require('knex')({ client: 'oracle' });
 
 class SelectQuery {
   constructor(sage, tableName, model, columns) {
@@ -12,19 +12,17 @@ class SelectQuery {
 
     this.model = model; // needed to convert results into models
 
-    columns = columns || "*";
+    columns = columns || '*';
     this.knex.select(columns);
 
-    this.knex.exec = (options = {}) => {
-      return this.exec(options);
-    };
+    this.knex.exec = (options = {}) => this.exec(options);
 
     return this.knex;
   }
 
   exec(options = {}) {
-    var models = [];
-    var self = this;
+    const models = [];
+    const self = this;
 
     let connection;
 
@@ -40,21 +38,19 @@ class SelectQuery {
         return connection.execute(sql);
       })
       .then(result => sageUtil.resultToJSON(result))
-      .then(results => {
-        _.each(results, result => {
+      .then((results) => {
+        _.each(results, (result) => {
           models.push(new self.model(result));
         });
         return models;
       })
-      .catch(err => {
+      .catch((err) => {
         if (err) {
           self.sage.logger.error(err);
         }
         throw err;
       })
-      .finally(() => {
-        return self.sage.afterExecute(connection);
-      });
+      .finally(() => self.sage.afterExecute(connection));
   }
 }
 

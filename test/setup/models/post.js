@@ -1,22 +1,23 @@
-var sage = require("../../../build/sage");
-var Schema = sage.Schema;
+const sage = require('../../../build/sage');
 
-var PostSchema = new Schema(
+const Schema = sage.Schema;
+
+const PostSchema = new Schema(
   {
     POST_ID: {
-      type: "number",
-      readonly: true
+      type: 'number',
+      readonly: true,
     },
     USER_ID: {
-      type: "number"
+      type: 'number',
     },
     POST_BODY: {
-      type: "varchar"
-    }
+      type: 'varchar',
+    },
   },
   {
-    primaryKey: "POST_ID"
-  }
+    primaryKey: 'POST_ID',
+  },
 );
 
-module.exports = sage.model("SAGE_TEST.POSTS", PostSchema);
+module.exports = sage.model('SAGE_TEST.POSTS', PostSchema);

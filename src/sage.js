@@ -1,18 +1,18 @@
-import Promise from "bluebird";
-import oracledb from "oracledb";
-import logger from "./logger";
+import Promise from 'bluebird';
+import oracledb from 'oracledb';
+import logger from './logger';
 
 // https://github.com/oracle/node-oracledb/blob/master/doc/api.md#-3214-stmtcachesize
 // Statement caching can be disabled by setting the size to 0.
 oracledb.stmtCacheSize = 0;
 
-import _ from "lodash";
+import _ from 'lodash';
 
-import sageModel from "../build/sage_model";
-import sageSchema from "../build/sage_schema";
-import sageUtil from "../build/sage_util";
+import sageModel from '../build/sage_model';
+import sageSchema from '../build/sage_schema';
+import sageUtil from '../build/sage_util';
 
-var knex = require("knex")({ client: "oracle" });
+const knex = require('knex')({ client: 'oracle' });
 
 class Sage {
   constructor(options = {}) {
@@ -33,22 +33,22 @@ class Sage {
   }
 
   log(o) {
-    logger.warn("This is deprecated.");
+    logger.warn('This is deprecated.');
     logger.debug(o);
   }
 
   getConnection(options = {}) {
-    var self = this;
-    return new Promise(function(resolve, reject) {
+    const self = this;
+    return new Promise((resolve, reject) => {
       if (options.transaction) {
-        var connection = options.transaction.connection;
+        const connection = options.transaction.connection;
         connection.isSageTransaction = true;
         return resolve(connection);
       }
 
-      self._pool.getConnection(function(err, connection) {
+      self._pool.getConnection((err, connection) => {
         if (err) {
-          logger.error("Out of connections!", err);
+          logger.error('Out of connections!', err);
           return reject(err);
         }
         return resolve(connection);
@@ -59,15 +59,15 @@ class Sage {
   // Promise wrap oracle connection.commit
   // Commits operations in the connection, then releases it
   commit(connection) {
-    return new Promise(function(resolve, reject) {
-      connection.commit(function(err, result) {
+    return new Promise((resolve, reject) => {
+      connection.commit((err, result) => {
         if (err) {
-          logger.error("Could not commit", err);
+          logger.error('Could not commit', err);
           // Do not return yet. Release connection first.
         }
         sage
           .releaseConnection(connection)
-          .then(function() {
+          .then(() => {
             if (err) {
               return reject(err);
             }
@@ -84,9 +84,8 @@ class Sage {
   afterExecuteCommitable(connection) {
     if (connection.isSageTransaction) {
       return Promise.resolve();
-    } else {
-      return sage.commit(connection);
     }
+    return sage.commit(connection);
   }
 
   // Used by statics and methods to figure out what to do with a connection
@@ -94,9 +93,8 @@ class Sage {
   afterExecute(connection) {
     if (connection.isSageTransaction) {
       return Promise.resolve();
-    } else {
-      return sage.releaseConnection(connection);
     }
+    return sage.releaseConnection(connection);
   }
   /**
    Create a sage transaction to perform several operations before commit.
@@ -130,49 +128,48 @@ class Sage {
 
    */
   transaction(fn) {
-    var self = this;
+    const self = this;
     if (fn) {
-      return new Promise(function(resolve, reject) {
-        self.getConnection().then(function(connection) {
-          var transaction = {
-            connection: connection,
-            commit: function() {
+      return new Promise((resolve, reject) => {
+        self.getConnection().then((connection) => {
+          const transaction = {
+            connection,
+            commit() {
               sage
                 .commit(this.connection)
                 .then(resolve)
                 .catch(reject);
             },
-            rollback: function(transaction) {
+            rollback(transaction) {
               sage
                 .releaseConnection(this.connection)
                 .then(resolve)
                 .catch(reject);
-            }
+            },
           };
           fn(transaction);
         });
       });
-    } else {
-      return self.getConnection().then(function(connection) {
-        var transaction = {
-          connection: connection,
-          commit: function() {
-            return sage.commit(this.connection);
-          },
-          rollback: function(transaction) {
-            return sage.releaseConnection(this.connection);
-          }
-        };
-        return transaction;
-      });
     }
+    return self.getConnection().then((connection) => {
+      const transaction = {
+        connection,
+        commit() {
+          return sage.commit(this.connection);
+        },
+        rollback(transaction) {
+          return sage.releaseConnection(this.connection);
+        },
+      };
+      return transaction;
+    });
   }
 
   releaseConnection(connection) {
-    return new Promise(function(resolve, reject) {
-      connection.release(function(err) {
+    return new Promise((resolve, reject) => {
+      connection.release((err) => {
         if (err) {
-          logger.error("Problem releasing connection", err);
+          logger.error('Problem releasing connection', err);
           reject(err);
         } else {
           resolve();
@@ -182,20 +179,19 @@ class Sage {
   }
 
   get connection() {
-    logger.warn("Sage connection is deprecated since pools");
-    throw "errr";
+    logger.warn('Sage connection is deprecated since pools');
+    throw 'errr';
     return false;
-    var self = this;
+    const self = this;
   }
 
   model(name, schema) {
     if (!schema) {
-      let model = this.models[name];
+      const model = this.models[name];
       if (model) {
         return model.model;
-      } else {
-        return null;
       }
+      return null;
     }
     return sageModel(name, schema, this);
   }
@@ -227,9 +223,9 @@ class Sage {
     options = _.extend(
       {
         maxRows: 100,
-        outFormat: self.oracledb.OBJECT
+        outFormat: self.oracledb.OBJECT,
       },
-      options
+      options,
     );
 
     let connection;
@@ -238,25 +234,22 @@ class Sage {
       .getConnection({ transaction: options.transaction })
       .then(c => (connection = c))
       .then(() => connection.execute(sql, bindParams, options))
-      .then(r => {
+      .then((r) => {
         // Lowercase all the object keys
         // This was just done to make the data more 'JS' friendly since
         // the database column names are all uppercase.
-        results = _.map(r.rows, row => {
+        results = _.map(r.rows, row =>
           // Return the row with lowercased keys
-          return _.transform(row, (result, val, key) => {
+          _.transform(row, (result, val, key) => {
             result[key.toLowerCase()] = val;
-          });
-        });
+          }));
 
         if (!options.transaction) {
           return sage.releaseConnection(connection);
         }
-
-        return;
       })
       .then(() => results) // Return the results
-      .catch(err => {
+      .catch((err) => {
         logger.warn(err);
         if (options.transaction) {
           throw err;
@@ -266,14 +259,14 @@ class Sage {
           .then(() => {
             throw err;
           })
-          .catch(err => {
+          .catch((err) => {
             throw err;
           });
       });
   }
 
   connect(uri, connectOptions = {}) {
-    let self = this;
+    const self = this;
     if (self._pool) {
       return Promise.resolve();
     }
@@ -295,15 +288,15 @@ class Sage {
 
     // Make a new connection
     let auth = {
-      user: "system",
-      password: "oracle",
-      connectString: uri || "127.0.0.1:1521/xe",
+      user: 'system',
+      password: 'oracle',
+      connectString: uri || '127.0.0.1:1521/xe',
       poolMin: connectOptions.poolMin,
-      poolMax: connectOptions.poolMax
+      poolMax: connectOptions.poolMax,
     };
     auth = _.defaults(connectOptions, auth);
-    return new Promise(function(resolve, reject) {
-      oracledb.createPool(auth, function(err, pool) {
+    return new Promise((resolve, reject) => {
+      oracledb.createPool(auth, (err, pool) => {
         if (err) {
           logger.error(err);
           return reject(err);

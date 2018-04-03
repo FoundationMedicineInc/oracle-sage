@@ -1,18 +1,19 @@
-var sage = require("../../../build/sage");
-var Schema = sage.Schema;
+const sage = require('../../../build/sage');
 
-var ProfileSchema = new Schema(
+const Schema = sage.Schema;
+
+const ProfileSchema = new Schema(
   {
     USER_ID: {
-      type: "number"
+      type: 'number',
     },
     BIO: {
-      type: "varchar"
-    }
+      type: 'varchar',
+    },
   },
   {
-    primaryKey: "USER_ID"
-  }
+    primaryKey: 'USER_ID',
+  },
 );
 
-module.exports = sage.model("SAGE_TEST.PROFILES", ProfileSchema);
+module.exports = sage.model('SAGE_TEST.PROFILES', ProfileSchema);
