@@ -1,39 +1,49 @@
-var _ = require('lodash');
-var Promise = require('bluebird');
-var path = require('path');
-var sage = require('../build/sage');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const path = require('path');
+const sage = require('../build/sage');
 
 module.exports = {
-  sage: sage,
-  initdb: function(options) {
+  sage,
+  initdb(options) {
     options = options || {};
 
-    var oracle = require('./setup/oracle')
-    return new Promise(function(resolve, reject) {
-      oracle.connect().then(function(){
-        return oracle.runSQL({ path: path.resolve(__dirname, './setup/db/schema.sql'), verbose: options.verbose });
-      }).then(function() {
-        if(options.verbose) {
-          console.log('************');
-          console.log('Success.');
-          console.log('************');
-        }
-      }).then(function() {
-        resolve();
-      })
-    })
+    const oracle = require('./setup/oracle');
+    return new Promise((resolve, reject) => {
+      oracle
+        .connect()
+        .then(() =>
+          oracle.runSQL({
+            path: path.resolve(__dirname, './setup/db/schema.sql'),
+            verbose: options.verbose,
+          })
+        )
+        .then(() => {
+          if (options.verbose) {
+            console.log('************');
+            console.log('Success.');
+            console.log('************');
+          }
+        })
+        .then(() => {
+          resolve();
+        });
+    });
   },
-  connect: function() {
-    return new Promise(function(resolve, reject) {
-      sage.connect('127.0.0.1:1521/xe', {
-        user: 'SAGE_TEST',
-        password: 'oracle'
-      }).then(function() {
-        console.log("TestHelper connected via sage");
-        resolve();
-      }).catch(function(err) {
-        console.log(err);
-      })
-    })
-  }
+  connect() {
+    return new Promise((resolve, reject) => {
+      sage
+        .connect('127.0.0.1:1521/xe', {
+          user: 'SAGE_TEST',
+          password: 'oracle',
+        })
+        .then(() => {
+          console.log('TestHelper connected via sage');
+          resolve();
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    });
+  },
 };

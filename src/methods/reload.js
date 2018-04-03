@@ -3,24 +3,26 @@ import sageUtil from '../../build/sage_util';
 
 module.exports = function(self, name, schema, sage) {
   self.reload = function(options = {}) {
-    var self = this;
+    const self = this;
     return new Promise((resolve, reject) => {
-      if(!this.get(this._schema.primaryKey)) {
-        sage.logger.warn("No primary key. I don't know who to reload.")
-        return reject()
+      if (!this.get(this._schema.primaryKey)) {
+        sage.logger.warn("No primary key. I don't know who to reload.");
+        return reject();
       }
 
-      let pk = schema.primaryKey
+      const pk = schema.primaryKey;
 
-      var query = {};
+      const query = {};
       query[pk] = self.get(pk);
 
-      sage.models[name].model.findOne(query, options).then(function(model) {
-        self._props = model._props;
-        self.resetDirtyProps();
-        return resolve();
-      }).catch(reject);
-
+      sage.models[name].model
+        .findOne(query, options)
+        .then(model => {
+          self._props = model._props;
+          self.resetDirtyProps();
+          return resolve();
+        })
+        .catch(reject);
     });
-  }
-}
+  };
+};

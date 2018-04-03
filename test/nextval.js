@@ -1,37 +1,40 @@
-var _ = require('lodash');
-var moment = require('moment');
-var TestHelpers = require('./test_helpers');
-var expect = require('chai').expect;
+const _ = require('lodash');
+const moment = require('moment');
+const TestHelpers = require('./test_helpers');
+const expect = require('chai').expect;
 
-var Sequence = require('./setup/models/sequence_no_trigger');
+const Sequence = require('./setup/models/sequence_no_trigger');
 
-var user;
+let user;
 
-describe('transactions',function() {
+describe('transactions', () => {
   // Reset Db
-  before(function(done) {
-    TestHelpers.initdb().then(function() {
+  before(done => {
+    TestHelpers.initdb().then(() => {
       done();
     });
-  });;
+  });
   // Connect to sage
-  before(function(done) {
-    TestHelpers.connect().then(function() {
-      done();
-    }).catch(function(err) {
-      console.log(err);
-    });
-  });  
-  
-  it('should create', function(done) {
+  before(done => {
+    TestHelpers.connect()
+      .then(() => {
+        done();
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  });
+
+  it('should create', done => {
     Sequence.create({
-      VALUE: "12345"
-    }).then(function(err) {
-      Sequence.count().then(function(count) {
+      VALUE: '12345',
+    }).then(err => {
+      Sequence.count().then(count => {
         expect(count).to.equal(1);
         // We must verify this is TRUE because sage temporarily sets it to false during creation
         // Make sure it gets set back
-        expect(Sequence.schema.definition[Sequence.schema.primaryKey].readonly).to.be.true;
+        expect(Sequence.schema.definition[Sequence.schema.primaryKey].readonly)
+          .to.be.true;
         done();
       });
     });

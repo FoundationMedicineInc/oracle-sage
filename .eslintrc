@@ -1,0 +1,12 @@
+{
+  "extends": "airbnb",
+  "rules" : {
+    "new-cap": ["error", {
+      "newIsCap": true,
+      "newIsCapExceptions": [],
+      "newIsCapExceptionPattern": "self",
+      "capIsNew": false,
+      "capIsNewExceptions": []
+    }]
+  }
+}

@@ -1,118 +1,125 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 
-let util = {};
+const util = {};
 
 util.getSelectANDSQL = function(fields = {}) {
-  let params = [];
-  let values = {};
-  _.each(fields, function(value, key) {
-    params.push(`${key}=:${key}`)
+  const params = [];
+  const values = {};
+  _.each(fields, (value, key) => {
+    params.push(`${key}=:${key}`);
     values[key] = value;
   });
-  let sql = params.join(" AND ");
+  const sql = params.join(' AND ');
   return {
-    sql: sql,
-    values: values
+    sql,
+    values,
   };
-}
+};
 
 util.getUpdateSQL = function(fields = {}) {
-  let params = [];
-  let values = {};
-  _.each(fields, function(value, key) {
-    params.push(`${key}=:${key}`)
+  const params = [];
+  const values = {};
+  _.each(fields, (value, key) => {
+    params.push(`${key}=:${key}`);
     values[key] = value;
   });
-  let sql = params.join(",");
+  const sql = params.join(',');
   return {
-    sql: sql,
-    values: values
+    sql,
+    values,
   };
-}
+};
 
 util.amendDateFields = function(schema, string) {
-  let self = this;
-  let fields = [];
-  _.each(schema.definition, function(value, key) {
-    let schemaProps = value;
-    if(schemaProps.type === "date") {
+  const self = this;
+  const fields = [];
+  _.each(schema.definition, (value, key) => {
+    const schemaProps = value;
+    if (schemaProps.type === 'date') {
       fields.push({
         name: key,
-        format: schemaProps.format
+        format: schemaProps.format,
       });
     }
   });
-  _.each(fields, function(field) {
-    let re = new RegExp(":" + field.name);
+  _.each(fields, field => {
+    const re = new RegExp(`:${field.name}`);
 
     // https://github.com/oracle/node-oracledb/issues/414
-    var dateBugFixTime = ' HH24:MI:SS';
+    const dateBugFixTime = ' HH24:MI:SS';
 
-    string = string.replace(re, "TO_DATE(:" + field.name + ",'" + field.format + dateBugFixTime + "')");
+    string = string.replace(
+      re,
+      `TO_DATE(:${field.name},'${field.format}${dateBugFixTime}')`
+    );
     // string = string.replace(re, "TO_DATE(:" + field.name + ",'" + field.format +"')");
   });
   return string;
-}
+};
 
 util.amendTimestampFields = function(schema, string) {
-  let self = this;
-  let fields = [];
-  _.each(schema.definition, function(value, key) {
-    let schemaProps = value;
-    if(schemaProps.type === "timestamp") {
+  const self = this;
+  const fields = [];
+  _.each(schema.definition, (value, key) => {
+    const schemaProps = value;
+    if (schemaProps.type === 'timestamp') {
       fields.push({
         name: key,
-        format: schemaProps.format
+        format: schemaProps.format,
       });
     }
   });
-  _.each(fields, function(field) {
-    let re = new RegExp(":" + field.name);
+  _.each(fields, field => {
+    const re = new RegExp(`:${field.name}`);
     // https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions193.htm
-    var oracleFormat = "DD-Mon-RR HH24:MI:SS.FF"
-    string = string.replace(re, "TO_TIMESTAMP(:" + field.name + ",'" + oracleFormat +"')");
+    const oracleFormat = 'DD-Mon-RR HH24:MI:SS.FF';
+    string = string.replace(
+      re,
+      `TO_TIMESTAMP(:${field.name},'${oracleFormat}')`
+    );
   });
   return string;
-}
-
+};
 
 // https://github.com/oracle/node-oracledb/issues/414
 // Goes thorugh and gets all DATE fields and sets the time to 12:00:00
 util.fixDateBug = function(schema, values) {
-  _.each(schema.definition, function(value, key) {
-    let schemaProps = value;
-    if(schemaProps.type === "date") {
-      if(values[key]) { // possible it is not set, eg. undefined/null
-        values[key] = values[key] + ' 12:00:00';
+  _.each(schema.definition, (value, key) => {
+    const schemaProps = value;
+    if (schemaProps.type === 'date') {
+      if (values[key]) {
+        // possible it is not set, eg. undefined/null
+        values[key] = `${values[key]} 12:00:00`;
       }
     }
   });
   return values;
-}
+};
 
 // Helper for getInsertSQL
 util.schemaToString = function(schema, options = {}) {
-  let prefix = options.prefix || "";
-  let result = "";
-  _.each(schema.definition, function(value, key) {
-    if(value.type != "association") {
-      if(!value.readonly) { // NEVER INSERT READONLY FIELDS
-        result = result + prefix + key + ",";
+  const prefix = options.prefix || '';
+  let result = '';
+  _.each(schema.definition, (value, key) => {
+    if (value.type != 'association') {
+      if (!value.readonly) {
+        // NEVER INSERT READONLY FIELDS
+        result = `${result + prefix + key},`;
       }
     }
   });
   result = result.substring(0, result.length - 1);
   return result;
-}
+};
 
 util.getInsertSQL = function(table, schema) {
-  let fields = this.schemaToString(schema);
-  let keys = this.schemaToString(schema, { prefix: ":" });
+  const fields = this.schemaToString(schema);
+  let keys = this.schemaToString(schema, { prefix: ':' });
   keys = this.amendDateFields(schema, keys);
   keys = this.amendTimestampFields(schema, keys);
   return `INSERT INTO ${table} (${fields}) VALUES (${keys})`;
-}
+};
 
 /**
  * Take a `result` from a Oracle execute and convert it to JSON. Handles cases
@@ -122,18 +129,19 @@ util.getInsertSQL = function(table, schema) {
  */
 util.resultToJSON = function(result) {
   const records = [];
-  return Promise.each(result.rows, (row) => {
+  return Promise.each(result.rows, row => {
     const record = {};
 
     return Promise.each(row, (value, index) => {
-      var field = result.metaData[index].name;
+      const field = result.metaData[index].name;
 
       let constructorName;
       // We get the constructor so we can handle specific types in specific ways
       // particulary streams and hex values.
       try {
         constructorName = value.constructor.name;
-      } catch(e) { // Fails on null or undefined since neither of these have constructors
+      } catch (e) {
+        // Fails on null or undefined since neither of these have constructors
         constructorName = null;
       }
 
@@ -143,16 +151,16 @@ util.resultToJSON = function(result) {
           break;
         case 'Lob':
           // For lob types. Wrap into a promise to read the stream
-          return new Promise((resolve) => {
+          return new Promise(resolve => {
             const chunks = [];
-            value.on('data', (chunk) => {
-              chunks.push(chunk.toString())
+            value.on('data', chunk => {
+              chunks.push(chunk.toString());
             });
             value.on('end', () => {
               record[field] = chunks.join('');
               resolve();
-            })
-          })
+            });
+          });
         default:
           // When using where rownum, a RNUM field is also returned for some reason.
           // See `findOne`.
@@ -161,14 +169,10 @@ util.resultToJSON = function(result) {
           }
           break;
       }
-    })
-    .then(() => {
+    }).then(() => {
       records.push(record);
-    })
-  })
-  .then(() => {
-    return records;
-  })
-}
+    });
+  }).then(() => records);
+};
 
 module.exports = util;

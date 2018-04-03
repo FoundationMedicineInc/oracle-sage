@@ -1,60 +1,68 @@
-import Promise from 'bluebird'
-import sageUtil from '../../build/sage_util'
-import async from 'async'
+import Promise from 'bluebird';
+import sageUtil from '../../build/sage_util';
+import async from 'async';
 
 module.exports = function(self, name, schema, sage) {
   self.destroy = function(options = {}) {
-    var self = this;
+    const self = this;
 
     return new Promise((resolve, reject) => {
-      let pk = this.get(this._schema.primaryKey);
-      if(!pk) {
+      const pk = this.get(this._schema.primaryKey);
+      if (!pk) {
         sage.logger.warn('Missing primary key on destroy. Who do I destroy?');
         return reject('Missing primary key.');
       }
 
-      let sql = sage
+      const sql = sage
         .knex(this._name)
         .where(this._schema.primaryKey, pk)
         .del()
         .toString();
 
-      var connection;
+      let connection;
 
-      async.series([
-        // Get connection
-        function(next) {
-          sage.getConnection({transaction: options.transaction}).then(function(c) {
-            connection = c;
-            next();
-          }).catch(function(err) {
-            next(err);
-          });
-        },
-        // Perform operation
-        function(next) {
-          sage.logger.debug(sql);
+      async.series(
+        [
+          // Get connection
+          function(next) {
+            sage
+              .getConnection({ transaction: options.transaction })
+              .then(c => {
+                connection = c;
+                next();
+              })
+              .catch(err => {
+                next(err);
+              });
+          },
+          // Perform operation
+          function(next) {
+            sage.logger.debug(sql);
 
-          connection.execute(sql, (err, results) => {
-            if(err) {
-              sage.logger.error('Could not destroy.');
-            }
-            next(err);
-          })
+            connection.execute(sql, (err, results) => {
+              if (err) {
+                sage.logger.error('Could not destroy.');
+              }
+              next(err);
+            });
+          },
+        ],
+        err => {
+          if (err) {
+            sage.logger.error(err);
+            return sage.afterExecute(connection).then(() => {
+              reject(err);
+            });
+          }
+
+          sage
+            .afterExecuteCommitable(connection)
+            .then(() => {
+              resolve();
+            })
+            .catch(reject);
         }
-      ], function(err) {
-        if(err) {
-          sage.logger.error(err);
-          return sage.afterExecute(connection).then(() => {
-            reject(err)
-          });
-        }
-
-        sage.afterExecuteCommitable(connection).then(function() {
-          resolve();
-        }).catch(reject);
-
-      });
-    })
-  }
-}
+      );
+    });
+  };
+};

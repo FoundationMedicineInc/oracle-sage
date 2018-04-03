@@ -1,13 +1,14 @@
 import _ from 'lodash';
+
 class Schema {
   constructor(definition = {}, config = {}) {
-    let tempDefinition = {};
-    for(let key in definition) {
-      let value = definition[key];
-      if(typeof(value) === "string") {
+    const tempDefinition = {};
+    for (const key in definition) {
+      const value = definition[key];
+      if (typeof value === 'string') {
         definition[key] = {
-          type: value
-        }
+          type: value,
+        };
       }
     }
     this._definition = definition;
@@ -19,19 +20,19 @@ class Schema {
     return this._definition;
   }
   get associations() {
-    let associations = [];
+    const associations = [];
     _.each(this._definition, (item, key) => {
-      if(item.type === "association") {
+      if (item.type === 'association') {
         associations.push({
-          key: key,
-          value: item
-        })
+          key,
+          value: item,
+        });
       }
     });
     return associations;
   }
   getDefinition(key) {
-    return this._definition[key]
+    return this._definition[key];
   }
 }
 

@@ -1,31 +1,31 @@
-import Promise from 'bluebird'
-import moment from 'moment'
-import sageUtil from '../build/sage_util'
-import sageSelectQuery from '../build/statics/select'
-import _ from 'lodash'
-import objectAssign from 'object-assign'
-import async from 'async'
+import Promise from 'bluebird';
+import moment from 'moment';
+import sageUtil from '../build/sage_util';
+import sageSelectQuery from '../build/statics/select';
+import _ from 'lodash';
+import objectAssign from 'object-assign';
+import async from 'async';
 
-let model = function(name, schema, sage) {
-  var _methods = {};
-  let modelClass = class Model {
+const model = function(name, schema, sage) {
+  let _methods = {};
+  const modelClass = class Model {
     constructor(props, initName, initSchema) {
       // Name and schema will inherit off function
       // Create uses the constructor as well so naming has to be different
-      this._name = initName || name
+      this._name = initName || name;
 
-      this._schema = initSchema || schema
+      this._schema = initSchema || schema;
 
-      this._props = props || {}
-      this._dirtyProps = {}
+      this._props = props || {};
+      this._dirtyProps = {};
 
-      this.errors = []
+      this.errors = [];
 
       // queue for pending associations to be populated
-      this._associations = []
+      this._associations = [];
 
       // apply extensions
-      objectAssign(this, _methods)
+      objectAssign(this, _methods);
 
       require('./methods/populate')(this, name, schema, sage);
       require('./methods/save')(this, name, schema, sage);
@@ -34,45 +34,45 @@ let model = function(name, schema, sage) {
     }
 
     mergeProps() {
-      this._props = _.assign(this._props, this._dirtyProps)
+      this._props = _.assign(this._props, this._dirtyProps);
       this.resetDirtyProps();
     }
 
     resetDirtyProps() {
-      this._dirtyProps = {}
+      this._dirtyProps = {};
     }
     static statics(object) {
-      objectAssign(this, object)
+      objectAssign(this, object);
     }
 
     static methods(object) {
-      _methods = _.extend(_methods, object)
+      _methods = _.extend(_methods, object);
     }
 
     // Generates a string of all the fields defined in the schema to replace a * in a SELECT *
     // We do this because tables with SDO_GEOMETRY fields or custom fields cannot currently be understood by Sage
     static _selectAllStringStatic() {
-      let fields = []
-      for(let key in schema.definition) {
-        if(schema.definition[key].type != 'association') {
-          fields.push(`${name}.${key}`)
+      const fields = [];
+      for (const key in schema.definition) {
+        if (schema.definition[key].type != 'association') {
+          fields.push(`${name}.${key}`);
         }
       }
-      return fields.join(',')
+      return fields.join(',');
     }
 
     static select(columns) {
       // Always pass in columns
-      if(!columns) {
-        columns = this._selectAllStringStatic().split(',')
+      if (!columns) {
+        columns = this._selectAllStringStatic().split(',');
       }
-      return new sageSelectQuery(sage, name, this, columns)
+      return new sageSelectQuery(sage, name, this, columns);
     }
     // **** END STATIC
 
     // Goes through and returns an object with non-entries filled with NULL
     get dirtyProps() {
-      return this._dirtyProps
+      return this._dirtyProps;
     }
 
     /**
@@ -80,146 +80,152 @@ let model = function(name, schema, sage) {
      * @return {Object}
      */
     get normalized() {
-      let result = {}
-      for(let key in this.schema.definition) {
-
+      const result = {};
+      for (const key in this.schema.definition) {
         // Do not normalize read only fields
-        if(this.schema.definition[key].readonly) {
-          continue
+        if (this.schema.definition[key].readonly) {
+          continue;
         }
 
-        let value
+        let value;
 
-        switch(this.schema.definition[key].type) {
+        switch (this.schema.definition[key].type) {
           case 'date':
-            var format = this.schema.definition[key].format
-            var date = this.get(key)
-            if(date) {
-              value = moment(date, format).format(format)
-              if(value === "Invalid date") {
-                sage.logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`)
-                value = moment((new Date(date))).format(format)
+            var format = this.schema.definition[key].format;
+            var date = this.get(key);
+            if (date) {
+              value = moment(date, format).format(format);
+              if (value === 'Invalid date') {
+                sage.logger.warn(
+                  `Could not decipher value: ${date}, using Date() value ${new Date(
+                    date
+                  )}`
+                );
+                value = moment(new Date(date)).format(format);
               }
             }
-            break
-          case "timestamp":
-            var format = this.schema.definition[key].format
-            var date = this.get(key)
-            if(date) {
-              value = moment(date, format).format(format)
-              if(value === "Invalid date") {
-                sage.logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`)
-                value = moment((new Date(date))).format(format)
+            break;
+          case 'timestamp':
+            var format = this.schema.definition[key].format;
+            var date = this.get(key);
+            if (date) {
+              value = moment(date, format).format(format);
+              if (value === 'Invalid date') {
+                sage.logger.warn(
+                  `Could not decipher value: ${date}, using Date() value ${new Date(
+                    date
+                  )}`
+                );
+                value = moment(new Date(date)).format(format);
               }
             }
-            break
+            break;
 
-          case "number":
+          case 'number':
             // Need this IF statement because what if the person does not have a
             // read only primary key and is creating a new model? Usually they would pass
             // down NULL as the PK, and if we didn't have this it would parseInt(NULL)
-            if(this.get(key) != null || this.get(key) != undefined) {
-              value = parseInt(this.get(key))
+            if (this.get(key) != null || this.get(key) != undefined) {
+              value = parseInt(this.get(key));
             }
             break;
 
           // Blobs must be converted to a buffer before inserting into Oracle
-          case "blob":
+          case 'blob':
             if (this.get(key) !== undefined && this.get(key) !== null) {
               value = new Buffer(this.get(key));
             }
             break;
 
           default:
-            value = this.get(key)
+            value = this.get(key);
         }
 
-        if(this.schema.definition[key].type != 'association') {
-          if(!this.schema.definition[key].readonly) {
-            result[key] = value
+        if (this.schema.definition[key].type != 'association') {
+          if (!this.schema.definition[key].readonly) {
+            result[key] = value;
           }
         }
       }
-      return result
+      return result;
     }
 
     get schema() {
-      return this._schema
+      return this._schema;
     }
     get name() {
-      return this._name
+      return this._name;
     }
 
     get id() {
-      return this.get(schema.primaryKey)
+      return this.get(schema.primaryKey);
     }
 
     // Return a property
     get(key) {
-      return this._dirtyProps[key] || this._props[key]
+      return this._dirtyProps[key] || this._props[key];
     }
 
     unset(key) {
-      this._dirtyProps[key] = undefined
-      this._props[key] = undefined
+      this._dirtyProps[key] = undefined;
+      this._props[key] = undefined;
     }
 
     // Set a property
     set(key, value) {
-      if(typeof key === 'object') {
-        for(let k in key) {
-          this._dirtyProps[k] = key[k]
+      if (typeof key === 'object') {
+        for (const k in key) {
+          this._dirtyProps[k] = key[k];
         }
       } else {
-        this._dirtyProps[key] = value
+        this._dirtyProps[key] = value;
       }
     }
 
     // Set a property directly to props
     _directSet(key, value) {
-      this._props[key] = value
+      this._props[key] = value;
     }
 
     clearErrors() {
-      this.errors = []
+      this.errors = [];
     }
 
     // Special JSON that sends lowercase
     // and will recieve lowercase and convert to uppercase
     toJSON() {
-      var result = {}
-      for(let k in this._props) {
-        result[k.toLowerCase()] = this._props[k]
+      const result = {};
+      for (const k in this._props) {
+        result[k.toLowerCase()] = this._props[k];
       }
 
       // translate population
-      _.each(this._schema.associations, function(association) {
-        let key = association.key.toLowerCase()
-        let models = result[key]
+      _.each(this._schema.associations, association => {
+        const key = association.key.toLowerCase();
+        const models = result[key];
 
-        if(association.value.joinType === "hasOne") {
-          if(models) {
+        if (association.value.joinType === 'hasOne') {
+          if (models) {
             result[key] = models.toJSON();
           } else {
             result[key] = undefined;
           }
         } else {
-          let modelsJSON = []
-          _.each(models, function(model) {
-            modelsJSON.push(model.toJSON())
-          })
-          result[key] = modelsJSON
+          const modelsJSON = [];
+          _.each(models, model => {
+            modelsJSON.push(model.toJSON());
+          });
+          result[key] = modelsJSON;
         }
+      });
 
-      })
-
-      return result
+      return result;
     }
 
     setFromJSON(json) {
-      for(let k in json) {
-        let value = json[k]
-        this.set(k.toUpperCase(), value)
+      for (const k in json) {
+        const value = json[k];
+        this.set(k.toUpperCase(), value);
       }
     }
 
@@ -244,194 +250,209 @@ let model = function(name, schema, sage) {
     // }
     // Check against schema if it is valid
     get valid() {
-      this.clearErrors()
-      let isValid = true
-      for(let key in this.schema.definition) {
-        let schemaProps = this.schema.definition[key];
-        let value = this.get(key)
-        let validators = []
+      this.clearErrors();
+      let isValid = true;
+      for (const key in this.schema.definition) {
+        const schemaProps = this.schema.definition[key];
+        const value = this.get(key);
+        const validators = [];
 
         // Dont validate association
-        if(schemaProps.type === "association") {
+        if (schemaProps.type === 'association') {
           continue;
         }
 
         // Required check
-        if(schemaProps.required) {
+        if (schemaProps.required) {
           validators.push({
-            validator: function(value) {
-              return (value != null && value != undefined)
+            validator(value) {
+              return value != null && value != undefined;
             },
-            message: `${key} is required`
-          })
-        } else if(value === null || value === undefined) {
+            message: `${key} is required`,
+          });
+        } else if (value === null || value === undefined) {
           // Don't check if the value is null
           // We continue because for example, number is null but not required.
           // It would fail the type check below if allowed to continue
-          continue
+          continue;
         }
 
-        switch(schemaProps.type) {
-          case "timestamp":
-            break
-          case "raw":
-            break
-          case "blob":
-            break
+        switch (schemaProps.type) {
+          case 'timestamp':
+            break;
+          case 'raw':
+            break;
+          case 'blob':
+            break;
 
-          case "number":
+          case 'number':
             validators.push({
-              validator: function(value) {
-                return typeof(value) === "number"
+              validator(value) {
+                return typeof value === 'number';
               },
-              message: `key: ${key}, value: ${value}, is not a number`
-            })
+              message: `key: ${key}, value: ${value}, is not a number`,
+            });
 
-            if(schemaProps.min) {
+            if (schemaProps.min) {
               validators.push({
-                validator: function(value) {
-                  return (value >= schemaProps.min)
+                validator(value) {
+                  return value >= schemaProps.min;
                 },
-                message: `key: ${key}, value: ${value}, must be at least ${schemaProps.min}`
-              })
-            }
-
-            if(schemaProps.max) {
-              validators.push({
-                validator: function(value) {
-                  return (value <= schemaProps.max)
-                },
-                message: `key: ${key}, value: ${value}, must be at most ${schemaProps.max}`
-              })
-            }
-            break
-          case "clob":
-            validators.push({
-              validator: function(value) {
-                return typeof(value) === "string"
-              },
-              message: `key: ${key}, value: ${value}, is not a valid clob`
-            })
-            validators.push({
-              validator: function(value) {
-                return value.length < 1000000
-              },
-              message: `key: ${key}, value: ${value}, must be shorter than 1,000,000 characters`
-            })
-            if(schemaProps.minlength) {
-              validators.push({
-                validator: function(value) {
-                  return (value.length > schemaProps.minlength)
-                },
-                message: `key: ${key}, value: ${value}, must be longer than ${schemaProps.minlength} characters`
-              })
+                message: `key: ${key}, value: ${value}, must be at least ${
+                  schemaProps.min
+                }`,
+              });
             }
 
-            if(schemaProps.maxlength) {
+            if (schemaProps.max) {
               validators.push({
-                validator: function(value) {
-                  return (value.length < schemaProps.maxlength)
+                validator(value) {
+                  return value <= schemaProps.max;
                 },
-                message: `key: ${key}, value: ${value}, must be shorter than ${schemaProps.maxlength} characters`
-              })
+                message: `key: ${key}, value: ${value}, must be at most ${
+                  schemaProps.max
+                }`,
+              });
             }
-            break
-          case "char":
+            break;
+          case 'clob':
             validators.push({
-              validator: function(value) {
-                return typeof(value) === "string"
+              validator(value) {
+                return typeof value === 'string';
               },
-              message: `key: ${key}, value: ${value}, is not a char`
-            })
-            if(schemaProps.enum) {
-              validators.push({
-                validator: function(value) {
-                  return _.indexOf(schemaProps.enum.values, value) > -1
-                },
-                message: `key: ${key}, value: ${value}, is not in enum`
-              })
-            }
-            break
-          case "date":
+              message: `key: ${key}, value: ${value}, is not a valid clob`,
+            });
             validators.push({
-              validator: function(value) {
+              validator(value) {
+                return value.length < 1000000;
+              },
+              message: `key: ${key}, value: ${value}, must be shorter than 1,000,000 characters`,
+            });
+            if (schemaProps.minlength) {
+              validators.push({
+                validator(value) {
+                  return value.length > schemaProps.minlength;
+                },
+                message: `key: ${key}, value: ${value}, must be longer than ${
+                  schemaProps.minlength
+                } characters`,
+              });
+            }
+
+            if (schemaProps.maxlength) {
+              validators.push({
+                validator(value) {
+                  return value.length < schemaProps.maxlength;
+                },
+                message: `key: ${key}, value: ${value}, must be shorter than ${
+                  schemaProps.maxlength
+                } characters`,
+              });
+            }
+            break;
+          case 'char':
+            validators.push({
+              validator(value) {
+                return typeof value === 'string';
+              },
+              message: `key: ${key}, value: ${value}, is not a char`,
+            });
+            if (schemaProps.enum) {
+              validators.push({
+                validator(value) {
+                  return _.indexOf(schemaProps.enum.values, value) > -1;
+                },
+                message: `key: ${key}, value: ${value}, is not in enum`,
+              });
+            }
+            break;
+          case 'date':
+            validators.push({
+              validator(value) {
                 // If moment fails, fallback to Date()
-                var isMoment = moment(value, schemaProps.format).isValid()
-                var isDate = (new Date(value)).toString() !== 'Invalid Date'
-                return isMoment || isDate
+                const isMoment = moment(value, schemaProps.format).isValid();
+                const isDate = new Date(value).toString() !== 'Invalid Date';
+                return isMoment || isDate;
               },
-              message: `key: ${key}, value: ${value}, is not a date`
-            })
-            break
-          case "varchar":
+              message: `key: ${key}, value: ${value}, is not a date`,
+            });
+            break;
+          case 'varchar':
             validators.push({
-              validator: function(value) {
-                return typeof(value) === "string"
+              validator(value) {
+                return typeof value === 'string';
               },
-              message: `key: ${key}, value: ${value}, is not a varchar`
-            })
+              message: `key: ${key}, value: ${value}, is not a varchar`,
+            });
 
-            if(schemaProps.enum) {
+            if (schemaProps.enum) {
               validators.push({
-                validator: function(value) {
-                  return _.indexOf(schemaProps.enum.values, value) > -1
+                validator(value) {
+                  return _.indexOf(schemaProps.enum.values, value) > -1;
                 },
-                message: `key: ${key}, value: ${value}, is not in enum`
-              })
+                message: `key: ${key}, value: ${value}, is not in enum`,
+              });
             }
 
-            if(schemaProps.minlength) {
+            if (schemaProps.minlength) {
               validators.push({
-                validator: function(value) {
-                  return (value.length > schemaProps.minlength)
+                validator(value) {
+                  return value.length > schemaProps.minlength;
                 },
-                message: `key: ${key}, value: ${value}, must be longer than ${schemaProps.minlength} characters`
-              })
+                message: `key: ${key}, value: ${value}, must be longer than ${
+                  schemaProps.minlength
+                } characters`,
+              });
             }
 
-            if(schemaProps.maxlength) {
+            if (schemaProps.maxlength) {
               validators.push({
-                validator: function(value) {
-                  return (value.length < schemaProps.maxlength)
+                validator(value) {
+                  return value.length < schemaProps.maxlength;
                 },
-                message: `key: ${key}, value: ${value}, must be shorter than ${schemaProps.maxlength} characters`
-              })
+                message: `key: ${key}, value: ${value}, must be shorter than ${
+                  schemaProps.maxlength
+                } characters`,
+              });
             }
-            break
+            break;
           default:
-            this.errors.push(`key: ${key}, value: ${value}, has undefined error, ${schemaProps.type}`)
+            this.errors.push(
+              `key: ${key}, value: ${value}, has undefined error, ${
+                schemaProps.type
+              }`
+            );
         }
 
         // Custom Validator Checks
-        if(schemaProps.validator) {
+        if (schemaProps.validator) {
           validators.push({
             validator: schemaProps.validator,
-            message: `${key} is not vaild`
-          })
+            message: `${key} is not vaild`,
+          });
         }
 
         // Check all validators
-        _.each(validators, (v) => {
-          var valid = v.validator(value)
-          if(!valid) {
-            this.errors.push(v.message)
+        _.each(validators, v => {
+          const valid = v.validator(value);
+          if (!valid) {
+            this.errors.push(v.message);
           }
-        })
+        });
 
-        if(this.errors.length > 0) {
-          isValid = false
+        if (this.errors.length > 0) {
+          isValid = false;
         }
-
       }
-      return isValid
+      return isValid;
     }
-  }
+  };
 
   // Store them in sage as they get created
   sage.models[name] = {
     model: modelClass,
-    schema: schema
-  }
+    schema,
+  };
 
   require('./statics/count')(modelClass, name, schema, sage);
   require('./statics/create')(modelClass, name, schema, sage);
@@ -440,9 +461,9 @@ let model = function(name, schema, sage) {
   // require('./statics/query')(modelClass, name, schema, sage);
 
   // Allow access to schema from model
-  modelClass.schema = schema
+  modelClass.schema = schema;
 
-  return(modelClass)
-}
+  return modelClass;
+};
 
-module.exports = model
+module.exports = model;

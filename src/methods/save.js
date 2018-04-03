@@ -5,27 +5,30 @@ import async from 'async';
 
 module.exports = function(self, name, schema, sage) {
   self.save = function(options = {}) {
-    var self = this;
+    const self = this;
 
     return new Promise((resolve, reject) => {
-      if(!this.get(this._schema.primaryKey)) {
-        sage.logger.warn("No primary key. I don't know who to save.")
-        return reject()
+      if (!this.get(this._schema.primaryKey)) {
+        sage.logger.warn("No primary key. I don't know who to save.");
+        return reject();
       }
-      if(!this.valid) {
-        sage.logger.warn("Invalid properties on model");
+      if (!this.valid) {
+        sage.logger.warn('Invalid properties on model');
         return reject();
       }
 
       // save it to the database
-      let pk = schema.primaryKey;
+      const pk = schema.primaryKey;
 
-      let result = sageUtil.getUpdateSQL(this.dirtyProps);
+      const result = sageUtil.getUpdateSQL(this.dirtyProps);
       result.values = sageUtil.fixDateBug(this.schema, result.values);
 
       // Convert blob fields into buffers before saving
-      _.each(_.keys(result.values), (key) => {
-        if (this.normalized[key] && this.normalized[key].constructor.name === 'Buffer') {
+      _.each(_.keys(result.values), key => {
+        if (
+          this.normalized[key] &&
+          this.normalized[key].constructor.name === 'Buffer'
+        ) {
           result.values[key] = this.normalized[key];
         }
       });
@@ -36,44 +39,51 @@ module.exports = function(self, name, schema, sage) {
       sql = sageUtil.amendTimestampFields(this.schema, sql);
       result.values[pk] = this.get(pk);
 
-      var connection;
+      let connection;
 
-      async.series([
-        // Get connection
-        function(next) {
-          sage.getConnection({transaction: options.transaction}).then(function(c) {
-            connection = c;
-            next();
-          }).catch(next);
-        },
-        // Perform operation
-        function(next) {
-          sage.logger.debug(sql, result.values);
+      async.series(
+        [
+          // Get connection
+          function(next) {
+            sage
+              .getConnection({ transaction: options.transaction })
+              .then(c => {
+                connection = c;
+                next();
+              })
+              .catch(next);
+          },
+          // Perform operation
+          function(next) {
+            sage.logger.debug(sql, result.values);
 
-          connection.execute(sql, result.values, function(err, result) {
-            if(!err) {
-              self.mergeProps();
-            }
-            next(err);
-          });
-        }
-      ], function(err) {
-        if(err) {
-          sage.logger.error(err);
-          return sage.afterExecute(connection).then(() => {
-            reject(err)
-          });
-        }
-
-        sage.afterExecuteCommitable(connection).then(function() {
-          if(err) {
-            return reject(err);
+            connection.execute(sql, result.values, (err, result) => {
+              if (!err) {
+                self.mergeProps();
+              }
+              next(err);
+            });
+          },
+        ],
+        err => {
+          if (err) {
+            sage.logger.error(err);
+            return sage.afterExecute(connection).then(() => {
+              reject(err);
+            });
           }
-          return resolve();
-        }).catch(reject);
 
-      });
-
-    })
-  }
-}
+          sage
+            .afterExecuteCommitable(connection)
+            .then(() => {
+              if (err) {
+                return reject(err);
+              }
+              return resolve();
+            })
+            .catch(reject);
+        }
+      );
+    });
+  };
+};
