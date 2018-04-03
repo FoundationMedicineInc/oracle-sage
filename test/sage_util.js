@@ -1,4 +1,4 @@
-const Promise = require("bluebird");
+const Promise = require('bluebird');
 const assert = require('assert');
 const expect = require('chai').expect;
 const sage = require('../build/sage');
@@ -22,7 +22,7 @@ const customCommentSchema = new sage.Schema(
   {
     COMMENT_ID: {
       type: 'raw',
-      transform: buffer => buffer.toString('utf8')
+      transform: buffer => buffer.toString('utf8'),
     },
     LIKE_COUNT: {
       type: 'raw',
@@ -39,7 +39,7 @@ const customCommentSchema = new sage.Schema(
             resolve(`${chunks.join('')} No you may not.`);
           });
         });
-      }
+      },
     },
   },
   {
@@ -47,7 +47,10 @@ const customCommentSchema = new sage.Schema(
   }
 );
 
-const CustomCommentModel = sage.model('SAGE_TEST.COMMENTS', customCommentSchema);
+const CustomCommentModel = sage.model(
+  'SAGE_TEST.COMMENTS',
+  customCommentSchema
+);
 
 describe('utilities', () => {
   // Reset Db
@@ -145,7 +148,9 @@ describe('utilities', () => {
       LIKE_COUNT: '25',
       BODY: 'I can haz cheezburger pleaze?',
     }).then(result => {
-      expect(result.get('BODY')).to.equal('I can haz cheezburger pleaze? No you may not.');
+      expect(result.get('BODY')).to.equal(
+        'I can haz cheezburger pleaze? No you may not.'
+      );
       done();
     });
   });
