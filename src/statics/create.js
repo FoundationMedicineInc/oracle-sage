@@ -3,7 +3,7 @@ import Promise from 'bluebird';
 import sageUtil from '../../build/sage_util';
 import async from 'async';
 
-module.exports = function (modelClass, name, schema, sage) {
+module.exports = function(modelClass, name, schema, sage) {
   function createArray(arrayOfProps) {}
 
   // Returns string of errors if invalid, null if valid
@@ -67,11 +67,11 @@ module.exports = function (modelClass, name, schema, sage) {
 
     // Build up a list of `INTO ()` statements
     const insertSqls = [];
-    _.each(props, (propsOne) => {
+    _.each(props, propsOne => {
       const m = new self(propsOne, name, schema);
       const values = m.normalized;
       let sql = template;
-      _.each(_.keys(values), (key) => {
+      _.each(_.keys(values), key => {
         let replaceValue = values[key] === undefined ? null : values[key];
 
         if (typeof replaceValue === 'string') {
@@ -100,7 +100,7 @@ module.exports = function (modelClass, name, schema, sage) {
 
     return sage
       .getConnection({ transaction: options.transaction })
-      .then((c) => {
+      .then(c => {
         connection = c;
       })
       .then(() => {
@@ -113,14 +113,17 @@ module.exports = function (modelClass, name, schema, sage) {
       .catch(err =>
         sage.afterExecute(connection).then(() => {
           throw err;
-        }));
+        })
+      );
   }
 
   function createOne(props = {}, options = {}, self) {
     const m = new self(props, name, schema);
     const errors = validateModel(m);
     if (errors) {
-      return Promise.reject(new Error(`Cannot create model. Errors: ${errors}`));
+      return Promise.reject(
+        new Error(`Cannot create model. Errors: ${errors}`)
+      );
     }
 
     const pk = m.schema.primaryKey;
@@ -142,7 +145,7 @@ module.exports = function (modelClass, name, schema, sage) {
     return (
       sage
         .getConnection({ transaction: options.transaction })
-        .then((c) => {
+        .then(c => {
           connection = c;
         })
         .then(() => {
@@ -170,7 +173,8 @@ module.exports = function (modelClass, name, schema, sage) {
         .catch(err =>
           sage.afterExecute(connection).then(() => {
             throw err;
-          }))
+          })
+        )
     );
   }
 
@@ -184,7 +188,7 @@ module.exports = function (modelClass, name, schema, sage) {
    *                                         create. See this for more info:
    *                                         http://stackoverflow.com/questions/13420461/oracle-insert-all-ignore-duplicates
    */
-  modelClass.create = function (props = {}, options = {}) {
+  modelClass.create = function(props = {}, options = {}) {
     if (typeof props === 'object' && props.length === undefined) {
       return createOne(props, options, this);
     } else if (typeof props === 'object' && props.length > 0) {

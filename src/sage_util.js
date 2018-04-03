@@ -3,7 +3,7 @@ import Promise from 'bluebird';
 
 const util = {};
 
-util.getSelectANDSQL = function (fields = {}) {
+util.getSelectANDSQL = function(fields = {}) {
   const params = [];
   const values = {};
   _.each(fields, (value, key) => {
@@ -17,7 +17,7 @@ util.getSelectANDSQL = function (fields = {}) {
   };
 };
 
-util.getUpdateSQL = function (fields = {}) {
+util.getUpdateSQL = function(fields = {}) {
   const params = [];
   const values = {};
   _.each(fields, (value, key) => {
@@ -31,7 +31,7 @@ util.getUpdateSQL = function (fields = {}) {
   };
 };
 
-util.amendDateFields = function (schema, string) {
+util.amendDateFields = function(schema, string) {
   const self = this;
   const fields = [];
   _.each(schema.definition, (value, key) => {
@@ -43,7 +43,7 @@ util.amendDateFields = function (schema, string) {
       });
     }
   });
-  _.each(fields, (field) => {
+  _.each(fields, field => {
     const re = new RegExp(`:${field.name}`);
 
     // https://github.com/oracle/node-oracledb/issues/414
@@ -51,14 +51,14 @@ util.amendDateFields = function (schema, string) {
 
     string = string.replace(
       re,
-      `TO_DATE(:${field.name},'${field.format}${dateBugFixTime}')`,
+      `TO_DATE(:${field.name},'${field.format}${dateBugFixTime}')`
     );
     // string = string.replace(re, "TO_DATE(:" + field.name + ",'" + field.format +"')");
   });
   return string;
 };
 
-util.amendTimestampFields = function (schema, string) {
+util.amendTimestampFields = function(schema, string) {
   const self = this;
   const fields = [];
   _.each(schema.definition, (value, key) => {
@@ -70,13 +70,13 @@ util.amendTimestampFields = function (schema, string) {
       });
     }
   });
-  _.each(fields, (field) => {
+  _.each(fields, field => {
     const re = new RegExp(`:${field.name}`);
     // https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions193.htm
     const oracleFormat = 'DD-Mon-RR HH24:MI:SS.FF';
     string = string.replace(
       re,
-      `TO_TIMESTAMP(:${field.name},'${oracleFormat}')`,
+      `TO_TIMESTAMP(:${field.name},'${oracleFormat}')`
     );
   });
   return string;
@@ -84,7 +84,7 @@ util.amendTimestampFields = function (schema, string) {
 
 // https://github.com/oracle/node-oracledb/issues/414
 // Goes thorugh and gets all DATE fields and sets the time to 12:00:00
-util.fixDateBug = function (schema, values) {
+util.fixDateBug = function(schema, values) {
   _.each(schema.definition, (value, key) => {
     const schemaProps = value;
     if (schemaProps.type === 'date') {
@@ -98,7 +98,7 @@ util.fixDateBug = function (schema, values) {
 };
 
 // Helper for getInsertSQL
-util.schemaToString = function (schema, options = {}) {
+util.schemaToString = function(schema, options = {}) {
   const prefix = options.prefix || '';
   let result = '';
   _.each(schema.definition, (value, key) => {
@@ -113,7 +113,7 @@ util.schemaToString = function (schema, options = {}) {
   return result;
 };
 
-util.getInsertSQL = function (table, schema) {
+util.getInsertSQL = function(table, schema) {
   const fields = this.schemaToString(schema);
   let keys = this.schemaToString(schema, { prefix: ':' });
   keys = this.amendDateFields(schema, keys);
@@ -127,9 +127,9 @@ util.getInsertSQL = function (table, schema) {
  * @param  {Object} result Oracle result object
  * @return {Array.<Object>}
  */
-util.resultToJSON = function (result) {
+util.resultToJSON = function(result) {
   const records = [];
-  return Promise.each(result.rows, (row) => {
+  return Promise.each(result.rows, row => {
     const record = {};
 
     return Promise.each(row, (value, index) => {
@@ -151,9 +151,9 @@ util.resultToJSON = function (result) {
           break;
         case 'Lob':
           // For lob types. Wrap into a promise to read the stream
-          return new Promise((resolve) => {
+          return new Promise(resolve => {
             const chunks = [];
-            value.on('data', (chunk) => {
+            value.on('data', chunk => {
               chunks.push(chunk.toString());
             });
             value.on('end', () => {

@@ -1,8 +1,8 @@
 import Promise from 'bluebird';
 import sageUtil from '../../build/sage_util';
 
-module.exports = function (self, name, schema, sage) {
-  self.reload = function (options = {}) {
+module.exports = function(self, name, schema, sage) {
+  self.reload = function(options = {}) {
     const self = this;
     return new Promise((resolve, reject) => {
       if (!this.get(this._schema.primaryKey)) {
@@ -17,7 +17,7 @@ module.exports = function (self, name, schema, sage) {
 
       sage.models[name].model
         .findOne(query, options)
-        .then((model) => {
+        .then(model => {
           self._props = model._props;
           self.resetDirtyProps();
           return resolve();

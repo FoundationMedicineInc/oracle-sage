@@ -131,7 +131,7 @@ class Sage {
     const self = this;
     if (fn) {
       return new Promise((resolve, reject) => {
-        self.getConnection().then((connection) => {
+        self.getConnection().then(connection => {
           const transaction = {
             connection,
             commit() {
@@ -151,7 +151,7 @@ class Sage {
         });
       });
     }
-    return self.getConnection().then((connection) => {
+    return self.getConnection().then(connection => {
       const transaction = {
         connection,
         commit() {
@@ -167,7 +167,7 @@ class Sage {
 
   releaseConnection(connection) {
     return new Promise((resolve, reject) => {
-      connection.release((err) => {
+      connection.release(err => {
         if (err) {
           logger.error('Problem releasing connection', err);
           reject(err);
@@ -225,7 +225,7 @@ class Sage {
         maxRows: 100,
         outFormat: self.oracledb.OBJECT,
       },
-      options,
+      options
     );
 
     let connection;
@@ -234,7 +234,7 @@ class Sage {
       .getConnection({ transaction: options.transaction })
       .then(c => (connection = c))
       .then(() => connection.execute(sql, bindParams, options))
-      .then((r) => {
+      .then(r => {
         // Lowercase all the object keys
         // This was just done to make the data more 'JS' friendly since
         // the database column names are all uppercase.
@@ -242,14 +242,15 @@ class Sage {
           // Return the row with lowercased keys
           _.transform(row, (result, val, key) => {
             result[key.toLowerCase()] = val;
-          }));
+          })
+        );
 
         if (!options.transaction) {
           return sage.releaseConnection(connection);
         }
       })
       .then(() => results) // Return the results
-      .catch((err) => {
+      .catch(err => {
         logger.warn(err);
         if (options.transaction) {
           throw err;
@@ -259,7 +260,7 @@ class Sage {
           .then(() => {
             throw err;
           })
-          .catch((err) => {
+          .catch(err => {
             throw err;
           });
       });

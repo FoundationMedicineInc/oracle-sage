@@ -2,8 +2,8 @@ import Promise from 'bluebird';
 import sageUtil from '../../build/sage_util';
 import async from 'async';
 
-module.exports = function (modelClass, name, schema, sage) {
-  modelClass.count = function (values = {}, options = {}) {
+module.exports = function(modelClass, name, schema, sage) {
+  modelClass.count = function(values = {}, options = {}) {
     const self = this;
     const result = sageUtil.getSelectANDSQL(values);
 
@@ -21,17 +21,17 @@ module.exports = function (modelClass, name, schema, sage) {
       async.series(
         [
           // Establish Connection
-          function (next) {
+          function(next) {
             sage
               .getConnection({ transaction: options.transaction })
-              .then((c) => {
+              .then(c => {
                 connection = c;
                 return next();
               })
               .catch(next);
           },
           // Perform operation
-          function (next) {
+          function(next) {
             sage.logger.debug(sql, result.values);
 
             connection.execute(sql, result.values, (err, result) => {
@@ -46,7 +46,7 @@ module.exports = function (modelClass, name, schema, sage) {
             });
           },
         ],
-        (err) => {
+        err => {
           if (err) {
             sage.logger.error(err);
           }
@@ -59,7 +59,7 @@ module.exports = function (modelClass, name, schema, sage) {
               return resolve(count);
             })
             .catch(reject);
-        },
+        }
       );
     });
   };

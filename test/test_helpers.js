@@ -9,13 +9,15 @@ module.exports = {
     options = options || {};
 
     const oracle = require('./setup/oracle');
-    return new Promise(((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       oracle
         .connect()
-        .then(() => oracle.runSQL({
-          path: path.resolve(__dirname, './setup/db/schema.sql'),
-          verbose: options.verbose,
-        }))
+        .then(() =>
+          oracle.runSQL({
+            path: path.resolve(__dirname, './setup/db/schema.sql'),
+            verbose: options.verbose,
+          })
+        )
         .then(() => {
           if (options.verbose) {
             console.log('************');
@@ -26,10 +28,10 @@ module.exports = {
         .then(() => {
           resolve();
         });
-    }));
+    });
   },
   connect() {
-    return new Promise(((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       sage
         .connect('127.0.0.1:1521/xe', {
           user: 'SAGE_TEST',
@@ -39,9 +41,9 @@ module.exports = {
           console.log('TestHelper connected via sage');
           resolve();
         })
-        .catch((err) => {
+        .catch(err => {
           console.log(err);
         });
-    }));
+    });
   },
 };

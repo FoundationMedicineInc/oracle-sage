@@ -38,7 +38,7 @@ const UserSchema = new Schema(
   },
   {
     primaryKey: 'USER_ID',
-  },
+  }
 );
 
 module.exports = sage.model('SAGE_TEST.USERS', UserSchema);

@@ -29,13 +29,13 @@ oracledb.getConnection(
         }
         console.log(result);
         doRelease(connection);
-      },
+      }
     );
-  },
+  }
 );
 
 function doRelease(connection) {
-  connection.close((err) => {
+  connection.close(err => {
     if (err) console.error(err.message);
   });
 }

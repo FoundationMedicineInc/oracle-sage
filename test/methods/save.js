@@ -10,38 +10,38 @@ const Post = require('../setup/models/post');
 let user;
 describe('save transactions', () => {
   // Reset Db
-  before((done) => {
+  before(done => {
     TestHelpers.initdb().then(() => {
       done();
     });
   });
   // Connect to sage
-  before((done) => {
+  before(done => {
     TestHelpers.connect()
       .then(() => {
         done();
       })
-      .catch((err) => {
+      .catch(err => {
         console.log(err);
       });
   });
   // Create and set user
-  before((done) => {
+  before(done => {
     User.create({ USERNAME: 'mrchess' })
-      .then((err) => {
-        User.findOne({ USERNAME: 'mrchess' }).then((userModel) => {
+      .then(err => {
+        User.findOne({ USERNAME: 'mrchess' }).then(userModel => {
           user = userModel;
           user.populate().then(() => {
             done();
           });
         });
       })
-      .catch((err) => {
+      .catch(err => {
         console.log('err', err);
       });
   });
 
-  it('should update the username', (done) => {
+  it('should update the username', done => {
     user.set('USERNAME', 'potato');
     user
       .save()
@@ -51,7 +51,7 @@ describe('save transactions', () => {
           done();
         });
       })
-      .catch((err) => {
+      .catch(err => {
         console.log(err);
       });
   });

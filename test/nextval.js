@@ -9,31 +9,32 @@ let user;
 
 describe('transactions', () => {
   // Reset Db
-  before((done) => {
+  before(done => {
     TestHelpers.initdb().then(() => {
       done();
     });
   });
   // Connect to sage
-  before((done) => {
+  before(done => {
     TestHelpers.connect()
       .then(() => {
         done();
       })
-      .catch((err) => {
+      .catch(err => {
         console.log(err);
       });
   });
 
-  it('should create', (done) => {
+  it('should create', done => {
     Sequence.create({
       VALUE: '12345',
-    }).then((err) => {
-      Sequence.count().then((count) => {
+    }).then(err => {
+      Sequence.count().then(count => {
         expect(count).to.equal(1);
         // We must verify this is TRUE because sage temporarily sets it to false during creation
         // Make sure it gets set back
-        expect(Sequence.schema.definition[Sequence.schema.primaryKey].readonly).to.be.true;
+        expect(Sequence.schema.definition[Sequence.schema.primaryKey].readonly)
+          .to.be.true;
         done();
       });
     });

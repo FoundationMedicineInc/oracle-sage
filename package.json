@@ -11,8 +11,8 @@
     "prepublishOnly": "nsp check && babel ./src --out-dir ./build",
     "watch": "babel src -d build -w",
     "build": "babel src -d build",
-    "lint": "./node_modules/.bin/eslint --fix \"src/**/*.js\"",
-    "prettier": "./node_modules/.bin/prettier --single-quote --trailing-comma --write \"src/**/*.js\""
+    "lint": "./node_modules/.bin/eslint --fix \"**/*.js\"",
+    "prettier": "./node_modules/.bin/prettier --single-quote --trailing-comma --write \"**/*.js\""
   },
   "husky": {
     "hooks": {

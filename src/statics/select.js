@@ -25,7 +25,7 @@ class SelectQuery {
 
     return self.sage
       .getConnection({ transaction: options.transaction })
-      .then((c) => {
+      .then(c => {
         connection = c;
       })
       .then(() => {
@@ -37,13 +37,13 @@ class SelectQuery {
         return connection.execute(sql);
       })
       .then(result => sageUtil.resultToJSON(result))
-      .then((results) => {
-        _.each(results, (result) => {
+      .then(results => {
+        _.each(results, result => {
           models.push(new self.model(result));
         });
         return models;
       })
-      .catch((err) => {
+      .catch(err => {
         if (err) {
           self.sage.logger.error(err);
         }

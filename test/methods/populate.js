@@ -9,66 +9,69 @@ const Post = require('../setup/models/post');
 // this test addresses https://github.com/FoundationMedicineInc/oracle-sage/issues/35
 describe('when populate is called within a transaction', () => {
   // Reset Db
-  before((done) => {
+  before(done => {
     TestHelpers.initdb().then(() => {
       done();
     });
   });
   // Connect to sage
-  before((done) => {
+  before(done => {
     TestHelpers.connect()
       .then(() => {
         done();
       })
-      .catch((err) => {
+      .catch(err => {
         console.log(err);
       });
   });
   // create a user with a profile
-  before((done) => {
+  before(done => {
     let user;
-    sage.transaction().then((t) => {
+    sage.transaction().then(t => {
       User.create({ USERNAME: 'jpollard' }, { transaction: t })
-        .then(() => User.findOne(
-          { USERNAME: 'jpollard' },
-          { transaction: t },
-        ).then((userModel) => {
-          user = userModel;
-          return Profile.create(
-            {
-              USER_ID: user.id,
-              BIO: 'I write software.',
-            },
-            { transaction: t },
-          );
-        }))
+        .then(() =>
+          User.findOne({ USERNAME: 'jpollard' }, { transaction: t }).then(
+            userModel => {
+              user = userModel;
+              return Profile.create(
+                {
+                  USER_ID: user.id,
+                  BIO: 'I write software.',
+                },
+                { transaction: t }
+              );
+            }
+          )
+        )
         .then(() => t.commit().then(done))
-        .catch((err) => {
+        .catch(err => {
           console.log('err', err);
           return t.rollback().then(done);
         });
     });
   });
 
-  it('populates data modified within the transaction', (done) => {
+  it('populates data modified within the transaction', done => {
     let user;
-    sage.transaction().then(t => User.findOne({ USERNAME: 'jpollard' }, { transaction: t })
-      .then(u => (user = u))
-      .then(() => Profile.findOne({ USER_ID: user.id }, { transaction: t }))
-      .then((p) => {
-        p.set('BIO', 'I write tests.');
-        return p.save({ transaction: t });
-      })
-      .then(() => user.populate({ transaction: t }))
-      .then(() => {
-        expect(user.get('PROFILE').get('BIO')).to.equal('I write tests.');
-      })
-      .then(() => {
-        t.commit().then(done);
-      })
-      .catch((err) => {
-        t.rollback();
-        console.log(err);
-      }));
+    sage.transaction().then(t =>
+      User.findOne({ USERNAME: 'jpollard' }, { transaction: t })
+        .then(u => (user = u))
+        .then(() => Profile.findOne({ USER_ID: user.id }, { transaction: t }))
+        .then(p => {
+          p.set('BIO', 'I write tests.');
+          return p.save({ transaction: t });
+        })
+        .then(() => user.populate({ transaction: t }))
+        .then(() => {
+          expect(user.get('PROFILE').get('BIO')).to.equal('I write tests.');
+        })
+        .then(() => {
+          t.commit().then(done);
+        })
+        .catch(err => {
+          t.rollback();
+          console.log(err);
+        })
+    );
   });
 });

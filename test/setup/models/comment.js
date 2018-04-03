@@ -16,7 +16,7 @@ const CommentSchema = new Schema(
   },
   {
     primaryKey: 'COMMENT_ID',
-  },
+  }
 );
 
 module.exports = sage.model('SAGE_TEST.COMMENTS', CommentSchema);

@@ -17,7 +17,7 @@ const PostSchema = new Schema(
   },
   {
     primaryKey: 'POST_ID',
-  },
+  }
 );
 
 module.exports = sage.model('SAGE_TEST.POSTS', PostSchema);

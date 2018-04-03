@@ -13,7 +13,7 @@ const SequenceNoTrigger = new Schema(
   },
   {
     primaryKey: 'SEQUENCE_NO_TRIGGER_ID',
-  },
+  }
 );
 
 module.exports = sage.model('SAGE_TEST.SEQUENCE_NO_TRIGGER', SequenceNoTrigger);

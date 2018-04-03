@@ -3,8 +3,8 @@ import async from 'async';
 import _ from 'lodash';
 import sageUtil from '../../build/sage_util';
 
-module.exports = function (self, name, schema, sage) {
-  self.populate = function (options = {}) {
+module.exports = function(self, name, schema, sage) {
+  self.populate = function(options = {}) {
     if (!this._associations.length) {
       this._associations = this._schema.associations;
     }
@@ -13,7 +13,7 @@ module.exports = function (self, name, schema, sage) {
       return new Promise((resolve, reject) => {
         this._populate(options)
           .then(() => resolve())
-          .catch((err) => {
+          .catch(err => {
             sage.logger.error(err);
             return reject(err);
           });
@@ -22,7 +22,7 @@ module.exports = function (self, name, schema, sage) {
     return Promise.resolve();
   };
 
-  self._populate = function (options = {}) {
+  self._populate = function(options = {}) {
     return new Promise((resolve, reject) => {
       const association = this._associations.shift();
       this.populateOne(association, options)
@@ -39,7 +39,7 @@ module.exports = function (self, name, schema, sage) {
     });
   };
 
-  self.populateOne = function (association, options = {}) {
+  self.populateOne = function(association, options = {}) {
     const self = this;
     const value = association.value;
     const model = sage.models[value.model];
@@ -67,17 +67,17 @@ module.exports = function (self, name, schema, sage) {
           .knex(value.joinsWith)
           .select(associationModel._selectAllStringStatic().split(','))
           .innerJoin(
-            function () {
+            function() {
               this.select('*')
                 .from(value.joinTable)
                 .where(
                   value.foreignKeys.mine,
-                  self.get(self._schema.primaryKey),
+                  self.get(self._schema.primaryKey)
                 )
                 .as('t1');
             },
             `${value.joinsWith}.${associationSchema.primaryKey}`,
-            `t1.${value.foreignKeys.theirs}`,
+            `t1.${value.foreignKeys.theirs}`
           )
           .toString();
         break;
@@ -104,17 +104,17 @@ module.exports = function (self, name, schema, sage) {
           .knex(value.joinsWith)
           .select(selectFields)
           .innerJoin(
-            function () {
+            function() {
               this.select('*')
                 .from(value.joinTable)
                 .where(
                   value.foreignKeys.mine,
-                  self.get(self._schema.primaryKey),
+                  self.get(self._schema.primaryKey)
                 )
                 .as('t1');
             },
             `${value.joinsWith}.${associationSchema.primaryKey}`,
-            `t1.${value.foreignKeys.theirs}`,
+            `t1.${value.foreignKeys.theirs}`
           )
           .toString();
 
@@ -130,25 +130,25 @@ module.exports = function (self, name, schema, sage) {
       let connection;
       async.series(
         [
-          function (next) {
+          function(next) {
             sage
               .getConnection({ transaction: options.transaction })
-              .then((c) => {
+              .then(c => {
                 connection = c;
                 return next();
               })
               .catch(err => next(err));
           },
           // Perform operation
-          function (next) {
+          function(next) {
             connection
               .execute(sql, [], { maxRows: 99999 })
               .then(result => sageUtil.resultToJSON(result))
-              .then((results) => {
+              .then(results => {
                 const models = [];
 
                 // Deep populate the results
-                const populateResults = function () {
+                const populateResults = function() {
                   const result = results.shift();
                   if (result) {
                     const model = new associationModel(result);
@@ -173,7 +173,7 @@ module.exports = function (self, name, schema, sage) {
               .catch(next);
           },
         ],
-        (err) => {
+        err => {
           if (err) {
             sage.logger.error(err);
           }
@@ -187,7 +187,7 @@ module.exports = function (self, name, schema, sage) {
               return resolve();
             })
             .catch(reject);
-        },
+        }
       );
     });
   };

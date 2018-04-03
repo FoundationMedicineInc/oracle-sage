@@ -60,7 +60,7 @@ describe('models', () => {
       },
       {
         primaryKey: 'id',
-      },
+      }
     );
   });
 

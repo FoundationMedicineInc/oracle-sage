@@ -3,8 +3,8 @@ import Promise from 'bluebird';
 import sageUtil from '../../build/sage_util';
 import async from 'async';
 
-module.exports = function (self, name, schema, sage) {
-  self.save = function (options = {}) {
+module.exports = function(self, name, schema, sage) {
+  self.save = function(options = {}) {
     const self = this;
 
     return new Promise((resolve, reject) => {
@@ -24,7 +24,7 @@ module.exports = function (self, name, schema, sage) {
       result.values = sageUtil.fixDateBug(this.schema, result.values);
 
       // Convert blob fields into buffers before saving
-      _.each(_.keys(result.values), (key) => {
+      _.each(_.keys(result.values), key => {
         if (
           this.normalized[key] &&
           this.normalized[key].constructor.name === 'Buffer'
@@ -44,17 +44,17 @@ module.exports = function (self, name, schema, sage) {
       async.series(
         [
           // Get connection
-          function (next) {
+          function(next) {
             sage
               .getConnection({ transaction: options.transaction })
-              .then((c) => {
+              .then(c => {
                 connection = c;
                 next();
               })
               .catch(next);
           },
           // Perform operation
-          function (next) {
+          function(next) {
             sage.logger.debug(sql, result.values);
 
             connection.execute(sql, result.values, (err, result) => {
@@ -65,7 +65,7 @@ module.exports = function (self, name, schema, sage) {
             });
           },
         ],
-        (err) => {
+        err => {
           if (err) {
             sage.logger.error(err);
             return sage.afterExecute(connection).then(() => {
@@ -82,7 +82,7 @@ module.exports = function (self, name, schema, sage) {
               return resolve();
             })
             .catch(reject);
-        },
+        }
       );
     });
   };

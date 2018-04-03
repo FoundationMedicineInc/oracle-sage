@@ -203,7 +203,7 @@ describe('validators', () => {
   });
 
   describe('create', () => {
-    it('should throw error if not valid', (done) => {
+    it('should throw error if not valid', done => {
       schema = new sage.Schema({
         id: 'number',
         name: {
@@ -219,7 +219,7 @@ describe('validators', () => {
         .then(() => {
           done('Failed. Should not create');
         })
-        .catch((err) => {
+        .catch(err => {
           assert.ok(err.message);
           done();
         });

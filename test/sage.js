@@ -16,7 +16,7 @@ describe('sage basic methods', () => {
 
   it('should execute', () => {
     const query = 'SELECT * FROM users';
-    return sage.execute(query).then((response) => {
+    return sage.execute(query).then(response => {
       expect(response.length).to.equal(0);
     });
   });
@@ -27,24 +27,25 @@ describe('sage basic methods work with transactions', () => {
   // Reset Db
   before(() => TestHelpers.initdb().then(TestHelpers.connect));
 
-  it('should execute in the context of a transaction', (done) => {
+  it('should execute in the context of a transaction', done => {
     sage = require('../build/sage');
     const query = 'SELECT * FROM users';
     return sage.transaction().then(t =>
       sage
         .execute(query, [], { transaction: t })
-        .then((response) => {
+        .then(response => {
           expect(response.length).to.equal(0);
         })
         .then(() => User.create({ USERNAME: 'jpollard' }, { transaction: t }))
         .then(() => sage.execute(query, [], { transaction: t }))
-        .then((response) => {
+        .then(response => {
           expect(response.length).to.equal(1);
         })
         .then(() => t.commit().then(done))
-        .catch((err) => {
+        .catch(err => {
           console.log('err', err);
           return t.rollback().then(done);
-        }));
+        })
+    );
   });
 });

@@ -13,7 +13,7 @@ const ProfileSchema = new Schema(
   },
   {
     primaryKey: 'USER_ID',
-  },
+  }
 );
 
 module.exports = sage.model('SAGE_TEST.PROFILES', ProfileSchema);

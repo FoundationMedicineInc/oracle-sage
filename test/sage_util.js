@@ -54,7 +54,7 @@ describe('utilities', () => {
       ],
     };
 
-    return sageUtil.resultToJSON(result).then((results) => {
+    return sageUtil.resultToJSON(result).then(results => {
       const result = results[0];
       assert.equal(result.USER_ID, 1);
       assert.equal(result.BIO, 0);

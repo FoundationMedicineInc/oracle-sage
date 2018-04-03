@@ -10,44 +10,46 @@ let user;
 // this test addresses https://github.com/FoundationMedicineInc/oracle-sage/issues/36
 describe('when a destroy fails within a transaction', () => {
   // Reset Db
-  before((done) => {
+  before(done => {
     TestHelpers.initdb().then(() => {
       done();
     });
   });
   // Connect to sage
-  before((done) => {
+  before(done => {
     TestHelpers.connect()
       .then(() => {
         done();
       })
-      .catch((err) => {
+      .catch(err => {
         console.log(err);
       });
   });
   // Create two users then attempt to delete one of them twice
-  before((done) => {
-    sage.transaction().then((t) => {
+  before(done => {
+    sage.transaction().then(t => {
       User.create({ USERNAME: 'mrchess' }, { transaction: t })
         .then(() => User.create({ USERNAME: 'jpollard' }, { transaction: t }))
-        .then(() => User.findOne(
-          { USERNAME: 'jpollard' },
-          { transaction: t },
-        ).then((userModel) => {
-          user = userModel;
-          return Profile.create(
-            {
-              USER_ID: user.id,
-              BIO: 'I write software.',
-            },
-            { transaction: t },
-          );
-        }))
+        .then(() =>
+          User.findOne({ USERNAME: 'jpollard' }, { transaction: t }).then(
+            userModel => {
+              user = userModel;
+              return Profile.create(
+                {
+                  USER_ID: user.id,
+                  BIO: 'I write software.',
+                },
+                { transaction: t }
+              );
+            }
+          )
+        )
         .then(() =>
           // expect this to fail because profile is still referencing it
-          user.destroy({ transaction: t }))
+          user.destroy({ transaction: t })
+        )
         .then(() => t.commit().then(done))
-        .catch((err) => {
+        .catch(err => {
           console.log('err', err);
           return t.rollback().then(done);
         });
@@ -56,14 +58,14 @@ describe('when a destroy fails within a transaction', () => {
 
   // the entire transaction should be rolled back as opposed to being partially committed
   // // this test addresses https://github.com/FoundationMedicineInc/oracle-sage/issues/36
-  it('the entire transaction should be rolled back', (done) => {
+  it('the entire transaction should be rolled back', done => {
     User.findOne({ USERNAME: 'mrchess' })
-      .then((userModel) => {
+      .then(userModel => {
         // we expect this user can't be found because we should have rolled back the entire transaction
         expect(userModel).to.equal(undefined);
         done();
       })
-      .catch((err) => {
+      .catch(err => {
         console.log(err);
       });
   });

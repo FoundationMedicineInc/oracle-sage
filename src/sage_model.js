@@ -6,7 +6,7 @@ import _ from 'lodash';
 import objectAssign from 'object-assign';
 import async from 'async';
 
-const model = function (name, schema, sage) {
+const model = function(name, schema, sage) {
   let _methods = {};
   const modelClass = class Model {
     constructor(props, initName, initSchema) {
@@ -96,7 +96,11 @@ const model = function (name, schema, sage) {
             if (date) {
               value = moment(date, format).format(format);
               if (value === 'Invalid date') {
-                sage.logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`);
+                sage.logger.warn(
+                  `Could not decipher value: ${date}, using Date() value ${new Date(
+                    date
+                  )}`
+                );
                 value = moment(new Date(date)).format(format);
               }
             }
@@ -107,7 +111,11 @@ const model = function (name, schema, sage) {
             if (date) {
               value = moment(date, format).format(format);
               if (value === 'Invalid date') {
-                sage.logger.warn(`Could not decipher value: ${date}, using Date() value ${new Date(date)}`);
+                sage.logger.warn(
+                  `Could not decipher value: ${date}, using Date() value ${new Date(
+                    date
+                  )}`
+                );
                 value = moment(new Date(date)).format(format);
               }
             }
@@ -192,7 +200,7 @@ const model = function (name, schema, sage) {
       }
 
       // translate population
-      _.each(this._schema.associations, (association) => {
+      _.each(this._schema.associations, association => {
         const key = association.key.toLowerCase();
         const models = result[key];
 
@@ -204,7 +212,7 @@ const model = function (name, schema, sage) {
           }
         } else {
           const modelsJSON = [];
-          _.each(models, (model) => {
+          _.each(models, model => {
             modelsJSON.push(model.toJSON());
           });
           result[key] = modelsJSON;
@@ -409,9 +417,11 @@ const model = function (name, schema, sage) {
             }
             break;
           default:
-            this.errors.push(`key: ${key}, value: ${value}, has undefined error, ${
-              schemaProps.type
-            }`);
+            this.errors.push(
+              `key: ${key}, value: ${value}, has undefined error, ${
+                schemaProps.type
+              }`
+            );
         }
 
         // Custom Validator Checks
@@ -423,7 +433,7 @@ const model = function (name, schema, sage) {
         }
 
         // Check all validators
-        _.each(validators, (v) => {
+        _.each(validators, v => {
           const valid = v.validator(value);
           if (!valid) {
             this.errors.push(v.message);
