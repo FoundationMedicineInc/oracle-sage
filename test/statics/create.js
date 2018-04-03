@@ -1,5 +1,3 @@
-const _ = require('lodash');
-const moment = require('moment');
 const TestHelpers = require('../test_helpers');
 const expect = require('chai').expect;
 

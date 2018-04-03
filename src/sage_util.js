@@ -122,12 +122,22 @@ util.getInsertSQL = function(table, schema) {
 };
 
 /**
+ * converts a buffer to an uppercase hexadecimal string
+ * @param buffer
+ * @returns {string}
+ */
+util.convertBufferToHexString = function(buffer) {
+  return buffer.toString('hex').toUpperCase();
+};
+
+/**
  * Take a `result` from a Oracle execute and convert it to JSON. Handles cases
  * with CLOBs and BLOBs and the Node oracledb Lob class.
  * @param  {Object} result Oracle result object
+ * @param {Object} schema Sage Schema
  * @return {Array.<Object>}
  */
-util.resultToJSON = function(result) {
+util.resultToJSON = function(result, schema = {}) {
   const records = [];
   return Promise.each(result.rows, row => {
     const record = {};
@@ -137,7 +147,7 @@ util.resultToJSON = function(result) {
 
       let constructorName;
       // We get the constructor so we can handle specific types in specific ways
-      // particulary streams and hex values.
+      // particularly streams and hex values.
       try {
         constructorName = value.constructor.name;
       } catch (e) {
@@ -145,16 +155,25 @@ util.resultToJSON = function(result) {
         constructorName = null;
       }
 
+      const schemaDefinition = schema.definition || {};
+      const schemaFieldObj = schemaDefinition[field];
+      if (schemaFieldObj && schemaFieldObj.transform) {
+        // this allows the transform function to be either a regular function or a promise
+        return Promise.resolve(schemaFieldObj.transform(value)).then(result => {
+          record[field] = result;
+        });
+      }
+
       switch (constructorName) {
         case 'Buffer':
-          record[field] = value.toString('hex');
+          record[field] = this.convertBufferToHexString(value);
           break;
         case 'Lob':
           // For lob types. Wrap into a promise to read the stream
           return new Promise(resolve => {
             const chunks = [];
             value.on('data', chunk => {
-              chunks.push(chunk.toString());
+              chunks.push(chunk.toString('utf8'));
             });
             value.on('end', () => {
               record[field] = chunks.join('');

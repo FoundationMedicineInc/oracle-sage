@@ -36,7 +36,7 @@ class SelectQuery {
         self.sage.logger.debug(sql);
         return connection.execute(sql);
       })
-      .then(result => sageUtil.resultToJSON(result))
+      .then(result => sageUtil.resultToJSON(result, this.schema))
       .then(results => {
         _.each(results, result => {
           models.push(new self.model(result));

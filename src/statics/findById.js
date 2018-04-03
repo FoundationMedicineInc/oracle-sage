@@ -36,7 +36,7 @@ module.exports = function(modelClass, name, schema, sage) {
             sage.logger.debug(sql, data);
             connection
               .execute(sql, data)
-              .then(result => sageUtil.resultToJSON(result))
+              .then(result => sageUtil.resultToJSON(result, schema))
               .then(results => {
                 if (results.length) {
                   resultModel = new self(results[0], name, schema);

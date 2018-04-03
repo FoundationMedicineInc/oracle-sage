@@ -143,7 +143,7 @@ module.exports = function(self, name, schema, sage) {
           function(next) {
             connection
               .execute(sql, [], { maxRows: 99999 })
-              .then(result => sageUtil.resultToJSON(result))
+              .then(result => sageUtil.resultToJSON(result, schema))
               .then(results => {
                 const models = [];
 
