@@ -1,38 +1,43 @@
-var _ = require('lodash');
-var moment = require('moment');
-var TestHelpers = require('./test_helpers');
-var expect = require('chai').expect;
+var _ = require("lodash");
+var moment = require("moment");
+var TestHelpers = require("./test_helpers");
+var expect = require("chai").expect;
 
-
-var User = require('./setup/models/user');
-var Profile = require('./setup/models/profile');
-var Post = require('./setup/models/post');
+var User = require("./setup/models/user");
+var Profile = require("./setup/models/profile");
+var Post = require("./setup/models/post");
 
 var user;
-describe('transactions',function() {
+describe("transactions", function() {
   // Reset Db
   before(function(done) {
     TestHelpers.initdb().then(function() {
       done();
     });
-  });;
+  });
   // Connect to sage
   before(function(done) {
-    TestHelpers.connect().then(function() {
-      done();
-    }).catch(function(err) {
-      console.log(err);
-    });
-  });  
+    TestHelpers.connect()
+      .then(function() {
+        done();
+      })
+      .catch(function(err) {
+        console.log(err);
+      });
+  });
   // Create and set user
   before(function(done) {
-    User.create({ USERNAME: "mrchess" }).then(function(err) {
-      User.findOne({ USERNAME: "mrchess" }).then(function(userModel) {
-        user = userModel;
-        console.log('found user', user.id)
-        done();
+    User.create({ USERNAME: "mrchess" })
+      .then(function(err) {
+        User.findOne({ USERNAME: "mrchess" }).then(function(userModel) {
+          user = userModel;
+          console.log("found user", user.id);
+          done();
+        });
+      })
+      .catch(function(err) {
+        console.log("err", err);
       });
-    }).catch(function(err) { console.log('err', err) });
   });
 
   // Create a profile for user - hasOne
@@ -53,7 +58,7 @@ describe('transactions',function() {
     }).then(function() {
       done();
     });
-  })
+  });
   before(function(done) {
     Post.create({
       USER_ID: user.id,
@@ -61,9 +66,9 @@ describe('transactions',function() {
     }).then(function() {
       done();
     });
-  })  
+  });
 
-  it('should populate', function(done) {
+  it("should populate", function(done) {
     user.populate().then(function() {
       // console.log(user)
       var json = user.toJSON();

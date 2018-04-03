@@ -1,25 +1,25 @@
-import Promise from 'bluebird';
-import _ from 'lodash';
-import async from 'async';
-import sageUtil from '../../build/sage_util';
+import Promise from "bluebird";
+import _ from "lodash";
+import async from "async";
+import sageUtil from "../../build/sage_util";
 
-var knex = require('knex')({ client: 'oracle' })
+var knex = require("knex")({ client: "oracle" });
 
 class SelectQuery {
   constructor(sage, tableName, model, columns) {
-    this.sage = sage
-    this.knex = knex(tableName)
+    this.sage = sage;
+    this.knex = knex(tableName);
 
-    this.model = model // needed to convert results into models
+    this.model = model; // needed to convert results into models
 
-    columns = columns || "*"
-    this.knex.select(columns)
+    columns = columns || "*";
+    this.knex.select(columns);
 
     this.knex.exec = (options = {}) => {
-      return this.exec(options)
-    }
+      return this.exec(options);
+    };
 
-    return this.knex
+    return this.knex;
   }
 
   exec(options = {}) {
@@ -28,33 +28,34 @@ class SelectQuery {
 
     let connection;
 
-    return self.sage.getConnection({transaction: options.transaction})
+    return self.sage
+      .getConnection({ transaction: options.transaction })
       .then(c => (connection = c))
       .then(() => {
         let sql = self.knex.toString();
         // Fix: [Error: ORA-01756: quoted string not properly terminated]
-        sql = sql.replace(/\\'/g, "''")
+        sql = sql.replace(/\\'/g, "''");
 
         self.sage.logger.debug(sql);
         return connection.execute(sql);
       })
-      .then((result) => sageUtil.resultToJSON(result))
-      .then((results) => {
-        _.each(results, (result) => {
-          models.push(new self.model(result))
+      .then(result => sageUtil.resultToJSON(result))
+      .then(results => {
+        _.each(results, result => {
+          models.push(new self.model(result));
         });
         return models;
       })
-      .catch((err) => {
-        if(err) {
+      .catch(err => {
+        if (err) {
           self.sage.logger.error(err);
         }
-        throw(err);
+        throw err;
       })
       .finally(() => {
-        return self.sage.afterExecute(connection)
+        return self.sage.afterExecute(connection);
       });
   }
 }
 
-module.exports = SelectQuery
+module.exports = SelectQuery;
