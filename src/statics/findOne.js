@@ -1,7 +1,6 @@
 import Promise from 'bluebird';
-import sageUtil from '../../build/sage_util';
 import async from 'async';
-import logger from '../logger';
+import sageUtil from '../../build/sage_util';
 
 module.exports = function (modelClass, name, schema, sage) {
   modelClass.findOne = function (values = {}, options = {}) {

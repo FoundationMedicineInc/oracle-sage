@@ -1,6 +1,4 @@
-import Promise from 'bluebird';
 import _ from 'lodash';
-import async from 'async';
 import sageUtil from '../../build/sage_util';
 
 const knex = require('knex')({ client: 'oracle' });
@@ -12,8 +10,7 @@ class SelectQuery {
 
     this.model = model; // needed to convert results into models
 
-    columns = columns || '*';
-    this.knex.select(columns);
+    this.knex.select(columns || '*');
 
     this.knex.exec = (options = {}) => this.exec(options);
 
@@ -28,7 +25,9 @@ class SelectQuery {
 
     return self.sage
       .getConnection({ transaction: options.transaction })
-      .then(c => (connection = c))
+      .then((c) => {
+        connection = c;
+      })
       .then(() => {
         let sql = self.knex.toString();
         // Fix: [Error: ORA-01756: quoted string not properly terminated]

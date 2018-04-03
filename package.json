@@ -16,7 +16,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "nsp check && npm run prettier && npm run lint && npm run build"
+      "pre-commit": "nsp check && npm run prettier && npm run build"
     }
   },
   "license": "MIT",
@@ -51,7 +51,7 @@
     "eslint-plugin-import": "^2.10.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.7.0",
-    "husky": "^0.14.3",
+    "husky": "^0.15.0-rc.13",
     "mocha": "^2.3.4",
     "nsp": "^3.2.1",
     "oracledb": "^2.1.2",
