@@ -46,13 +46,14 @@ describe('statics/create', () => {
       expect(result.rowsAffected).to.equal(4);
     }));
 
-  it('should work with numbers as integers or floats', (done) => {
+  it('should work with numbers as integers or floats', done => {
     let username1 = new Date().getTime().toString() + _.random(0, 99999);
     return User.create({ USERNAME: username1, AGE: 3.14 })
       .then(() => User.findOne({ USERNAME: username1 }))
       .then(userModel => {
         expect(userModel.get('AGE')).to.equal(3.14);
-      }).then(() => {
+      })
+      .then(() => {
         let username3 = new Date().getTime().toString() + _.random(0, 99999);
         return User.create({ USERNAME: username3, AGE: 95 })
           .then(() => User.findOne({ USERNAME: username3 }))
