@@ -164,6 +164,18 @@ describe('models', () => {
     assert.equal(user.normalized.age, 100);
   });
 
+  it('should not modify numbers', () => {
+    const User = sage.model('User', schema);
+    const bob = new User({ name: 'bob' });
+    const alice = new User({ name: 'alice' });
+
+    bob.set('age', '50.75');
+    assert.equal(bob.normalized.age, '50.75');
+
+    alice.set('age', 80.9);
+    assert.equal(alice.normalized.age, 80.9);
+  });
+
   it('should not have a readonly field in normalize', () => {
     const User = sage.model('User', schema);
     const user = new User({
