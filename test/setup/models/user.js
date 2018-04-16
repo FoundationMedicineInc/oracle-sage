@@ -15,6 +15,9 @@ const UserSchema = new Schema(
     USERNAME: {
       type: 'varchar',
     },
+    AGE: {
+      type: 'number',
+    },
     POSTS: {
       type: 'association',
       joinType: 'hasMany',

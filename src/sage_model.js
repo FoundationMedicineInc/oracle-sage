@@ -118,16 +118,8 @@ const model = function(name, schema, sage) {
             }
             break;
 
-          case 'number':
-            // Need this IF statement because what if the person does not have a
-            // read only primary key and is creating a new model? Usually they would pass
-            // down NULL as the PK, and if we didn't have this it would parseInt(NULL)
-            if (this.get(key) != null || this.get(key) != undefined) {
-              value = parseInt(this.get(key));
-            }
-            break;
-
           // Blobs must be converted to a buffer before inserting into Oracle
+          // this should work even if it's already a buffer so we don't need to check
           case 'blob':
             if (this.get(key) !== undefined && this.get(key) !== null) {
               value = new Buffer(this.get(key));
