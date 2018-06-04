@@ -219,6 +219,11 @@ class Sage {
   // }
   execute(sql, bindParams = [], options = {}) {
     const self = this;
+    return self._execute(sql, bindParams, options);
+  }
+
+  _execute(sql, bindParams, options) {
+    const self = this;
     logger.debug(sql);
     options = _.extend(
       {
@@ -267,6 +272,11 @@ class Sage {
   }
 
   connect(uri, connectOptions = {}) {
+    const self = this;
+    return self._connect(uri, connectOptions);
+  }
+
+  _connect(uri, connectOptions) {
     const self = this;
     if (self._pool) {
       return Promise.resolve();
