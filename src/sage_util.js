@@ -32,7 +32,6 @@ util.getUpdateSQL = function(fields = {}) {
 };
 
 util.amendDateFields = function(schema, string) {
-  const self = this;
   const fields = [];
   _.each(schema.definition, (value, key) => {
     const schemaProps = value;
@@ -59,24 +58,25 @@ util.amendDateFields = function(schema, string) {
 };
 
 util.amendTimestampFields = function(schema, string) {
-  const self = this;
   const fields = [];
   _.each(schema.definition, (value, key) => {
     const schemaProps = value;
     if (schemaProps.type === 'timestamp') {
+      const defaultOracleFormat = 'DD-Mon-RR HH24:MI:SS.FF';
       fields.push({
         name: key,
         format: schemaProps.format,
+        oracleFormat: schemaProps.oracleFormat || defaultOracleFormat,
       });
     }
   });
   _.each(fields, field => {
     const re = new RegExp(`:${field.name}`);
     // https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions193.htm
-    const oracleFormat = 'DD-Mon-RR HH24:MI:SS.FF';
+    const { name, oracleFormat } = field;
     string = string.replace(
       re,
-      `TO_TIMESTAMP(:${field.name},'${oracleFormat}')`
+      `TO_TIMESTAMP(:${name},'${oracleFormat}')`
     );
   });
   return string;

@@ -118,7 +118,12 @@ var userSchema = sage.Schema({
   ID: "number",
   CREATED_AT: {
     type: "date",
-    format: "MM/DD/YYYY"
+    format: "MM/DD/YYYY",
+  },
+  CREATED_DTS: {
+    type: "timestamp",
+    format: "DD/MMM/YYYY hh:mm:ss a",
+    oracleFormat: "DD-Mon-RR HH:MI:SS AM", // to send a custom oracleFormat for certain timestamp
   },
   USERNAME: {
     type: "varchar"
@@ -272,9 +277,9 @@ User.create({ USERNAME: "example" });
 ```javascript
 // EXPERIMENTAL. May not work well with complex column like BLOB
 User.create([
-  { USERNAME: "create" },  
-  { USERNAME: "many" },  
-  { USERNAME: "at once" }  
+  { USERNAME: "create" },
+  { USERNAME: "many" },
+  { USERNAME: "at once" }
 ], { hasDbmsErrlog: true }); // This options object is optional
 ```
 
