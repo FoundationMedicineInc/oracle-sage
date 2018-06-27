@@ -123,7 +123,6 @@ var userSchema = sage.Schema({
   CREATED_DTS: {
     type: "timestamp",
     format: "DD/MMM/YYYY hh:mm:ss a",
-    oracleFormat: "DD-Mon-RR HH:MI:SS AM", // to send a custom oracleFormat for certain timestamp
   },
   USERNAME: {
     type: "varchar"
