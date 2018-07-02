@@ -32,7 +32,6 @@ util.getUpdateSQL = function(fields = {}) {
 };
 
 util.amendDateFields = function(schema, string) {
-  const self = this;
   const fields = [];
   _.each(schema.definition, (value, key) => {
     const schemaProps = value;
@@ -59,25 +58,28 @@ util.amendDateFields = function(schema, string) {
 };
 
 util.amendTimestampFields = function(schema, string) {
-  const self = this;
   const fields = [];
   _.each(schema.definition, (value, key) => {
     const schemaProps = value;
     if (schemaProps.type === 'timestamp') {
+      const defaultOracleFormat = 'DD-Mon-RR HH24:MI:SS.FF';
       fields.push({
         name: key,
         format: schemaProps.format,
+
+        // There was an issue where Oracle was not saving AM/PM because the SQL was
+        // not specifying the format in TO_TIMESTAMP. We do not expose this in the docs
+        // because there may be a better way to fix this, and want to fix it properly in the
+        // future.
+        oracleFormat: schemaProps.oracleFormat || defaultOracleFormat,
       });
     }
   });
   _.each(fields, field => {
     const re = new RegExp(`:${field.name}`);
     // https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions193.htm
-    const oracleFormat = 'DD-Mon-RR HH24:MI:SS.FF';
-    string = string.replace(
-      re,
-      `TO_TIMESTAMP(:${field.name},'${oracleFormat}')`
-    );
+    const { name, oracleFormat } = field;
+    string = string.replace(re, `TO_TIMESTAMP(:${name},'${oracleFormat}')`);
   });
   return string;
 };
