@@ -33,10 +33,13 @@ module.exports = {
   connect() {
     return new Promise((resolve, reject) => {
       sage
-        .connect('127.0.0.1:1521/xe', {
-          user: 'SAGE_TEST',
-          password: 'oracle',
-        })
+        .connect(
+          '127.0.0.1:1521/xe',
+          {
+            user: 'SAGE_TEST',
+            password: 'oracle',
+          }
+        )
         .then(() => {
           console.log('TestHelper connected via sage');
           resolve();
