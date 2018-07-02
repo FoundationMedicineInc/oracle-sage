@@ -5,4 +5,7 @@
 
 # VERSION 1.1.1
 - critical bug fix - normalize was interpreting all numbers as integers when using the model `create` method (issue should be isolated to only this method)
-    - the normalize method will no longer parse values as integers, but the validate method will enforce that your input must be a number (unless a custom validator is provided)
+    - the normalize method will no longer parse values as integers, but the validate method will enforce that your input must be a number (unless a custom validator is provided)\
+
+# VERSION 1.1.2
+- creates execute and connect base functionality now exposed through _execute and _connect methods so _execute and _connect can easily be extended
