@@ -16,6 +16,11 @@ const userSchema = new sage.Schema({
     type: 'date',
     format: 'MM/DD/YYYY',
   },
+  CREATED_DTS: {
+    type: 'timestamp',
+    format: 'DD/MMM/YYYY hh:mm:ss a',
+    oracleFormat: 'DD-Mon-RR HH:MI:SS AM',
+  },
 });
 
 const customCommentSchema = new sage.Schema(
@@ -71,24 +76,33 @@ describe('utilities', () => {
   });
 
   it('should build sql correctly', () => {
-    var sql = sageUtil.schemaToString(userSchema);
-    assert.equal(sql, 'ID,CREATED_AT');
+    let sql = sageUtil.schemaToString(userSchema);
+    assert.equal(sql, 'ID,CREATED_AT,CREATED_DTS');
 
-    var sql = sageUtil.schemaToString(userSchema, { prefix: ':' });
-    assert.equal(sql, ':ID,:CREATED_AT');
+    sql = sageUtil.schemaToString(userSchema, { prefix: ':' });
+    assert.equal(sql, ':ID,:CREATED_AT,:CREATED_DTS');
   });
 
   it('should amend date fields', () => {
     let sql = sageUtil.schemaToString(userSchema, { prefix: ':' });
     sql = sageUtil.amendDateFields(userSchema, sql);
-    const expected = ":ID,TO_DATE(:CREATED_AT,'MM/DD/YYYY HH24:MI:SS')";
+    const expected =
+      ":ID,TO_DATE(:CREATED_AT,'MM/DD/YYYY HH24:MI:SS'),:CREATED_DTS";
+    assert.equal(sql, expected);
+  });
+
+  it('should amend timestamp fields', () => {
+    let sql = sageUtil.schemaToString(userSchema, { prefix: ':' });
+    sql = sageUtil.amendTimestampFields(userSchema, sql);
+    const expected =
+      ":ID,:CREATED_AT,TO_TIMESTAMP(:CREATED_DTS,'DD-Mon-RR HH:MI:SS AM')";
     assert.equal(sql, expected);
   });
 
   it('should build a full query', () => {
     const sql = sageUtil.getInsertSQL('test', userSchema);
     const expected =
-      "INSERT INTO test (ID,CREATED_AT) VALUES (:ID,TO_DATE(:CREATED_AT,'MM/DD/YYYY HH24:MI:SS'))";
+      "INSERT INTO test (ID,CREATED_AT,CREATED_DTS) VALUES (:ID,TO_DATE(:CREATED_AT,'MM/DD/YYYY HH24:MI:SS'),TO_TIMESTAMP(:CREATED_DTS,'DD-Mon-RR HH:MI:SS AM'))";
     assert.equal(sql, expected);
   });
 
