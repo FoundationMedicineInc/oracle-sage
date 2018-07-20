@@ -353,11 +353,16 @@ User.count().then(function(count) { ... })
 
 A chainable query builder based off Knex. See [Knex](http://knexjs.org/) for the full API usage.
 
+Note you must use the `exec` or `execWithBindParams` to ensure results are returned as a Sage model - using `toString` then `sage.execute` will return raw query results
+The options used with the `exec` or `execWithBindParams` methods also support options allowed here: https://github.com/oracle/node-oracledb/blob/master/doc/api.md#execute
+
 **Note that right now sage only supports the ARRAY format for knex select if you specify multiple columns. String is OK for single column.**
 
 ```javascript
 const singleColumnExample = 'USERNAME';
 const multipleColumnExample = ['USERNAME', 'PASSWORD'];
+// for purposes of example we're assuming we are already in a transaction
+const options = { transaction: t };
 
 User
   .select() // same as select('*')
@@ -365,14 +370,21 @@ User
   .limit(1)
   .exec().then(function(resultsAsModels) {
     resultsAsModels[0].get('USERNAME') // value is "example"
-  })
+  });
 
 User
   .select("USERNAME")
   .limit(1)
-  .exec().then(function(resultsAsModels) {
+  .exec(options).then(function(resultsAsModels) {
     console.log(resultsAsModels);
-  })
+  });
+
+User
+  .select()
+  .whereRaw('USERNAME = :userName')
+  .execWithBindParams(bindParams, options).then(resultsAsModels => {
+    console.log(resultsAsModels);
+  });
 ```
 
 ## Model Methods

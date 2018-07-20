@@ -9,3 +9,8 @@
 
 # VERSION 1.1.2
 - creates execute and connect base functionality now exposed through _execute and _connect methods so _execute and _connect can easily be extended
+
+# Version 1.1.5
+- adds an `execWithBindParams` method to the sage `select` method and also allows the options used with `exec` or `execWithBindParams` to be passed down to the node oracledb driver (useful for setting things like the max rows on a particular call)
+- this new method was added to preserve backwards compatibility of the `exec` method while providing an API that is consistent with the rest of the library (for the future this is a good case to pass all parameters in a wrapper object and destructure so ordering of arguments doesn't matter)
+- `exec` can also be used with `bindParams` now but these must be passed second which is somewhat antithetical to the way the rest of the library works (`bindParams` always come before options)
