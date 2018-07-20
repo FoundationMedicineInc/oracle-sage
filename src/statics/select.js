@@ -13,11 +13,16 @@ class SelectQuery {
     this.knex.select(columns || '*');
 
     this.knex.exec = (options = {}) => this.exec(options);
-
+    this.knex.execWithBindParams = (bindParams, options) => this.execWithBindParams(bindParams, options);
+    
     return this.knex;
   }
 
-  exec(options = {}) {
+  execWithBindParams(bindParams, options) {
+    return this.exec(options, bindParams);
+  }
+
+  exec(options = {}, bindParams = []) {
     const models = [];
     const self = this;
 
@@ -34,7 +39,7 @@ class SelectQuery {
         sql = sql.replace(/\\'/g, "''");
 
         self.sage.logger.debug(sql);
-        return connection.execute(sql);
+        return connection.execute(sql, bindParams, options);
       })
       .then(result => sageUtil.resultToJSON(result, this.schema))
       .then(results => {
